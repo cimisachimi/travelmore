@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image"; // ✨ Import the Image component
 
 // Helper component for a standard navigation link
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -24,7 +25,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   );
 }
 
-// ✨ NEW: Component for dropdown links with spinning arrow
+// Component for dropdown links with spinning arrow
 function DropdownLink({ title, items }: { title: string; items: { name: string; href: string }[] }) {
   return (
     <div className="relative group">
@@ -49,7 +50,7 @@ function DropdownLink({ title, items }: { title: string; items: { name: string; 
       {/* The dropdown menu */}
       <div className="
         absolute left-0 mt-2 w-48 origin-top-left rounded-md bg-white shadow-lg
-        transform scale-95 opacity-0 invisible 
+        transform scale-95 opacity-0 invisible
         transition-all duration-200 ease-in-out
         group-hover:scale-100 group-hover:opacity-100 group-hover:visible
       ">
@@ -87,9 +88,15 @@ export default function Navbar() {
     <nav className="bg-white shadow-md">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/" className="text-2xl font-bold text-black">
-            TravelSite
+          {/* ✨ Image Logo */}
+          <Link href="/">
+            <Image
+              src="/logo.png"
+              alt="TravelSite Logo"
+              width={140}
+              height={40}
+              priority // Helps with loading performance for important images
+            />
           </Link>
 
           {/* Menu */}
@@ -99,22 +106,15 @@ export default function Navbar() {
             <NavLink href="/services">Services</NavLink>
             <DropdownLink title="Pages" items={pageLinks} />
             <NavLink href="/blog">Blog</NavLink>
-            <NavLink href="/contact">Contact</NavLink>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex space-x-3">
+          {/* Action Button */}
+          <div className="flex">
             <Link
-              href="/login"
-              className="px-4 py-2 rounded-lg bg-transparent text-black font-medium border border-gray-300 hover:bg-gray-100 transition-colors"
+              href="/contact"
+              className="px-4 py-2 rounded-lg bg-gray-500 text-white font-medium hover:bg-gray-800 transition-colors"
             >
-              Login
-            </Link>
-            <Link
-              href="/signup"
-              className="px-4 py-2 rounded-lg bg-black text-white font-medium hover:bg-gray-800 transition-colors"
-            >
-              Sign Up
+              Contact Us
             </Link>
           </div>
         </div>
