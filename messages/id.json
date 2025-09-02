@@ -1,0 +1,15 @@
+{
+  "Navbar": {
+    "home": "Beranda",
+    "destinations": "Destinasi",
+    "services": "Layanan",
+    "pages": "Halaman",
+    "blog": "Blog",
+    "contact": "Hubungi Kami"
+  },
+  "PersonalizedTripPlanner": {
+    "title": "Rencanakan Perjalanan Impian Anda di Jogja",
+    "subtitle": "Lupakan paket wisata yang kaku. Kami merancang setiap detail perjalanan khusus untuk Anda.",
+    "cta": "Mulai Konsultasi Gratis"
+  }
+}

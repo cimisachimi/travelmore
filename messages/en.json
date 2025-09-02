@@ -1,0 +1,15 @@
+{
+  "Navbar": {
+    "home": "Home",
+    "destinations": "Destinations",
+    "services": "Services",
+    "pages": "Pages",
+    "blog": "Blog",
+    "contact": "Contact Us"
+  },
+  "PersonalizedTripPlanner": {
+    "title": "Plan Your Dream Trip in Jogja",
+    "subtitle": "Forget rigid tour packages. We design every detail of the trip just for you.",
+    "cta": "Start Free Consultation"
+  }
+}

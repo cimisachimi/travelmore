@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import LanguageSwitcher from './LanguageSwitcher'; // ✨ Import the switcher
 
 // Helper component for a standard navigation link
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -110,14 +111,15 @@ export default function Navbar() {
             <NavLink href="/about">about</NavLink>
           </div>
 
-          {/* Action Button */}
-          <div className="flex pr-4">
+          {/* Action Button & Language Switcher */}
+          <div className="flex items-center space-x-4 pr-4">
             <Link
               href="/contact"
               className="px-4 py-2 rounded-lg bg-primary text-black font-medium hover:brightness-90 transition-all"
             >
               Contact Us
             </Link>
+            <LanguageSwitcher /> {/* ✨ Add the component here */}
           </div>
         </div>
       </div>
