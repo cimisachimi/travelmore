@@ -1,7 +1,7 @@
 // components/HeroSlider.tsx
 "use client";
 
-import { useState, useEffect, useCallback } from "react"; // ✨ Import useCallback
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -12,7 +12,7 @@ interface SlideData {
   title: string;
 }
 
-// Custom arrow button component (no change needed here, still good)
+// Custom arrow button component (no changes needed)
 const CustomArrowButton = ({ direction, onClick }: { direction: "up" | "down"; onClick: () => void }) => (
   <button
     onClick={onClick}
@@ -36,7 +36,7 @@ const CustomArrowButton = ({ direction, onClick }: { direction: "up" | "down"; o
   </button>
 );
 
-// Dot indicator component (no change needed here, still good)
+// Dot indicator component (no changes needed)
 const DotIndicator = ({ active, onClick }: { active: boolean; onClick: () => void }) => (
   <button
     onClick={onClick}
@@ -57,99 +57,68 @@ export default function HeroSlider() {
   ];
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false); // ✨ New state for transition
-  const [visibleSlideIndex, setVisibleSlideIndex] = useState(0); // ✨ New state for visible slide
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  // Function to handle slide change with transition
   const changeSlide = useCallback((newIndex: number) => {
-    if (isTransitioning) return; // Prevent rapid clicking issues
-    setIsTransitioning(true);
-
-    // Fade out the current content
+    if (isAnimating) return; // Prevent changing slides while one is in progress
+    setIsAnimating(true);
+    // After the content fades out, change the slide index
     setTimeout(() => {
-      setCurrentSlideIndex(newIndex); // Update to the new slide after fade-out
-      // No need to set isTransitioning(false) here, as it will be set when content fades in
-    }, 500); // Duration of the fade-out animation in global.css
-  }, [isTransitioning]);
+      setCurrentSlideIndex(newIndex);
+      // Allow new animations to start after a short delay
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 500); // This should match your fade-in animation duration
+    }, 500); // This should match your fade-out animation duration
+  }, [isAnimating, slides.length]);
 
-  // Update visibleSlideIndex when currentSlideIndex changes, for content fade-in
-  useEffect(() => {
-    setVisibleSlideIndex(currentSlideIndex);
-    const fadeInTimeout = setTimeout(() => {
-      setIsTransitioning(false); // Mark transition as complete after fade-in
-    }, 800); // Duration of fade-in animation, matches animate-fadeInUp
-    return () => clearTimeout(fadeInTimeout);
-  }, [currentSlideIndex]);
-
-
-  const goToNextSlide = () => {
-    const newIndex = (currentSlideIndex + 1) % slides.length;
-    changeSlide(newIndex);
-  };
+  const goToNextSlide = useCallback(() => {
+    changeSlide((currentSlideIndex + 1) % slides.length);
+  }, [currentSlideIndex, slides.length, changeSlide]);
 
   const goToPrevSlide = () => {
-    const newIndex = (currentSlideIndex - 1 + slides.length) % slides.length;
-    changeSlide(newIndex);
+    changeSlide((currentSlideIndex - 1 + slides.length) % slides.length);
   };
 
   // Auto-advance slides
   useEffect(() => {
-    const interval = setInterval(goToNextSlide, 7000); // Change slide every 7 seconds
+    const interval = setInterval(goToNextSlide, 7000);
     return () => clearInterval(interval);
-  }, [goToNextSlide]); // Depend on goToNextSlide (which depends on changeSlide)
+  }, [goToNextSlide]);
 
-
-  // Get the slide data for the currently displayed content
-  const currentContentSlide = slides[visibleSlideIndex];
-  // Get the slide data for the background image (which transitions separately)
-  const currentImageSlide = slides[currentSlideIndex];
+  const currentSlide = slides[currentSlideIndex];
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Background Image with Overlay */}
-      {/* We use currentImageSlide for the Image component to allow pre-loading */}
-      <Image
-        src={currentImageSlide.imageSrc}
-        alt={`Background for ${currentImageSlide.title}`}
-        fill
-        style={{ objectFit: "cover" }}
-        priority // Load the first image with high priority
-        className="transition-opacity duration-1000 ease-in-out opacity-100" // Always fully opaque
-        key={currentImageSlide.imageSrc} // Key to force re-render/transition on image change
-      />
-      {/* Create a second image for the transition effect */}
-      {currentImageSlide.imageSrc !== slides[visibleSlideIndex].imageSrc && (
+      {/* Background Images for Cross-fade */}
+      {slides.map((slide, index) => (
         <Image
-          src={slides[visibleSlideIndex].imageSrc}
-          alt={`Previous background`}
+          key={slide.imageSrc}
+          src={slide.imageSrc}
+          alt={`Background for ${slide.title}`}
           fill
-          style={{ objectFit: "cover" }}
-          className="absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-0" // Fades out
+          style={{ objectFit: 'cover' }}
+          priority={index === 0}
+          className={`
+            absolute inset-0 transition-opacity duration-1000 ease-in-out
+            ${index === currentSlideIndex ? 'opacity-100' : 'opacity-0'}
+          `}
         />
-      )}
+      ))}
 
-      <div className="absolute inset-0 bg-black opacity-40 z-10"></div> {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black opacity-40 z-10"></div>
 
       {/* Content */}
       <div
-        className={`relative z-20 flex flex-col justify-center items-start h-full max-w-6xl mx-auto px-4 text-white
-          ${isTransitioning ? "animate-fadeOutDown" : "animate-none"} `} // ✨ Apply fade out here
+        className={`relative z-20 flex flex-col justify-center items-start h-full max-w-6xl mx-auto px-4 text-white transition-opacity duration-500
+          ${isAnimating ? 'opacity-0' : 'opacity-100'}`}
       >
-        <p className={`font-serif italic text-lg mb-4 transform translate-y-4 opacity-0 ${!isTransitioning ? 'animate-fadeInUp animate-delay-200' : ''}`}>
-          {currentContentSlide.subtitle}
-        </p>
-        <h1 className={`text-5xl md:text-6xl font-bold mb-8 leading-tight transform translate-y-4 opacity-0 ${!isTransitioning ? 'animate-fadeInUp animate-delay-400' : ''}`}>
-          {currentContentSlide.title}
-        </h1>
+        <p className="font-serif italic text-lg mb-4">{currentSlide.subtitle}</p>
+        <h1 className="text-5xl md:text-6xl font-bold mb-8 leading-tight">{currentSlide.title}</h1>
         <div className="flex space-x-4">
           <Link
             href="/tours"
-            className={`
-              px-6 py-3 rounded-lg bg-blue-500 text-white font-medium
-              hover:bg-blue-600 transition-colors duration-300
-              flex items-center space-x-2
-              transform translate-y-4 opacity-0 ${!isTransitioning ? 'animate-fadeInUp animate-delay-600' : ''}
-            `}
+            className="px-6 py-3 rounded-lg bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors duration-300 flex items-center space-x-2"
           >
             <span>Explore Tours</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -158,12 +127,7 @@ export default function HeroSlider() {
           </Link>
           <Link
             href="/services"
-            className={`
-              px-6 py-3 rounded-lg border border-white text-white font-medium
-              hover:bg-white hover:text-black transition-colors duration-300
-              flex items-center space-x-2
-              transform translate-y-4 opacity-0 ${!isTransitioning ? 'animate-fadeInUp animate-delay-800' : ''}
-            `}
+            className="px-6 py-3 rounded-lg border border-white text-white font-medium hover:bg-white hover:text-black transition-colors duration-300 flex items-center space-x-2"
           >
             <span>Our Services</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -173,23 +137,18 @@ export default function HeroSlider() {
         </div>
       </div>
 
-      {/* Navigation (Arrows and Indicators) */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-3 z-30"> {/* Z-index increased */}
-        {/* Up Arrow */}
+      {/* Navigation */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-3 z-30">
         <CustomArrowButton direction="up" onClick={goToPrevSlide} />
-
-        {/* Indicators */}
         <div className="flex flex-col space-y-2">
           {slides.map((_, index) => (
             <DotIndicator
               key={index}
-              active={index === currentSlideIndex} // Indicators should reflect the current image being shown
-              onClick={() => changeSlide(index)} // Use changeSlide for indicators too
+              active={index === currentSlideIndex}
+              onClick={() => changeSlide(index)}
             />
           ))}
         </div>
-
-        {/* Down Arrow */}
         <CustomArrowButton direction="down" onClick={goToNextSlide} />
       </div>
     </div>

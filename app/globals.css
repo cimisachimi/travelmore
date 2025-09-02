@@ -1,15 +1,20 @@
+/* app/globals.css */
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
   --foreground: #000000;
-  --primary: #4DD8E6;
-  --secondary: #FFFF00;
+  /* ✨ Updated color codes */
+  --primary: #5ce1e6;
+  --secondary: #f8f800;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  /* ✨ Exposing custom colors to Tailwind */
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

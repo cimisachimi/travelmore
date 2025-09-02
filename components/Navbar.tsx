@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image"; // ✨ Import the Image component
+import Image from "next/image";
 
 // Helper component for a standard navigation link
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -85,19 +85,21 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="bg-white shadow-md">
-      <div className="max-w-6xl mx-auto px-4">
+    <nav className="bg-white shadow-md sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center h-16">
-          {/* ✨ Image Logo */}
-          <Link href="/">
-            <Image
-              src="/logo.png"
-              alt="TravelSite Logo"
-              width={140}
-              height={40}
-              priority // Helps with loading performance for important images
-            />
-          </Link>
+          {/* ✨ Refined logo wrapper with better proportions */}
+          <div className="bg-primary py-3 pl-4 pr-12 [clip-path:polygon(0_0,100%_0,90%_100%,0%_100%)]">
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/logo.png"
+                alt="TravelMore Logo"
+                width={128}
+                height={36}
+                priority
+              />
+            </Link>
+          </div>
 
           {/* Menu */}
           <div className="hidden md:flex items-center space-x-6">
@@ -105,14 +107,14 @@ export default function Navbar() {
             <DropdownLink title="Destinations" items={destinationLinks} />
             <NavLink href="/services">Services</NavLink>
             <DropdownLink title="Pages" items={pageLinks} />
-            <NavLink href="/blog">Blog</NavLink>
+            <NavLink href="/about">about</NavLink>
           </div>
 
           {/* Action Button */}
-          <div className="flex">
+          <div className="flex pr-4">
             <Link
               href="/contact"
-              className="px-4 py-2 rounded-lg bg-gray-500 text-white font-medium hover:bg-gray-800 transition-colors"
+              className="px-4 py-2 rounded-lg bg-primary text-black font-medium hover:brightness-90 transition-all"
             >
               Contact Us
             </Link>
