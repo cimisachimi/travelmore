@@ -28,9 +28,9 @@ const PersonalizedTripPlanner: React.FC = () => (
         <h3 className="text-lg font-semibold mb-4">Kami menyesuaikan berdasarkan:</h3>
         <div className="grid grid-cols-2 gap-4 mb-8">
           <CustomizationFactor iconSrc="/interests-icon.svg" text="Keinginan & Hobi" />
-          <CustomizationFactor iconSrc="/price-icon.svg" text="Budget Perjalanan" />
+          <CustomizationFactor iconSrc="/budget-icon.svg" text="Budget Perjalanan" />
           <CustomizationFactor iconSrc="/group-size-icon.svg" text="Jumlah Wisatawan" />
-          <CustomizationFactor iconSrc="/backpacker-icon.svg" text="Genre & Gaya Trip" />
+          <CustomizationFactor iconSrc="/trip-icon.svg" text="Genre & Gaya Trip" />
         </div>
 
         <div className="mt-6">
