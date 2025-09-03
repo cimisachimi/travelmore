@@ -1,7 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const packagesData = {
+// Define a type for a single package
+type Package = {
+  title: string;
+  imgSrc: string;
+  price: string;
+  description: string;
+  facilities: string[];
+  destinations: string[];
+  wa: string;
+};
+
+// Define the type for the packagesData object
+const packagesData: { [key: string]: Package } = {
   "borobudur-prambanan": {
     title: "2 Days: Borobudur & Prambanan",
     imgSrc: "/hero-1.jpg",
@@ -32,7 +44,7 @@ const packagesData = {
 };
 
 export default function PackageDetail({ params }: { params: { id: string } }) {
-  const pkg = packagesData[params.id];
+  const pkg = packagesData[params.id as keyof typeof packagesData];
 
   if (!pkg) return <div className="p-8 text-center text-gray-500">Package not found.</div>;
 

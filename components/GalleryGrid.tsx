@@ -33,34 +33,44 @@ export default function GalleryGrid() {
       });
   }, []);
 
-  // Jika data belum ada, buat array kosong dengan panjang 27 untuk placeholder
-  const placeholderCards = Array.from({ length: 27 });
+  // If loading, show placeholder cards
+  if (loading || destinations.length === 0) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4">
+        {Array.from({ length: 27 }).map((_, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col"
+          >
+            <div className="w-full h-48 bg-gray-200 animate-pulse"></div>
+            <div className="p-4">
+              <h3 className="text-lg font-semibold">
+                <span className="block w-32 h-6 bg-gray-200 animate-pulse"></span>
+              </h3>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
+  // If data is loaded, show the actual destination cards
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4">
-      {(loading || destinations.length === 0
-        ? placeholderCards
-        : destinations
-      ).map((dest, index) => (
+      {destinations.map((dest) => (
         <div
-          key={dest?.id || index}
+          key={dest.id}
           className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col"
         >
-          {dest?.imageUrl ? (
-            <Image
-              src={dest.imageUrl}
-              alt={dest.name}
-              width={400}
-              height={250}
-              className="object-cover w-full h-48"
-            />
-          ) : (
-            <div className="w-full h-48 bg-gray-200 animate-pulse"></div> // Placeholder untuk gambar
-          )}
+          <Image
+            src={dest.imageUrl}
+            alt={dest.name}
+            width={400}
+            height={250}
+            className="object-cover w-full h-48"
+          />
           <div className="p-4">
-            <h3 className="text-lg font-semibold">
-              {dest?.name || <span className="block w-32 h-6 bg-gray-200 animate-pulse"></span>} {/* Placeholder untuk nama */}
-            </h3>
+            <h3 className="text-lg font-semibold">{dest.name}</h3>
           </div>
         </div>
       ))}

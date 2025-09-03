@@ -17,7 +17,7 @@ const CustomArrowButton = ({ direction, onClick }: { direction: "up" | "down"; o
   <button
     onClick={onClick}
     className="
-      p-2 rounded-full bg-white bg-opacity-30 text-white
+      p-2 rounded-full bg-white bg-opacity-30 text-black
       hover:bg-opacity-50 transition-colors duration-300
       focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-75
       flex items-center justify-center
@@ -70,11 +70,11 @@ export default function HeroSlider() {
         setIsAnimating(false);
       }, 500); // This should match your fade-in animation duration
     }, 500); // This should match your fade-out animation duration
-  }, [isAnimating, slides.length]);
+  }, [isAnimating]);
 
   const goToNextSlide = useCallback(() => {
     changeSlide((currentSlideIndex + 1) % slides.length);
-  }, [currentSlideIndex, slides.length, changeSlide]);
+  }, [currentSlideIndex, changeSlide, slides.length]);
 
   const goToPrevSlide = () => {
     changeSlide((currentSlideIndex - 1 + slides.length) % slides.length);

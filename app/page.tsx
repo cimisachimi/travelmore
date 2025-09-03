@@ -5,14 +5,13 @@ import CustomExperience from "@/components/CustomExperience";
 import PopularPackages from "@/components/PopularPackages";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import CTASection from "@/components/CTASection";
-import PersonalizedTripPlanner from "@/components/PersonalizedTripPlanner"; // ✨ Impor komponen baru
-import Link from "next/link";
+import PersonalizedTripPlanner from "@/components/PersonalizedTripPlanner";
 
 export default function Home() {
   return (
     <>
       <HeroSlider />
-      <PersonalizedTripPlanner /> {/* ✨ Ganti ProductDisplay dengan ini */}
+      <PersonalizedTripPlanner />
       <ServiceHighlights />
       <CustomExperience />
       <PopularPackages />

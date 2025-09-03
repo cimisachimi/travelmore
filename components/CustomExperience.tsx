@@ -112,7 +112,7 @@ const CustomExperience: React.FC = () => {
                 style={{ objectFit: 'cover' }}
               />
             </div>
-            <p className="text-lg text-gray-700 mb-4">Once you've made your selections, our team will craft a personalized itinerary and quote just for you.</p>
+            <p className="text-lg text-gray-700 mb-4">Once you&apos;ve made your selections, our team will craft a personalized itinerary and quote just for you.</p>
             <button className="w-full px-8 py-4 rounded-lg bg-primary text-black font-bold text-lg hover:brightness-90 transition-all transform hover:scale-105">
               Get My Custom Plan
             </button>
