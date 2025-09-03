@@ -79,10 +79,10 @@ export default function Navbar() {
   ];
 
   const pageLinks = [
-    { name: "Gallery", href: "/gallery" },
-    { name: "Our Team", href: "/team" },
-    { name: "FAQ", href: "/faq" },
-  ];
+  { name: "Gallery", href: "/gallery" }, 
+  { name: "Our Team", href: "/team" },
+  { name: "FAQ", href: "/faq" },
+];
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
