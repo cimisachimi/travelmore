@@ -1,40 +1,40 @@
 /* app/globals.css */
 @import "tailwindcss";
 
+/* ✅ Always light mode */
 :root {
   --background: #ffffff;
   --foreground: #000000;
-  /* ✨ Updated color codes */
-  --primary: #5ce1e6;
+
+  /* ✨ Finalized brand colors */
+  --primary: #40E0D0;
+  /* Tosca */
   --secondary: #f8f800;
+  /* Yellow */
 }
 
+/* ✅ Tailwind theme extension via CSS variables */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  /* ✨ Exposing custom colors to Tailwind */
+
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #ffffff;
-    --foreground: #171717;
-  }
+  /* ✅ Use next/font variables, fallback to system */
+  --font-sans: var(--font-poppins), var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-serif), ui-serif, Georgia, serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
 }
 
-/* global.css */
-
-/* ... (your existing Tailwind imports and theme) ... */
+/* ========================= */
+/* Animations */
+/* ========================= */
 
 @keyframes fadeInUp {
   from {
@@ -48,7 +48,6 @@ body {
   }
 }
 
-/* ✨ New: Fade out and move down animation for content */
 @keyframes fadeOutDown {
   from {
     opacity: 1;
@@ -65,12 +64,11 @@ body {
   animation: fadeInUp 0.8s ease-out forwards;
 }
 
-/* ✨ New: Apply fadeOutDown animation */
 .animate-fadeOutDown {
   animation: fadeOutDown 0.5s ease-out forwards;
 }
 
-/* Delay animations for staggering effect */
+/* Staggered delays */
 .animate-delay-200 {
   animation-delay: 0.2s;
 }
