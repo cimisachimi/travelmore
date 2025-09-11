@@ -117,10 +117,10 @@ export default function HeroSlider() {
         <h1 className="text-5xl md:text-6xl font-bold mb-8 leading-tight">{currentSlide.title}</h1>
         <div className="flex space-x-4">
           <Link
-            href="/tours"
+            href="/planner"
             className="px-6 py-3 rounded-lg bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors duration-300 flex items-center space-x-2"
           >
-            <span>Explore Tours</span>
+            <span>Plan Your Trip</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>

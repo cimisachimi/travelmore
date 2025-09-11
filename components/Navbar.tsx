@@ -1,3 +1,4 @@
+// components/Navbar.tsx
 "use client";
 
 import Link from "next/link";
@@ -106,6 +107,7 @@ export default function Navbar() {
             <NavLink href="/">Home</NavLink>
             <DropdownLink title="Destinations" items={destinationLinks} />
             <NavLink href="/services">Services</NavLink>
+            <NavLink href="/planner">Trip Planner</NavLink>
             <DropdownLink title="Pages" items={pageLinks} />
             <NavLink href="/about">about</NavLink>
           </div>

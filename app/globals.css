@@ -11,6 +11,10 @@
   /* Tosca */
   --secondary: #f8f800;
   /* Yellow */
+
+  /* ✨ New premium colors */
+  --premium-primary: #000000;
+  --premium-secondary: #ff914d;
 }
 
 /* ✅ Tailwind theme extension via CSS variables */
@@ -20,6 +24,10 @@
 
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
+
+  /* ✨ New premium colors added to theme */
+  --color-premium-primary: var(--premium-primary);
+  --color-premium-secondary: var(--premium-secondary);
 
   /* ✅ Use next/font variables, fallback to system */
   --font-sans: var(--font-poppins), var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;

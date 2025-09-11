@@ -1,21 +1,23 @@
 // app/page.tsx
 import HeroSlider from "@/components/HeroSlider";
 import ServiceHighlights from "@/components/ServiceHighlights";
-import CustomExperience from "@/components/CustomExperience";
+
 import PopularPackages from "@/components/PopularPackages";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import CTASection from "@/components/CTASection";
 import PersonalizedTripPlanner from "@/components/PersonalizedTripPlanner";
 import Testimonials from "@/components/Testimoni";
 import BlogSection from "../components/BlogSection";
+import HowItWorks from "@/components/HowItWork";
 
 export default function Home() {
   return (
     <>
       <HeroSlider />
+      <HowItWorks />
       <PersonalizedTripPlanner />
       <ServiceHighlights />
-      <CustomExperience />
+
       <PopularPackages />
       <WhyChooseUs />
       <CTASection />
