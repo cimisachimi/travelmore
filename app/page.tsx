@@ -6,6 +6,7 @@ import PopularPackages from "@/components/PopularPackages";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import CTASection from "@/components/CTASection";
 import PersonalizedTripPlanner from "@/components/PersonalizedTripPlanner";
+import Testimonials from "@/components/Testimoni";
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
       <PopularPackages />
       <WhyChooseUs />
       <CTASection />
+      <Testimonials />
 
       {/* Konten lain bisa diletakkan di bawah */}
       <div className="max-w-6xl mx-auto px-4 py-16">
