@@ -79,17 +79,17 @@ export default function Navbar() {
   ];
 
   const pageLinks = [
-  { name: "Gallery", href: "/gallery" }, 
-  { name: "Our Team", href: "/team" },
-  { name: "FAQ", href: "/faq" },
-];
+    { name: "Gallery", href: "/gallery" },
+    { name: "Our Team", href: "/team" },
+    { name: "FAQ", href: "/faq" },
+  ];
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center h-16">
           {/* ✨ Refined logo wrapper with better proportions */}
-          <div className="bg-primary py-3 pl-4 pr-12 [clip-path:polygon(0_0,100%_0,90%_100%,0%_100%)]">
+          <div className="">
             <Link href="/" className="flex items-center">
               <Image
                 src="/logo.png"
