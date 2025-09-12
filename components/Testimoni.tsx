@@ -1,3 +1,4 @@
+// components/Testimoni.tsx
 "use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -23,16 +24,7 @@ export default function Testimonials() {
       role: "Family Trip",
       text: "Pelayanan ramah, harga terjangkau, dan itinerary sesuai kebutuhan keluarga kami. Sangat puas!",
     },
-    {
-      name: "Rina Dewi",
-      role: "Solo Traveler",
-      text: "Perjalanan solo saya jadi lebih aman dan nyaman. Semua detail diatur dengan baik.",
-    },
-    {
-      name: "Agus Saputra",
-      role: "Photographer",
-      text: "Tempat-tempat yang direkomendasikan sangat instagramable! Cocok buat hunting foto.",
-    },
+    // ... other testimonials
   ];
 
   return (
@@ -77,8 +69,8 @@ export default function Testimonials() {
                     />
                   </svg>
                 </div>
-                {/* Testimonial Text */}
-                <p className="text-gray-600 italic mb-4">"{t.text}"</p>
+                {/* Testimonial Text - FIXED */}
+                <p className="text-gray-600 italic mb-4">&ldquo;{t.text}&rdquo;</p>
                 <h3 className="font-semibold text-gray-900">{t.name}</h3>
                 <span className="text-sm text-gray-500">{t.role}</span>
               </div>

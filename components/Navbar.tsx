@@ -93,7 +93,7 @@ export default function Navbar() {
           <div className="">
             <Link href="/" className="flex items-center">
               <Image
-                src="/logo.png"
+                src="/logo.svg"
                 alt="TravelMore Logo"
                 width={128}
                 height={36}

@@ -1,8 +1,10 @@
 // components/CTASection.tsx
 import React from 'react';
-import Link from 'next/link';
-import { Button } from './ui/Button'; // 1. Import the new component
+// The line below is removed because the 'Link' component is not used
+// import Link from 'next/link';
+import { Button } from './ui/Button';
 
+// ... rest of the file
 const CTASection: React.FC = () => (
   <section className="bg-secondary">
     <div className="max-w-4xl mx-auto py-12 px-4 text-center">
