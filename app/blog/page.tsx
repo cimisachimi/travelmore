@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { blogs } from "@/data/blog";
 
-export default function BlogSection() {
+export default function BlogListPage() {
   return (
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-6">
@@ -46,28 +46,8 @@ export default function BlogSection() {
           ))}
         </div>
 
-        {/* Show More Button */}
-        <div className="mt-12 flex justify-center">
-          <Link
-            href="/blog"
-            className="inline-flex items-center px-8 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-600 hover:text-white transition"
-          >
-            Show More
-            <svg
-              className="ml-2 w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
-          </Link>
-        </div>
+        {/* Hapus atau ubah tombol "Show More" jika tidak diperlukan lagi */}
+        {/* <div className="mt-12 flex justify-center">...</div> */}
       </div>
     </section>
   );
