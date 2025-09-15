@@ -52,7 +52,7 @@ const ServiceHighlights: React.FC = () => (
         />
         <ServiceCard
           iconSrc="/car-icon.svg"
-          title="Car Rental"
+          title="City Tour"
           features="With or Without Driver"
           description="Enjoy the flexibility to explore Yogyakarta at your own pace with our reliable and well-maintained vehicles."
         />

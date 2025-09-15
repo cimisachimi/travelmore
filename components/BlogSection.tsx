@@ -1,67 +1,73 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
+import { blogs } from "@/data/blog"; // sesuaikan path
 
 export default function BlogSection() {
-  const blogs = [
-    {
-      title: "10 Destinasi Wisata Hits di Jogja 2025",
-      excerpt:
-        "Temukan tempat-tempat wisata terbaru dan populer di Yogyakarta yang wajib masuk daftar perjalanan Anda.",
-      image:
-        "https://images.unsplash.com/photo-1597218228539-87224cdbed27?auto=format&fit=crop&w=800&q=80",
-      date: "5 September 2025",
-      author: "Travelmore Team",
-    },
-    {
-      title: "Tips Hemat Liburan di Yogyakarta",
-      excerpt:
-        "Nikmati perjalanan seru tanpa menguras dompet. Berikut tips hemat saat liburan di Jogja.",
-      image:
-        "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80",
-      date: "28 Agustus 2025",
-      author: "Travelmore Team",
-    },
-    {
-      title: "Kuliner Khas Jogja yang Wajib Dicoba",
-      excerpt:
-        "Tidak lengkap rasanya ke Jogja tanpa mencicipi makanan khasnya. Ini rekomendasi terbaik untuk Anda.",
-      image:
-        "https://images.unsplash.com/photo-1604908177522-040ecbb4f1d5?auto=format&fit=crop&w=800&q=80",
-      date: "20 Agustus 2025",
-      author: "Travelmore Team",
-    },
-  ];
-
   return (
-    <section className="py-16 bg-white">
+    <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold">Artikel & Blog</h2>
-          <p className="text-gray-500 mt-2">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-gray-800">Artikel & Blog</h2>
+          <p className="text-gray-500 mt-3 max-w-2xl mx-auto">
             Inspirasi perjalanan, tips liburan, dan cerita seru dari Travelmore.
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        {/* Blog Grid */}
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
           {blogs.map((blog, i) => (
             <div
               key={i}
-              className="bg-gray-50 rounded-2xl shadow-md hover:shadow-xl transition overflow-hidden flex flex-col"
+              className="bg-white rounded-3xl shadow-md hover:shadow-2xl transition-transform transform hover:-translate-y-1 flex flex-col overflow-hidden group"
             >
-              {/* FIXED: Replaced <img> with next/image */}
-              <div className="relative h-48 w-full">
+              {/* Gambar */}
+              <div className="relative h-60 w-full overflow-hidden">
                 <Image
                   src={blog.image}
                   alt={blog.title}
-                  layout="fill"
-                  className="object-cover"
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
+
+              {/* Konten */}
               <div className="p-6 flex flex-col flex-1">
-                {/* ... rest of the card content */}
+                <span className="text-sm text-gray-400">{blog.date}</span>
+                <h3 className="text-xl font-semibold mt-2 text-gray-800 hover:text-blue-600 transition-colors">
+                  {blog.title}
+                </h3>
+                <p className="text-gray-600 mt-3 flex-1">{blog.excerpt}</p>
+                <span className="mt-4 text-sm font-medium text-gray-700">
+                  {blog.author}
+                </span>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Show More Button */}
+        <div className="mt-12 flex justify-center">
+          <Link
+            href="/blog"
+            className="inline-flex items-center px-8 py-3 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary hover:text-white transition"
+          >
+            Show More
+            <svg
+              className="ml-2 w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              />
+            </svg>
+          </Link>
         </div>
       </div>
     </section>

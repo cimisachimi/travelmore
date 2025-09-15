@@ -83,7 +83,8 @@ export default function CarDetailPage() {
                 <span className="text-2xl font-bold text-primary">{formatCurrency(price)}</span>
                 <span className="text-gray-600 dark:text-gray-400">/day</span>
               </div>
-              <label className="inline-flex items-center cursor-pointer">
+                {/* Driver Toggle */}
+              //<label className="inline-flex items-center cursor-pointer">
                 <input type="checkbox" checked={withDriver} onChange={() => setWithDriver(!withDriver)} className="sr-only peer" />
                 <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                 <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">With Driver</span>

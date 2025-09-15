@@ -35,14 +35,14 @@ const PersonalizedTripPlanner: React.FC = () => (
 
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-4">Layanan Tambahan:</h3>
-          <p className="text-gray-700">Kami juga menyediakan **Jasa Sewa Kendaraan** (dengan atau tanpa sopir) untuk fleksibilitas maksimal selama Anda di Jogja.</p>
+          <p className="text-gray-700">Kami juga menyediakan ** City Tour**  untuk fleksibilitas maksimal selama Anda di Jogja.</p>
         </div>
 
         <Link
           href="/contact"
           className="inline-block mt-8 px-8 py-3 rounded-lg bg-primary text-black font-bold hover:brightness-90 transition-all transform hover:scale-105"
         >
-          Mulai Konsultasi Gratis
+          Make Your Choice
         </Link>
       </div>
 
