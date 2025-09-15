@@ -1,0 +1,23 @@
+/* styles/calendar.css */
+
+.custom-daypicker {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: #40E0D0;
+  /* Primary color */
+  --rdp-background-color: #ef4444;
+  /* Disabled color */
+}
+
+.dark .custom-daypicker {
+  --rdp-accent-color: #ff914d;
+  /* Dark theme primary color */
+}
+
+.custom-daypicker .rdp-day {
+  border-radius: 6px;
+}
+
+.custom-daypicker .rdp-day_disabled {
+  color: white;
+  font-weight: bold;
+}
