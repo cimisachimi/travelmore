@@ -34,6 +34,14 @@
   --font-serif: var(--font-serif), ui-serif, Georgia, serif;
 }
 
+/* ✨ Exclusive/Dark Mode Theme ✨ */
+.dark {
+  --background: #1a1a1a;
+  --foreground: #ffffff;
+  --primary: #ff914d;
+  --secondary: #f8f800;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -43,6 +51,75 @@ body {
 /* ========================= */
 /* Animations */
 /* ========================= */
+/* Animations */
+/* ========================= */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+/* ✨ New Animations for Hero Section ✨ */
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-fadeOutDown {
+  animation: fadeOutDown 0.5s ease-out forwards;
+}
+
+/* ✨ New Animation Classes ✨ */
+.animate-slideInFromLeft {
+  animation: slideInFromLeft 0.6s ease-out forwards;
+}
+
+.animate-slideInFromRight {
+  animation: slideInFromRight 0.6s ease-out forwards;
+}
+
 
 @keyframes fadeInUp {
   from {

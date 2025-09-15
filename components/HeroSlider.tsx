@@ -5,14 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-// Define the structure for each slide's data
-interface SlideData {
-  imageSrc: string;
-  subtitle: string;
-  title: string;
-}
-
-// Custom arrow button component (no changes needed)
+// Custom arrow button
 const CustomArrowButton = ({ direction, onClick }: { direction: "up" | "down"; onClick: () => void }) => (
   <button
     onClick={onClick}
@@ -36,7 +29,7 @@ const CustomArrowButton = ({ direction, onClick }: { direction: "up" | "down"; o
   </button>
 );
 
-// Dot indicator component (no changes needed)
+// Dot indicator
 const DotIndicator = ({ active, onClick }: { active: boolean; onClick: () => void }) => (
   <button
     onClick={onClick}
@@ -50,7 +43,7 @@ const DotIndicator = ({ active, onClick }: { active: boolean; onClick: () => voi
 );
 
 export default function HeroSlider() {
-  const slides: SlideData[] = [
+  const slides = [
     { imageSrc: "/hero-1.jpg", subtitle: "Get unforgettable pleasure with us", title: "Let's make your best trip with us" },
     { imageSrc: "/hero-2.jpg", subtitle: "Discover new horizons", title: "Adventure awaits your next journey" },
     { imageSrc: "/hero-3.jpg", subtitle: "Relax and rejuvenate", title: "Your perfect getaway starts here" },
@@ -60,16 +53,12 @@ export default function HeroSlider() {
   const [isAnimating, setIsAnimating] = useState(false);
 
   const changeSlide = useCallback((newIndex: number) => {
-    if (isAnimating) return; // Prevent changing slides while one is in progress
+    if (isAnimating) return;
     setIsAnimating(true);
-    // After the content fades out, change the slide index
     setTimeout(() => {
       setCurrentSlideIndex(newIndex);
-      // Allow new animations to start after a short delay
-      setTimeout(() => {
-        setIsAnimating(false);
-      }, 500); // This should match your fade-in animation duration
-    }, 500); // This should match your fade-out animation duration
+      setTimeout(() => setIsAnimating(false), 500);
+    }, 500);
   }, [isAnimating]);
 
   const goToNextSlide = useCallback(() => {
@@ -80,7 +69,6 @@ export default function HeroSlider() {
     changeSlide((currentSlideIndex - 1 + slides.length) % slides.length);
   };
 
-  // Auto-advance slides
   useEffect(() => {
     const interval = setInterval(goToNextSlide, 7000);
     return () => clearInterval(interval);
@@ -90,18 +78,18 @@ export default function HeroSlider() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Background Images for Cross-fade */}
+      {/* Backgrounds */}
       {slides.map((slide, index) => (
         <Image
           key={slide.imageSrc}
           src={slide.imageSrc}
           alt={`Background for ${slide.title}`}
           fill
-          style={{ objectFit: 'cover' }}
+          style={{ objectFit: "cover" }}
           priority={index === 0}
           className={`
             absolute inset-0 transition-opacity duration-1000 ease-in-out
-            ${index === currentSlideIndex ? 'opacity-100' : 'opacity-0'}
+            ${index === currentSlideIndex ? "opacity-100" : "opacity-0"}
           `}
         />
       ))}
@@ -111,25 +99,16 @@ export default function HeroSlider() {
       {/* Content */}
       <div
         className={`relative z-20 flex flex-col justify-center items-start h-full max-w-6xl mx-auto px-4 text-white transition-opacity duration-500
-          ${isAnimating ? 'opacity-0' : 'opacity-100'}`}
+          ${isAnimating ? "opacity-0" : "opacity-100"}`}
       >
         <p className="font-serif italic text-lg mb-4">{currentSlide.subtitle}</p>
         <h1 className="text-5xl md:text-6xl font-bold mb-8 leading-tight">{currentSlide.title}</h1>
         <div className="flex space-x-4">
           <Link
             href="/planner"
-            className="px-6 py-3 rounded-lg bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors duration-300 flex items-center space-x-2"
+            className="px-6 py-3 rounded-lg bg-primary text-black font-bold hover:brightness-90 transition-colors duration-300 flex items-center space-x-2"
           >
             <span>Plan Your Trip</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </Link>
-          <Link
-            href="/services"
-            className="px-6 py-3 rounded-lg border border-white text-white font-medium hover:bg-white hover:text-black transition-colors duration-300 flex items-center space-x-2"
-          >
-            <span>Our Services</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>

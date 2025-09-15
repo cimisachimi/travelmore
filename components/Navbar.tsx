@@ -3,20 +3,45 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useTheme } from "./ThemeProvider"; // Import the theme context
 
-// Helper component for a standard navigation link
+// Theme toggle component
+const ThemeToggle = () => {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <div className="flex items-center p-1 rounded-full bg-gray-200 dark:bg-gray-700">
+      <button
+        onClick={() => setTheme("regular")}
+        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${theme === "regular"
+          ? "bg-white text-black"
+          : "text-gray-500"
+          }`}
+      >
+        Regular
+      </button>
+      <button
+        onClick={() => setTheme("exclusive")}
+        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${theme === "exclusive"
+          ? "bg-premium-secondary text-premium-primary"
+          : "text-gray-500"
+          }`}
+      >
+        Exclusive
+      </button>
+    </div>
+  );
+};
+
+// NavLink helper
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link
-      href={href}
-      className="relative inline-block group text-black"
-    >
+    <Link href={href} className="relative inline-block group">
       {children}
-      {/* The animated underline */}
       <span
         className="
           absolute left-0 -bottom-1 h-[2px] w-full
-          origin-left scale-x-0 transform bg-black
+          origin-left scale-x-0 transform
           transition-transform duration-300
           group-hover:scale-x-100
         "
@@ -26,14 +51,12 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   );
 }
 
-// Component for dropdown links with spinning arrow
+// DropdownLink component
 function DropdownLink({ title, items }: { title: string; items: { name: string; href: string }[] }) {
   return (
     <div className="relative group">
-      {/* The main link with the title and arrow */}
-      <button className="inline-flex items-center space-x-1 text-black">
+      <button className="inline-flex items-center space-x-1">
         <span>{title}</span>
-        {/* The SVG arrow icon */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
@@ -48,19 +71,20 @@ function DropdownLink({ title, items }: { title: string; items: { name: string; 
         </svg>
       </button>
 
-      {/* The dropdown menu */}
-      <div className="
-        absolute left-0 mt-2 w-48 origin-top-left rounded-md bg-white shadow-lg
-        transform scale-95 opacity-0 invisible
-        transition-all duration-200 ease-in-out
-        group-hover:scale-100 group-hover:opacity-100 group-hover:visible
-      ">
+      <div
+        className="
+          absolute left-0 mt-2 w-48 origin-top-left rounded-md shadow-lg
+          transform scale-95 opacity-0 invisible
+          transition-all duration-200 ease-in-out
+          group-hover:scale-100 group-hover:opacity-100 group-hover:visible
+        "
+      >
         <div className="py-1" role="menu" aria-orientation="vertical">
           {items.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="block px-4 py-2 text-sm hover:bg-gray-100"
               role="menuitem"
             >
               {item.name}
@@ -72,8 +96,9 @@ function DropdownLink({ title, items }: { title: string; items: { name: string; 
   );
 }
 
-
 export default function Navbar() {
+  const { theme } = useTheme();
+
   const destinationLinks = [
     { name: "All Destinations", href: "/destinations" },
     { name: "Destination Details", href: "/destinations/details" },
@@ -85,12 +110,17 @@ export default function Navbar() {
     { name: "FAQ", href: "/faq" },
   ];
 
+  // Decide colors based on theme
+  const isExclusive = theme === "exclusive";
+  const bgClass = isExclusive ? "bg-premium-primary text-premium-secondary" : "bg-white text-black";
+  const dropdownBg = isExclusive ? "bg-premium-secondary text-premium-primary" : "bg-white text-black";
+
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
+    <nav className={`${bgClass} shadow-md sticky top-0 z-50 transition-colors duration-300`}>
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center h-16">
-          {/* ✨ Refined logo wrapper with better proportions */}
-          <div className="">
+          {/* Logo */}
+          <div>
             <Link href="/" className="flex items-center">
               <Image
                 src="/logo.svg"
@@ -102,24 +132,20 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Menu */}
+          {/* Nav links */}
           <div className="hidden md:flex items-center space-x-6">
             <NavLink href="/">Home</NavLink>
             <DropdownLink title="Destinations" items={destinationLinks} />
             <NavLink href="/services">Services</NavLink>
             <NavLink href="/planner">Trip Planner</NavLink>
             <DropdownLink title="Pages" items={pageLinks} />
-            <NavLink href="/about">about</NavLink>
+            <NavLink href="/about">About</NavLink>
           </div>
 
-          {/* Action Button */}
-          <div className="flex pr-4">
-            <Link
-              href="/contact"
-              className="px-4 py-2 rounded-lg bg-primary text-black font-medium hover:brightness-90 transition-all"
-            >
-              Contact Us
-            </Link>
+          {/* Right side */}
+          <div className="flex items-center space-x-4 pr-4">
+            <ThemeToggle />
+
           </div>
         </div>
       </div>
