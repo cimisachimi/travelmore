@@ -1,136 +1,52 @@
 /* app/globals.css */
 @import "tailwindcss";
+@import "../styles/animation.css";
 
-/* ✅ Always light mode */
+/* ✨ Animasi diimpor dari file terpisah */
+/* ✅ Light Mode (Default) */
 :root {
   --background: #ffffff;
-  --foreground: #000000;
-
-  /* ✨ Finalized brand colors */
+  --foreground: #111827;
+  /* Darker gray for better readability */
+  --card-background: #f9fafb;
+  /* Light gray for cards */
+  --border-color: #e5e7eb;
+  /* ✨ Brand colors */
   --primary: #40E0D0;
   /* Tosca */
   --secondary: #f8f800;
   /* Yellow */
-
-  /* ✨ New premium colors */
-  --premium-primary: #000000;
-  --premium-secondary: #ff914d;
 }
 
-/* ✅ Tailwind theme extension via CSS variables */
-@theme inline {
+/* ✨ Dark Mode (Exclusive) */
+.dark {
+  --background: #111827;
+  /* Dark blue-gray */
+  --foreground: #f9fafb;
+  /* Off-white for text */
+  --card-background: #1f2937;
+  /* Lighter dark shade for cards */
+  --border-color: #374151;
+  /* ✨ Exclusive colors */
+  --primary: #ff914d;
+  /* Orange */
+  --secondary: #f8f800;
+  /* Yellow */
+}
+
+/* ✅ Tailwind theme extension */
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
+  --color-card: var(--card-background);
+  --color-border: var(--border-color);
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
-
-  /* ✨ New premium colors added to theme */
-  --color-premium-primary: var(--premium-primary);
-  --color-premium-secondary: var(--premium-secondary);
-
-  /* ✅ Use next/font variables, fallback to system */
-  --font-sans: var(--font-poppins), var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-serif), ui-serif, Georgia, serif;
-}
-
-/* ✨ Exclusive/Dark Mode Theme ✨ */
-.dark {
-  --background: #1a1a1a;
-  --foreground: #ffffff;
-  --primary: var(--premium-secondary);
-  --secondary: #f8f800;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
   font-family: var(--font-sans);
-}
-
-/* ========================= */
-/* Animations */
-/* ========================= */
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeOutDown {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  to {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-}
-
-/* ✨ New Animations for Hero Section ✨ */
-@keyframes slideInFromLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInFromRight {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.animate-fadeInUp {
-  animation: fadeInUp 0.8s ease-out forwards;
-}
-
-.animate-fadeOutDown {
-  animation: fadeOutDown 0.5s ease-out forwards;
-}
-
-/* ✨ New Animation Classes ✨ */
-.animate-slideInFromLeft {
-  animation: slideInFromLeft 0.6s ease-out forwards;
-}
-
-.animate-slideInFromRight {
-  animation: slideInFromRight 0.6s ease-out forwards;
-}
-
-/* Staggered delays */
-.animate-delay-200 {
-  animation-delay: 0.2s;
-}
-
-.animate-delay-400 {
-  animation-delay: 0.4s;
-}
-
-.animate-delay-600 {
-  animation-delay: 0.6s;
-}
-
-.animate-delay-800 {
-  animation-delay: 0.8s;
+  transition: background-color 0.3s, color 0.3s;
 }

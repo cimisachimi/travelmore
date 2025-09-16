@@ -1,4 +1,5 @@
 // components/ComparisonSection.tsx
+"use client"; // Diperlukan untuk menggunakan hook seperti useTheme
 import React from 'react';
 
 // --- Helper Icons ---
@@ -9,37 +10,38 @@ const CheckIcon = ({ className = '' }: { className?: string }) => (
 );
 
 const DashIcon = () => (
-  <svg className="w-6 h-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+  <svg className="w-6 h-6 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
   </svg>
 );
 
 // --- Component Data ---
+// Menggunakan 'text-primary' karena warnanya akan berubah sesuai tema
 const comparisonData = [
-  { feature: "Personalized Itinerary", regular: <CheckIcon className="text-primary" />, exclusive: <CheckIcon className="text-premium-secondary" /> },
-  { feature: "Itinerary Revisions", regular: "1 Session", exclusive: "Unlimited" },
-  { feature: "Accommodation Booking", regular: <DashIcon />, exclusive: <CheckIcon className="text-premium-secondary" /> },
-  { feature: "Flight & Transport Booking", regular: <DashIcon />, exclusive: <CheckIcon className="text-premium-secondary" /> },
-  { feature: "Dedicated Travel Designer", regular: <DashIcon />, exclusive: <CheckIcon className="text-premium-secondary" /> },
-  { feature: "24/7 On-Trip Support", regular: <DashIcon />, exclusive: <CheckIcon className="text-premium-secondary" /> },
+  { feature: "Itinerary yang Dipersonalisasi", regular: <CheckIcon className="text-primary" />, exclusive: <CheckIcon className="text-primary" /> },
+  { feature: "Revisi Itinerary", regular: "1 Sesi", exclusive: "Tanpa Batas" },
+  { feature: "Pemesanan Akomodasi", regular: <DashIcon />, exclusive: <CheckIcon className="text-primary" /> },
+  { feature: "Pemesanan Tiket & Transportasi", regular: <DashIcon />, exclusive: <CheckIcon className="text-primary" /> },
+  { feature: "Travel Designer Khusus", regular: <DashIcon />, exclusive: <CheckIcon className="text-primary" /> },
+  { feature: "Dukungan 24/7 Selama Perjalanan", regular: <DashIcon />, exclusive: <CheckIcon className="text-primary" /> },
 ];
 
 // --- Main Component ---
 const ComparisonSection = () => (
-  <section className="bg-gray-50 py-16">
+  <section className="bg-background py-16">
     <div className="max-w-4xl mx-auto px-4">
-      <div className="bg-white rounded-lg shadow-xl p-6">
-        <h3 className="text-2xl font-bold text-center mb-6 text-black">Service Comparison</h3>
-        <div className="grid grid-cols-3 gap-2 text-center font-semibold text-black">
-          <div className="p-2 text-left">Feature</div>
-          <div className="p-2 bg-gray-100 rounded-t-md">Regular</div>
-          <div className="p-2 bg-gray-100 rounded-t-md">Exclusive</div>
+      <div className="bg-card rounded-lg shadow-xl p-6 border border-border">
+        <h3 className="text-2xl font-bold text-center mb-6 text-foreground">Perbandingan Layanan</h3>
+        <div className="grid grid-cols-3 gap-2 text-center font-semibold text-foreground">
+          <div className="p-2 text-left">Fitur</div>
+          <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-t-md">Regular</div>
+          <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-t-md">Exclusive</div>
         </div>
         {comparisonData.map((item, index) => (
-          <div key={index} className="grid grid-cols-3 gap-2 text-center items-center border-t border-gray-200">
-            <div className="p-3 text-left text-sm text-gray-700">{item.feature}</div>
-            <div className="p-3 flex justify-center items-center font-bold text-gray-800">{item.regular}</div>
-            <div className="p-3 flex justify-center items-center font-bold text-gray-800">{item.exclusive}</div>
+          <div key={index} className="grid grid-cols-3 gap-2 text-center items-center border-t border-border">
+            <div className="p-3 text-left text-sm text-foreground/80">{item.feature}</div>
+            <div className="p-3 flex justify-center items-center font-bold text-foreground">{item.regular}</div>
+            <div className="p-3 flex justify-center items-center font-bold text-foreground">{item.exclusive}</div>
           </div>
         ))}
       </div>

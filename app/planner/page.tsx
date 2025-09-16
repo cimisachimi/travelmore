@@ -10,7 +10,7 @@ import ComparisonSection from "@/components/ComparisonSection";
 // --- Helper Icons ---
 const CheckIcon = ({ className = "" }: { className?: string }) => (
   <svg
-    className={`w-6 h-6 flex-shrink-0 ${className}`}
+    className={`w-6 h-6 flex-shrink-0 text-primary ${className}`}
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"
@@ -28,7 +28,6 @@ const CheckIcon = ({ className = "" }: { className?: string }) => (
 // --- Main Planner Page Component ---
 export default function PlannerPage() {
   const { theme } = useTheme();
-
   const isExclusive = theme === "exclusive";
 
   const content = {
@@ -98,26 +97,24 @@ export default function PlannerPage() {
   ];
 
   return (
-    <main className="bg-white dark:bg-gray-900 transition-colors duration-300">
+    <main className="bg-background text-foreground transition-colors duration-300">
       <section className="container mx-auto px-4 py-16 space-y-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Column: Content */}
           <div className="text-left">
-            <h1 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
               {currentContent.title}
             </h1>
-            <p className="text-gray-600 dark:text-gray-300 mb-6 text-lg">
+            <p className="text-foreground/80 mb-6 text-lg">
               {currentContent.description}
             </p>
 
-            <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+            <div className="bg-card p-6 rounded-lg shadow-md mb-8 border border-border">
               <ul className="space-y-4">
                 {currentContent.features.map((feature, index) => (
                   <li key={index} className="flex items-center">
-                    <CheckIcon className="text-primary mr-3" />
-                    <span className="text-gray-800 dark:text-gray-200 font-medium">
-                      {feature}
-                    </span>
+                    <CheckIcon className="mr-3" />
+                    <span className="font-medium">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -132,14 +129,14 @@ export default function PlannerPage() {
 
             {/* Terms */}
             <div className="mb-8">
-              <h2 className="font-semibold text-black dark:text-white mb-3">
+              <h2 className="font-semibold mb-3">
                 Ketentuan:
               </h2>
               <ul className="space-y-2">
                 {currentContent.terms.map((term, index) => (
                   <li
                     key={index}
-                    className="text-gray-600 dark:text-gray-400 text-sm list-disc list-inside"
+                    className="text-foreground/70 text-sm list-disc list-inside"
                   >
                     {term}
                   </li>
@@ -154,6 +151,7 @@ export default function PlannerPage() {
               {currentContent.ctaText}
             </Link>
           </div>
+
           {/* Right Column: Image */}
           <div className="relative h-[500px] w-full rounded-lg overflow-hidden shadow-2xl">
             <Image
@@ -165,19 +163,23 @@ export default function PlannerPage() {
           </div>
         </div>
 
+
         {/* Workflow Section */}
-        <section className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 md:p-12">
-          <h2 className="text-3xl font-bold text-black dark:text-white text-center mb-10">
+        <section className="bg-background rounded-lg shadow-xl p-8 md:p-12 border border-border transition-colors duration-300">
+          <h2 className="text-3xl font-bold text-foreground text-center mb-10">
             Cara Kerja Layanan Konsultasi
           </h2>
 
           <div className="relative max-w-5xl mx-auto">
             {/* Timeline line */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700 transform -translate-x-1/2"></div>
+            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-foreground/20 transform -translate-x-1/2"></div>
 
-            <div className="space-y-16">
+            <div className="space-y-8">
               {workflow.map((step, index) => (
-                <div key={index} className="relative grid grid-cols-2 gap-12 items-center">
+                <div
+                  key={index}
+                  className="relative grid grid-cols-2 gap-12 items-center"
+                >
                   {/* Step number (centered on line) */}
                   <div className="absolute left-1/2 transform -translate-x-1/2 bg-primary text-black w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-md z-10">
                     {index + 1}
@@ -188,11 +190,9 @@ export default function PlannerPage() {
                     <>
                       <div className="pr-12 text-right">
                         <h3 className="text-xl font-semibold text-primary mb-2">
-                          Langkah {index + 1}
+                          {step.title}
                         </h3>
-                        <p className="text-gray-600 dark:text-gray-300">
-                          {step.description}
-                        </p>
+                        <p className="text-foreground/70">{step.description}</p>
                       </div>
                       <div></div> {/* empty placeholder for grid balance */}
                     </>
@@ -201,11 +201,9 @@ export default function PlannerPage() {
                       <div></div> {/* empty placeholder for grid balance */}
                       <div className="pl-12 text-left">
                         <h3 className="text-xl font-semibold text-primary mb-2">
-                          Langkah {index + 1}
+                          {step.title}
                         </h3>
-                        <p className="text-gray-600 dark:text-gray-300">
-                          {step.description}
-                        </p>
+                        <p className="text-foreground/70">{step.description}</p>
                       </div>
                     </>
                   )}
@@ -214,8 +212,9 @@ export default function PlannerPage() {
             </div>
           </div>
         </section>
-        <ComparisonSection />
 
+
+        <ComparisonSection />
 
       </section>
     </main>

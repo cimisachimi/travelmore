@@ -4,49 +4,46 @@ import Link from "next/link";
 import Image from "next/image";
 
 const Footer: React.FC = () => (
-  // ✨ Changed background to black
-  <footer className="bg-gray-700 text-white py-8">
+  <footer className="bg-gray-800 dark:bg-black text-white py-8">
     <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-start gap-8 px-4">
       {/* Logo + Description */}
       <div className="flex flex-col">
         <Link href="/">
           <Image
             src="/logo.png"
-            alt="TravelMore Logo"
+            alt="Logo TravelMore"
             width={140}
             height={40}
-            className="mb-2" // Add some margin below the logo
+            className="mb-2"
           />
         </Link>
         <p className="mt-2 max-w-xs text-sm text-gray-400">
-          Your trusted partner for unforgettable journeys and reliable car
-          rentals. Explore the world with ease and comfort!
+          Partner terpercaya Anda untuk perjalanan tak terlupakan dan sewa mobil yang andal. Jelajahi dunia dengan mudah dan nyaman!
         </p>
       </div>
 
       {/* Quick Links */}
       <div>
-        <h3 className="mb-2 font-semibold">Quick Links</h3>
+        <h3 className="mb-2 font-semibold">Tautan Cepat</h3>
         <ul className="space-y-1 text-gray-300">
           <li>
-            {/* ✨ Updated link styling */}
             <Link href="/destinations" className="hover:text-primary transition-colors">
-              Destinations
+              Destinasi
             </Link>
           </li>
           <li>
             <Link href="/car-rental" className="hover:text-primary transition-colors">
-              Car Rental
+              Sewa Mobil
             </Link>
           </li>
           <li>
             <Link href="/about" className="hover:text-primary transition-colors">
-              About Us
+              Tentang Kami
             </Link>
           </li>
           <li>
             <Link href="/contact" className="hover:text-primary transition-colors">
-              Contact
+              Kontak
             </Link>
           </li>
         </ul>
@@ -54,17 +51,15 @@ const Footer: React.FC = () => (
 
       {/* Contact Info */}
       <div>
-        <h3 className="mb-2 font-semibold">Contact Us</h3>
+        <h3 className="mb-2 font-semibold">Hubungi Kami</h3>
         <p className="text-sm text-gray-300">
           Jl. Magelang - Yogyakarta No.71,
           <br />
-          Mulungan Wetan, Sendangadi, Kec. Mlati,
+          Sleman, Daerah Istimewa Yogyakarta 55285
           <br />
-          Kabupaten Sleman, Daerah Istimewa Yogyakarta 55285
-          <br />
-          Phone:{" "}
-          <a href="tel:+1234567890" className="hover:text-primary transition-colors">
-            +1 (234) 567-890
+          Telepon:{" "}
+          <a href="tel:+6281234567890" className="hover:text-primary transition-colors">
+            +62 812 3456 7890
           </a>
           <br />
           Email:{" "}
@@ -76,8 +71,8 @@ const Footer: React.FC = () => (
     </div>
 
     {/* Bottom Bar */}
-    <div className="border-t border-gray-700 mt-8 text-center py-4 text-sm text-gray-500">
-      &copy; {new Date().getFullYear()} travelmore.travel All rights reserved.
+    <div className="border-t border-gray-700 dark:border-gray-800 mt-8 text-center py-4 text-sm text-gray-500">
+      &copy; {new Date().getFullYear()} travelmore.travel Hak cipta dilindungi.
     </div>
   </footer>
 );

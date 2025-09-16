@@ -11,7 +11,7 @@ type ButtonProps = {
 
 export function Button({ children, href, onClick, className = '' }: ButtonProps) {
   const baseClasses =
-    'inline-block px-8 py-3 rounded-lg font-bold text-black bg-primary hover:brightness-90 transition-all transform hover:scale-105';
+    'inline-block px-8 py-3 rounded-lg font-bold bg-primary text-black hover:brightness-90 transition-all transform hover:scale-105';
 
   if (href) {
     return (

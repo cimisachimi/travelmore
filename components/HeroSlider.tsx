@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-// Custom arrow button
+// Custom arrow button (No changes needed here)
 const CustomArrowButton = ({ direction, onClick }: { direction: "up" | "down"; onClick: () => void }) => (
   <button
     onClick={onClick}
@@ -29,7 +29,7 @@ const CustomArrowButton = ({ direction, onClick }: { direction: "up" | "down"; o
   </button>
 );
 
-// Dot indicator
+// Dot indicator (No changes needed here)
 const DotIndicator = ({ active, onClick }: { active: boolean; onClick: () => void }) => (
   <button
     onClick={onClick}
@@ -43,10 +43,23 @@ const DotIndicator = ({ active, onClick }: { active: boolean; onClick: () => voi
 );
 
 export default function HeroSlider() {
+  // ✨ --- Konten slide baru yang berfokus pada Trip Planner --- ✨
   const slides = [
-    { imageSrc: "/hero-1.jpg", subtitle: "Get unforgettable pleasure with us", title: "Let's make your best trip with us" },
-    { imageSrc: "/hero-2.jpg", subtitle: "Discover new horizons", title: "Adventure awaits your next journey" },
-    { imageSrc: "/hero-3.jpg", subtitle: "Relax and rejuvenate", title: "Your perfect getaway starts here" },
+    {
+      imageSrc: "/hero-1.jpg",
+      subtitle: "Lupakan Itinerary Kaku & Membosankan",
+      title: "Rancang Petualangan Impian Anda di Yogyakarta",
+    },
+    {
+      imageSrc: "/hero-2.jpg",
+      subtitle: "Sesuai Minat, Budget, dan Gaya Anda",
+      title: "Dari Kuliner Lokal Hingga Petualangan Tersembunyi",
+    },
+    {
+      imageSrc: "/hero-3.jpg",
+      subtitle: "Didampingi oleh Ahli Lokal",
+      title: "Perjalanan Tanpa Stres, Penuh Momen Tak Terlupakan",
+    },
   ];
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -98,21 +111,24 @@ export default function HeroSlider() {
 
       {/* Content */}
       <div
-        className={`relative z-20 flex flex-col justify-center items-start h-full max-w-6xl mx-auto px-4 text-white transition-opacity duration-500
-          ${isAnimating ? "opacity-0" : "opacity-100"}`}
+        className={`relative z-20 flex flex-col justify-center items-center text-center h-full max-w-4xl mx-auto px-4 text-white transition-all duration-500
+          ${isAnimating ? "opacity-0 -translate-y-4" : "opacity-100 translate-y-0"}`}
       >
-        <p className="font-serif italic text-lg mb-4">{currentSlide.subtitle}</p>
-        <h1 className="text-5xl md:text-6xl font-bold mb-8 leading-tight">{currentSlide.title}</h1>
-        <div className="flex space-x-4">
+        <p className="font-serif italic text-lg mb-4 animate-fadeInUp">{currentSlide.subtitle}</p>
+        <h1 className="text-5xl md:text-6xl font-bold mb-8 leading-tight animate-fadeInUp animate-delay-200">{currentSlide.title}</h1>
+
+        {/* ✨ --- Tombol CTA yang diperbarui --- ✨ */}
+        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 animate-fadeInUp animate-delay-400">
           <Link
             href="/planner"
-            className="px-6 py-3 rounded-lg bg-primary text-black font-bold hover:brightness-90 transition-colors duration-300 flex items-center space-x-2"
+            className="px-8 py-4 rounded-lg bg-primary text-black font-bold hover:brightness-90 transition-all duration-300 flex items-center space-x-2 text-lg transform hover:scale-105 shadow-lg"
           >
-            <span>Plan Your Trip</span>
+            <span>Mulai Konsultasi</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
           </Link>
+
         </div>
       </div>
 

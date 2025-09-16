@@ -17,37 +17,37 @@ const PackageCard = ({ id, imgSrc, title, description }: { id: string; imgSrc: s
       <h3 className="text-2xl font-bold">{title}</h3>
       <p className="text-gray-300 mt-2">{description}</p>
       <Link href={`/packages/${id}`} className="inline-block mt-4 text-primary font-semibold hover:underline">
-        Learn More →
+        Lihat Detail →
       </Link>
     </div>
   </div>
 );
 
 const PopularPackages: React.FC = () => (
-  <section className="bg-white py-16">
+  <section className="bg-background py-16">
     <div className="max-w-6xl mx-auto px-4">
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold">Explore Our Popular Packages</h2>
-        <p className="text-gray-600 mt-2">Curated itineraries for the best experience in Yogyakarta.</p>
+        <h2 className="text-3xl font-bold text-foreground">Jelajahi Paket Populer Kami</h2>
+        <p className="text-foreground/80 mt-2">Itinerary pilihan untuk pengalaman terbaik di Yogyakarta.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <PackageCard
           id="borobudur-prambanan"
           imgSrc="/hero-1.jpg"
-          title="2 Days: Borobudur & Prambanan"
-          description="Witness the majestic sunrise at Borobudur and explore the grand Prambanan temple complex."
+          title="2 Hari: Borobudur & Prambanan"
+          description="Saksikan matahari terbit yang megah di Borobudur dan jelajahi kompleks Candi Prambanan yang agung."
         />
         <PackageCard
           id="yogyakarta-adventure"
           imgSrc="/hero-2.jpg"
-          title="3 Days: Yogyakarta Adventure"
-          description="Experience the thrill of Jomblang Cave, Timang Beach, and the slopes of Merapi Volcano."
+          title="3 Hari: Petualangan Yogyakarta"
+          description="Rasakan sensasi Goa Jomblang, Pantai Timang, dan lereng Gunung Merapi."
         />
         <PackageCard
           id="cultural-immersion"
           imgSrc="/hero-3.jpg"
-          title="4 Days: Cultural Immersion"
-          description="Dive deep into Jogja's culture with visits to the Sultan's Palace, Taman Sari, and a batik workshop."
+          title="4 Hari: Pendalaman Budaya"
+          description="Selami budaya Jogja dengan kunjungan ke Keraton, Taman Sari, dan lokakarya batik."
         />
       </div>
     </div>

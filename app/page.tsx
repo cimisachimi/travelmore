@@ -1,6 +1,6 @@
 // app/page.tsx
 import HeroSlider from "@/components/HeroSlider";
-import ServiceHighlights from "@/components/ServiceHighlights";
+
 import PopularPackages from "@/components/PopularPackages";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import CTASection from "@/components/CTASection";
@@ -18,7 +18,6 @@ export default function Home() {
       <OtherServices /> {/* ✨ New component is placed here */}
       <HowItWorks />
       <PersonalizedTripPlanner />
-      <ServiceHighlights />
       <PopularPackages />
       <WhyChooseUs />
       <CTASection />

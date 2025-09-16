@@ -5,12 +5,12 @@ import { blogs } from "@/data/blog";
 
 export default function BlogSection() {
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="bg-card py-20">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-800">Artikel & Blog</h2>
-          <p className="text-gray-500 mt-3 max-w-2xl mx-auto">
+          <h2 className="text-4xl font-bold text-foreground">Artikel & Blog</h2>
+          <p className="text-foreground/80 mt-3 max-w-2xl mx-auto">
             Inspirasi perjalanan, tips liburan, dan cerita seru dari Travelmore.
           </p>
         </div>
@@ -21,7 +21,7 @@ export default function BlogSection() {
             <Link
               key={blog.id}
               href={`/blog/${blog.id}`}
-              className="bg-white rounded-3xl shadow-md hover:shadow-2xl transition-transform transform hover:-translate-y-1 flex flex-col overflow-hidden group"
+              className="bg-background rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col overflow-hidden group border border-border"
             >
               {/* Gambar */}
               <div className="relative h-60 w-full overflow-hidden">
@@ -35,12 +35,12 @@ export default function BlogSection() {
 
               {/* Konten */}
               <div className="p-6 flex flex-col flex-1">
-                <span className="text-sm text-gray-400">{blog.date}</span>
-                <h3 className="text-xl font-semibold mt-2 text-gray-800 group-hover:text-blue-600 transition-colors">
+                <span className="text-sm text-foreground/60">{blog.date}</span>
+                <h3 className="text-xl font-semibold mt-2 text-foreground group-hover:text-primary transition-colors">
                   {blog.title}
                 </h3>
-                <p className="text-gray-600 mt-3 flex-1">{blog.excerpt}</p>
-                <span className="mt-4 text-sm font-medium text-gray-700">{blog.author}</span>
+                <p className="text-foreground/80 mt-3 flex-1">{blog.excerpt}</p>
+                <span className="mt-4 text-sm font-medium text-foreground">{blog.author}</span>
               </div>
             </Link>
           ))}
@@ -50,9 +50,9 @@ export default function BlogSection() {
         <div className="mt-12 flex justify-center">
           <Link
             href="/blog"
-            className="inline-flex items-center px-8 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-600 hover:text-white transition"
+            className="inline-flex items-center px-8 py-3 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary hover:text-black transition-colors"
           >
-            Show More
+            Lihat Semua Artikel
             <svg
               className="ml-2 w-5 h-5"
               fill="none"

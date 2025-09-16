@@ -8,48 +8,49 @@ const Feature = ({ iconSrc, title, description }: { iconSrc: string; title: stri
       <Image src={iconSrc} alt={`${title} icon`} width={24} height={24} />
     </div>
     <div>
-      <h3 className="text-lg font-bold">{title}</h3>
-      <p className="text-gray-600 mt-1">{description}</p>
+      <h3 className="text-lg font-bold text-foreground">{title}</h3>
+      <p className="text-foreground/80 mt-1">{description}</p>
     </div>
   </div>
 );
 
 const WhyChooseUs: React.FC = () => (
-  <section className="bg-gray-50 py-16">
+  <section className="bg-card py-16">
     <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
       {/* Left Side: Image */}
       <div className="relative h-96 w-full rounded-lg overflow-hidden shadow-lg">
         <Image
           src="/hero-3.jpg"
-          alt="Happy travelers"
+          alt="Wisatawan bahagia"
           fill
           style={{ objectFit: 'cover' }}
+          className="transform hover:scale-105 transition-transform duration-500"
         />
       </div>
 
       {/* Right Side: Features */}
       <div>
-        <h2 className="text-3xl font-bold mb-6">Why Choose Us?</h2>
+        <h2 className="text-3xl font-bold mb-6 text-foreground">Mengapa Memilih Kami?</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <Feature
             iconSrc="/guide-icon.svg"
-            title="Local Expert Guides"
-            description="Our guides are passionate locals who bring you authentic experiences."
+            title="Pemandu Lokal Ahli"
+            description="Pemandu kami adalah penduduk lokal yang akan memberi Anda pengalaman otentik."
           />
           <Feature
             iconSrc="/flexible-icon.svg"
-            title="Flexible Packages"
-            description="Tailor your trip to your interests and budget with our customizable plans."
+            title="Paket Fleksibel"
+            description="Sesuaikan perjalanan Anda dengan minat dan anggaran melalui rencana kami yang dapat disesuaikan."
           />
           <Feature
             iconSrc="/price-icon.svg"
-            title="Affordable Prices"
-            description="We offer competitive pricing without compromising on quality or service."
+            title="Harga Terjangkau"
+            description="Kami menawarkan harga yang kompetitif tanpa mengorbankan kualitas layanan."
           />
           <Feature
             iconSrc="/support-icon.svg"
-            title="24/7 Support"
-            description="Our team is always here to assist you, ensuring a smooth and worry-free trip."
+            title="Dukungan 24/7"
+            description="Tim kami selalu siap membantu Anda, memastikan perjalanan yang lancar dan bebas khawatir."
           />
         </div>
       </div>

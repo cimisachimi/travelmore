@@ -1,23 +1,19 @@
 // components/CTASection.tsx
 import React from 'react';
-// The line below is removed because the 'Link' component is not used
-// import Link from 'next/link';
 import { Button } from './ui/Button';
 
-// ... rest of the file
 const CTASection: React.FC = () => (
   <section className="bg-secondary">
     <div className="max-w-4xl mx-auto py-12 px-4 text-center">
-      <h2 className="text-3xl font-bold text-black font-serif">Ready for Your Next Adventure?</h2>
-      <p className="text-gray-800 mt-2 mb-6">Let our experts help you craft the perfect Yogyakarta itinerary.</p>
+      <h2 className="text-3xl font-bold text-black font-serif">Siap untuk Petualangan Berikutnya?</h2>
+      <p className="text-gray-800 mt-2 mb-6">Biarkan ahli kami membantu Anda menyusun itinerary Yogyakarta yang sempurna.</p>
 
-      {/* 2. Replace the old Link with the new Button component */}
       <Button href="/contact" className="text-lg px-10 py-4">
-        Plan Your Trip with Us
+        Rencanakan Perjalanan Anda Bersama Kami
       </Button>
 
       <p className="text-sm text-gray-700 mt-4">
-        Or contact us directly via <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer" className="font-bold underline hover:text-black">WhatsApp</a>.
+        Atau hubungi kami langsung melalui <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="font-bold underline hover:text-black">WhatsApp</a>.
       </p>
     </div>
   </section>
