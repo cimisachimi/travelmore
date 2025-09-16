@@ -1,5 +1,5 @@
 export interface Package {
-  id: number;
+  id: string; // ID harus berupa string
   title: string;
   description: string;
   regularPrice: number;
@@ -10,7 +10,7 @@ export interface Package {
 
 export const packages: Package[] = [
   {
-    id: 1,
+    id: "borobudur-prambanan",
     title: "2 Days: Borobudur & Prambanan",
     description: "Witness the majestic sunrise at Borobudur and explore the grand Prambanan temple complex.",
     regularPrice: 2500000,
@@ -19,7 +19,7 @@ export const packages: Package[] = [
     category: "Temple",
   },
   {
-    id: 2,
+    id: "yogyakarta-adventure",
     title: "3 Days: Yogyakarta Adventure",
     description: "Experience the thrill of Jomblang Cave, Timang Beach, and the slopes of Merapi Volcano.",
     regularPrice: 3800000,
@@ -28,7 +28,7 @@ export const packages: Package[] = [
     category: "Adventure",
   },
   {
-    id: 3,
+    id: "cultural-immersion",
     title: "4 Days: Cultural Immersion",
     description: "Dive deep into Jogja's culture with visits to the Sultan's Palace, Taman Sari, and a batik workshop.",
     regularPrice: 4200000,
@@ -36,5 +36,4 @@ export const packages: Package[] = [
     image: "/hero-3.jpg",
     category: "Culture",
   },
-  // ... other packages updated similarly
 ];
