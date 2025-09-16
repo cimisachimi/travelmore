@@ -2,14 +2,14 @@
 
 .custom-daypicker {
   --rdp-cell-size: 40px;
-  --rdp-accent-color: #40E0D0;
+  --rdp-accent-color: var(--primary);
   /* Primary color */
   --rdp-background-color: #ef4444;
   /* Disabled color */
 }
 
 .dark .custom-daypicker {
-  --rdp-accent-color: #ff914d;
+  --rdp-accent-color: var(--primary);
   /* Dark theme primary color */
 }
 

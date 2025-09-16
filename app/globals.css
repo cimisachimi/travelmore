@@ -38,7 +38,7 @@
 .dark {
   --background: #1a1a1a;
   --foreground: #ffffff;
-  --primary: #ff914d;
+  --primary: var(--premium-secondary);
   --secondary: #f8f800;
 }
 
@@ -48,8 +48,6 @@ body {
   font-family: var(--font-sans);
 }
 
-/* ========================= */
-/* Animations */
 /* ========================= */
 /* Animations */
 /* ========================= */
@@ -118,39 +116,6 @@ body {
 
 .animate-slideInFromRight {
   animation: slideInFromRight 0.6s ease-out forwards;
-}
-
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeOutDown {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  to {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-}
-
-.animate-fadeInUp {
-  animation: fadeInUp 0.8s ease-out forwards;
-}
-
-.animate-fadeOutDown {
-  animation: fadeOutDown 0.5s ease-out forwards;
 }
 
 /* Staggered delays */

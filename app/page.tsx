@@ -8,14 +8,13 @@ import PersonalizedTripPlanner from "@/components/PersonalizedTripPlanner";
 import Testimonials from "@/components/Testimoni";
 import BlogSection from "../components/BlogSection";
 import HowItWorks from "@/components/HowItWork";
-import ComparisonSection from "@/components/ComparisonSection";
 import OtherServices from "@/components/OtherServices"; // ✨ Import the new component
 
 export default function Home() {
   return (
     <>
       <HeroSlider />
-      <ComparisonSection />
+
       <OtherServices /> {/* ✨ New component is placed here */}
       <HowItWorks />
       <PersonalizedTripPlanner />

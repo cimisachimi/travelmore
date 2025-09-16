@@ -99,10 +99,7 @@ function DropdownLink({ title, items }: { title: string; items: { name: string; 
 export default function Navbar() {
   const { theme } = useTheme();
 
-  const destinationLinks = [
-    { name: "All Destinations", href: "/destinations" },
-    { name: "Destination Details", href: "/destinations/details" },
-  ];
+
 
   const pageLinks = [
     { name: "Gallery", href: "/gallery" },
@@ -113,7 +110,6 @@ export default function Navbar() {
   // Decide colors based on theme
   const isExclusive = theme === "exclusive";
   const bgClass = isExclusive ? "bg-premium-primary text-premium-secondary" : "bg-white text-black";
-  const dropdownBg = isExclusive ? "bg-premium-secondary text-premium-primary" : "bg-white text-black";
 
   return (
     <nav className={`${bgClass} shadow-md sticky top-0 z-50 transition-colors duration-300`}>
@@ -135,7 +131,7 @@ export default function Navbar() {
           {/* Nav links */}
           <div className="hidden md:flex items-center space-x-6">
             <NavLink href="/">Home</NavLink>
-            <DropdownLink title="Destinations" items={destinationLinks} />
+
             <NavLink href="/services">Services</NavLink>
             <NavLink href="/planner">Trip Planner</NavLink>
             <DropdownLink title="Pages" items={pageLinks} />

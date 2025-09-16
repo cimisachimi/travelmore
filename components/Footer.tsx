@@ -30,24 +30,24 @@ const Footer: React.FC = () => (
         <ul className="space-y-1 text-gray-300">
           <li>
             {/* ✨ Updated link styling */}
-            <a href="/destinations" className="hover:text-primary transition-colors">
+            <Link href="/destinations" className="hover:text-primary transition-colors">
               Destinations
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/car-rental" className="hover:text-primary transition-colors">
+            <Link href="/car-rental" className="hover:text-primary transition-colors">
               Car Rental
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/about" className="hover:text-primary transition-colors">
+            <Link href="/about" className="hover:text-primary transition-colors">
               About Us
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/contact" className="hover:text-primary transition-colors">
+            <Link href="/contact" className="hover:text-primary transition-colors">
               Contact
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

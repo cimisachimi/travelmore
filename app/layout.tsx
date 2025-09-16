@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${fontPoppins.variable} ${fontMontserrat.variable} ${fontSerif.variable}`}
     >
-      <body className="bg-background text-foreground font-sans">
+      <body className="bg- text-foreground font-sans">
         <ThemeProvider>
           <Navbar />
           <main>{children}</main>
