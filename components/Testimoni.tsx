@@ -1,3 +1,4 @@
+// components/Testimoni.tsx
 "use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -5,7 +6,7 @@ import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { testimonials, Testimonial } from "@/data/testi"; // <-- Impor data dari file terpisah
+import { testimonials, Testimonial } from "@/data/testi";
 
 export default function Testimonials() {
   return (
@@ -32,27 +33,34 @@ export default function Testimonials() {
         >
           {testimonials.map((t: Testimonial, i: number) => (
             <SwiperSlide key={i}>
-              <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center h-full border border-gray-100">
-                {/* Avatar Icon */}
-                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4 border-2 border-primary">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-8 h-8 text-prinmary"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15.75 6.75a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 1115 0v.75H4.5v-.75z"
-                    />
-                  </svg>
+              {/* Perbaikan pada div kontainer kartu */}
+              <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center justify-between min-h-[280px] border border-gray-100">
+                
+                {/* Bagian atas: Icon & Teks */}
+                <div className="flex flex-col items-center flex-1">
+                  {/* Avatar Icon */}
+                  <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4 border-2 border-primary">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-8 h-8 text-primary"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.75 6.75a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 1115 0v.75H4.5v-.75z"
+                      />
+                    </svg>
+                  </div>
+                  {/* Testimonial Text */}
+                  <p className="text-gray-600 italic mb-4 text-center">&ldquo;{t.text}&rdquo;</p>
                 </div>
-                {/* Testimonial Text */}
-                <p className="text-gray-600 italic mb-4 text-center">&ldquo;{t.text}&rdquo;</p>
-                <div className="mt-auto pt-4"> {/* Menyesuaikan untuk tata letak yang rapi */}
+                
+                {/* Bagian bawah: Nama & Peran */}
+                <div className="mt-auto">
                   <h3 className="font-semibold text-gray-800">{t.name}</h3>
                   <span className="text-sm text-gray-500">{t.role}</span>
                 </div>
@@ -74,4 +82,3 @@ export default function Testimonials() {
     </section>
   );
 }
-
