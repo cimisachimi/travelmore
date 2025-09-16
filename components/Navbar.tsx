@@ -128,7 +128,7 @@ export default function Navbar() {
             <NavLink href="/">Beranda</NavLink>
             <NavLink href="/planner">Trip Planner</NavLink>
             <NavLink href="/packages">Paket Wisata</NavLink>
-            <NavLink href="/car-rental">Sewa Mobil</NavLink>
+            <NavLink href="/car-rental">City Tour</NavLink>
             <DropdownLink title="Lainnya" items={pageLinks} />
           </div>
 

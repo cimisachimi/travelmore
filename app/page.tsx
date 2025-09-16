@@ -14,11 +14,10 @@ export default function Home() {
   return (
     <>
       <HeroSlider />
-
-      <OtherServices /> {/* ✨ New component is placed here */}
-      <HowItWorks />
       <PersonalizedTripPlanner />
       <PopularPackages />
+      <OtherServices /> 
+      <HowItWorks />
       <WhyChooseUs />
       <CTASection />
       <Testimonials />
