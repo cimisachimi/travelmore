@@ -136,7 +136,7 @@ export default function PackagesPage() {
                         <p className={`mb-4 flex-grow ${textMutedClass}`}>
                           {pkg.description}
                         </p>
-                        <p className={`text-xl font-bold text-blue-600 mt-auto`}>
+                        <p className={`text-xl font-bold text-primary dark:text-primary mt-auto`}>
                           {formatCurrency(theme === 'regular' ? pkg.regularPrice : pkg.exclusivePrice)}
                         </p>
                       </div>
