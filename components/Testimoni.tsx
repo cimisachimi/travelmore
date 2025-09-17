@@ -10,9 +10,9 @@ import { testimonials, Testimonial } from "@/data/testi";
 
 export default function Testimonials() {
   return (
-    <section className="bg-gray-50 py-16">
+    <section className="bg-card py-16 transition-colors duration-300"> {/* ✨ Changed */}
       <div className="max-w-7xl mx-auto px-6 text-center">
-        <h2 className="text-3xl font-bold mb-12 text-gray-800">Apa Kata Mereka?</h2>
+        <h2 className="text-3xl font-bold mb-12 text-foreground">Apa Kata Mereka?</h2> {/* ✨ Changed */}
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
           spaceBetween={30}
@@ -33,13 +33,13 @@ export default function Testimonials() {
         >
           {testimonials.map((t: Testimonial, i: number) => (
             <SwiperSlide key={i}>
-              {/* Perbaikan pada div kontainer kartu */}
-              <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center justify-between min-h-[280px] border border-gray-100">
+              {/* Card container with updated theme colors */}
+              <div className="bg-background rounded-2xl shadow-lg p-6 flex flex-col items-center justify-between min-h-[280px] border border-border"> {/* ✨ Changed */}
                 
                 {/* Bagian atas: Icon & Teks */}
                 <div className="flex flex-col items-center flex-1">
                   {/* Avatar Icon */}
-                  <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4 border-2 border-primary">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 border-2 border-primary"> {/* ✨ Changed */}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -56,13 +56,13 @@ export default function Testimonials() {
                     </svg>
                   </div>
                   {/* Testimonial Text */}
-                  <p className="text-gray-600 italic mb-4 text-center">&ldquo;{t.text}&rdquo;</p>
+                  <p className="text-foreground/80 italic mb-4 text-center">&ldquo;{t.text}&rdquo;</p> {/* ✨ Changed */}
                 </div>
                 
                 {/* Bagian bawah: Nama & Peran */}
                 <div className="mt-auto">
-                  <h3 className="font-semibold text-gray-800">{t.name}</h3>
-                  <span className="text-sm text-gray-500">{t.role}</span>
+                  <h3 className="font-semibold text-foreground">{t.name}</h3> {/* ✨ Changed */}
+                  <span className="text-sm text-foreground/80">{t.role}</span> {/* ✨ Changed */}
                 </div>
               </div>
             </SwiperSlide>
@@ -71,10 +71,10 @@ export default function Testimonials() {
 
         {/* Custom Navigation Buttons */}
         <div className="flex justify-center gap-6 mt-6">
-          <button className="custom-prev w-12 h-12 flex items-center justify-center rounded-full bg-primary text-white shadow-md hover:brightness-90 transition">
+          <button className="custom-prev w-12 h-12 flex items-center justify-center rounded-full bg-primary text-black shadow-md hover:brightness-90 transition"> {/* ✨ Changed */}
             ←
           </button>
-          <button className="custom-next w-12 h-12 flex items-center justify-center rounded-full bg-primary text-white shadow-md hover:brightness-90 transition">
+          <button className="custom-next w-12 h-12 flex items-center justify-center rounded-full bg-primary text-black shadow-md hover:brightness-90 transition"> {/* ✨ Changed */}
             →
           </button>
         </div>
