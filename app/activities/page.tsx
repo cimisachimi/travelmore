@@ -1,88 +1,160 @@
+// app/activities/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useTheme } from "@/components/ThemeProvider";
+import { activities } from "@/data/activities"; // ✨ Use the new activities data
 
-// Reusable Form Input Component (no changes needed)
-const FormInput: React.FC<{
-  label: string;
-  name: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  placeholder?: string;
-  type?: string;
-  as?: 'textarea';
-}> = ({ label, name, value, onChange, placeholder, type = 'text', as }) => (
-  <div>
-    <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-    {as === 'textarea' ? (
-      <textarea id={name} name={name} value={value} onChange={onChange} placeholder={placeholder} rows={4} className="w-full p-3 rounded-md bg-gray-100 text-black border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:outline-none transition" />
-    ) : (
-      <input id={name} type={type} name={name} value={value} onChange={onChange} placeholder={placeholder} className="w-full p-3 rounded-md bg-gray-100 text-black border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:outline-none transition" />
-    )}
-  </div>
-);
+export default function ActivitiesPage() {
+  const { theme } = useTheme();
 
-// --- Main Activity Page Component ---
-export default function ActivityPage() {
-  const [formData, setFormData] = useState({
-    activityName: '',
-    date: '',
-    participants: '',
-    message: '',
-    name: '',
-    email: '',
-    phone: '',
-  });
+  // State for filters
+  const [maxPrice, setMaxPrice] = useState<number>(1000000);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  // Get all unique categories from the activities data
+  const allCategories = useMemo(
+    () => [...new Set(activities.map((act) => act.category))],
+    []
+  );
+
+  // Handle category checkbox changes
+  const handleCategoryChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const category = event.target.name;
+    if (event.target.checked) {
+      setSelectedCategories((prev) => [...prev, category]);
+    } else {
+      setSelectedCategories((prev) => prev.filter((c) => c !== category));
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Di sini Anda biasanya akan mengirim data ke backend atau API
-    alert("Permintaan pemesanan aktivitas Anda telah dikirim! Kami akan segera menghubungi Anda.");
-    console.log(formData);
+  // Filter activities based on the current state and theme
+  const filteredActivities = useMemo(() => {
+    return activities.filter((act) => {
+      const currentPrice = theme === 'regular' ? act.regularPrice : act.exclusivePrice;
+      const priceMatch = currentPrice <= maxPrice;
+      const categoryMatch =
+        selectedCategories.length === 0 ||
+        selectedCategories.includes(act.category);
+      return priceMatch && categoryMatch;
+    });
+  }, [maxPrice, selectedCategories, theme]);
+
+  // Function to format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(amount);
   };
+
+  // Dynamic classes for theming
+  const mainBgClass = theme === 'regular' ? 'bg-white' : 'bg-gray-900';
+  const cardBgClass = theme === 'regular' ? 'bg-white' : 'bg-gray-800';
+  const textClass = theme === 'regular' ? 'text-black' : 'text-white';
+  const textMutedClass = theme === 'regular' ? 'text-gray-600' : 'text-gray-300';
 
   return (
-    <main>
-      <section className="bg-gray-50 py-16">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-black mb-2">Pemesanan Aktivitas</h2>
-            <p className="text-gray-600">Pesan aktivitas wisata favorit Anda dengan mudah. Isi formulir di bawah ini dan kami akan segera mengonfirmasi.</p>
-          </div>
+    <div className={`${mainBgClass}`}>
+      <div className="container mx-auto px-4 lg:px-8 py-12">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Filter Sidebar */}
+          <aside className="w-full md:w-1/4">
+            <div className={`${cardBgClass} p-6 rounded-lg shadow-md sticky top-24`}>
+              <h3 className={`text-xl font-bold mb-4 ${textClass}`}>Filters</h3>
 
-          <div className="bg-white p-8 rounded-lg shadow-lg">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <h3 className="text-xl font-semibold text-black mb-4 border-b pb-2">Detail Aktivitas</h3>
-                <div className="space-y-4">
-                  <FormInput label="Nama Aktivitas" name="activityName" value={formData.activityName} onChange={handleChange} placeholder="Contoh: Tiket Masuk Museum, Tur Pantai" />
-                  <FormInput label="Tanggal Aktivitas" name="date" value={formData.date} onChange={handleChange} type="date" />
-                  <FormInput label="Jumlah Peserta" name="participants" value={formData.participants} onChange={handleChange} placeholder="Contoh: 2 dewasa, 1 anak" />
-                  <FormInput label="Pesan Tambahan (opsional)" name="message" value={formData.message} onChange={handleChange} as="textarea" placeholder="Contoh: Kami membutuhkan pemandu berbahasa Inggris" />
+              {/* Price Filter */}
+              <div className="mb-6">
+                <label htmlFor="priceRange" className={`block font-semibold mb-2 ${textClass}`}>
+                  Price Range
+                </label>
+                <input
+                  id="priceRange"
+                  type="range"
+                  min="150000"
+                  max="1000000"
+                  step="50000"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(Number(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer custom-range"
+                />
+                <div className={`mt-2 ${textMutedClass}`}>
+                  Up to: <strong>{formatCurrency(maxPrice)}</strong>
                 </div>
               </div>
 
+              <hr className="my-6 border-gray-200 dark:border-gray-700" />
+
+              {/* Category Filter */}
               <div>
-                <h3 className="text-xl font-semibold text-black mb-4 border-b pb-2">Informasi Kontak</h3>
-                <div className="space-y-4">
-                  <FormInput label="Nama Lengkap" name="name" value={formData.name} onChange={handleChange} />
-                  <FormInput label="Alamat Email" name="email" value={formData.email} onChange={handleChange} type="email" />
-                  <FormInput label="Nomor Telepon (WhatsApp)" name="phone" value={formData.phone} onChange={handleChange} type="tel" />
+                <h4 className={`font-semibold mb-2 ${textClass}`}>Categories</h4>
+                <div className="space-y-2">
+                  {allCategories.map((category) => (
+                    <label key={category} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name={category}
+                        checked={selectedCategories.includes(category)}
+                        onChange={handleCategoryChange}
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                      />
+                      <span className={`ml-3 ${textMutedClass}`}>{category}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
+            </div>
+          </aside>
 
-              <button type="submit" className="w-full px-8 py-3 rounded-lg bg-blue-600 text-white font-bold hover:brightness-90 transition-all transform hover:scale-105">
-                Pesan Sekarang
-              </button>
-            </form>
-          </div>
+          {/* Activities Grid */}
+          <main className="w-full md:w-3/4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {filteredActivities.length > 0 ? (
+                filteredActivities.map((act) => (
+                  <Link
+                    key={act.id}
+                    href={`/activities/${act.id}`}
+                  >
+                    <div
+                      className={`${cardBgClass} rounded-lg shadow-lg overflow-hidden flex flex-col group transition hover:shadow-xl`}
+                    >
+                      <div className="relative h-56 w-full overflow-hidden">
+                        <Image
+                          src={act.image}
+                          alt={act.title}
+                          layout="fill"
+                          objectFit="cover"
+                          className="transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </div>
+                      <div className="p-6 flex flex-col flex-grow">
+                        <h2 className={`text-xl font-bold mb-2 ${textClass}`}>{act.title}</h2>
+                        <p className={`mb-4 flex-grow ${textMutedClass}`}>
+                          {act.description}
+                        </p>
+                        <p className={`text-xl font-bold text-primary dark:text-primary mt-auto`}>
+                          {formatCurrency(theme === 'regular' ? act.regularPrice : act.exclusivePrice)}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="lg:col-span-2 text-center py-16">
+                  <p className="text-gray-500 text-xl">
+                    No activities match your filters.
+                  </p>
+                </div>
+              )}
+            </div>
+          </main>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }
