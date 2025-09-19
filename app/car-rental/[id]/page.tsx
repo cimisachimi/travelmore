@@ -1,3 +1,4 @@
+// app/car-rental/[id]/page.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -8,24 +9,25 @@ import "react-day-picker/dist/style.css";
 import "@/styles/calendar.css"; // Import the new calendar styles
 import { useTheme } from "@/components/ThemeProvider";
 import type { Car } from "@/data/cars";
+import { cars } from "@/data/cars"; // Import the actual car data
 
 export default function CarDetailPage() {
-  const { theme, prices } = useTheme();
+  const { theme } = useTheme();
   const { id } = useParams();
-  const car = prices.cars.find((c: Car) => c.id.toString() === id);
+  // Find car based on string ID from URL
+  const car = cars.find((c: Car) => String(c.id) === id);
 
-  const [withDriver, setWithDriver] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   if (!car) {
-    return <div className="p-10 text-center">Car not found.</div>;
+    return <div className="p-10 text-center text-foreground">Car not found.</div>;
   }
 
-  const price = withDriver
-    ? theme === 'regular' ? car.regularPriceWithDriver : car.exclusivePriceWithDriver
-    : theme === 'regular' ? car.regularPriceWithoutDriver : car.exclusivePriceWithoutDriver;
+  // --- Perbaikan: Harga sekarang selalu dengan driver ---
+  const price = theme === 'regular' ? car.regularPriceWithDriver : car.exclusivePriceWithDriver;
 
-  const bookedDays = car.bookedDates.map((d) => new Date(d));
+  // --- Perbaikan: bookedDays sekarang memiliki format yang benar ---
+  const bookedDays = car.bookedDates.map((d: string) => new Date(d));
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -41,7 +43,7 @@ export default function CarDetailPage() {
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-900">
+    <div className="bg-background text-foreground min-h-screen">
       <div className="container mx-auto px-4 py-12">
         <div className="grid lg:grid-cols-2 gap-10">
           {/* Left: Car info */}
@@ -54,12 +56,12 @@ export default function CarDetailPage() {
                 className="object-cover"
               />
             </div>
-            <h2 className="text-3xl font-bold mt-6 text-black dark:text-white">{car.name}</h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">{car.description}</p>
+            <h2 className="text-3xl font-bold mt-6 text-foreground">{car.name}</h2>
+            <p className="mt-2 text-foreground/70">{car.description}</p>
 
-            <div className="mt-6 p-4 bg-white dark:bg-gray-800 rounded-lg">
-              <h3 className="font-semibold mb-2 text-black dark:text-white">Service Coverage:</h3>
-              <ul className="list-disc pl-5 text-gray-700 dark:text-gray-300 space-y-1">
+            <div className="mt-6 p-4 bg-card rounded-lg border border-border">
+              <h3 className="font-semibold mb-2 text-foreground">Service Coverage:</h3>
+              <ul className="list-disc pl-5 text-foreground/70 space-y-1">
                 <li>Service Area: Yogyakarta & Central Java</li>
                 <li>Driver Included</li>
                 <li>Fuel Included</li>
@@ -68,40 +70,41 @@ export default function CarDetailPage() {
           </div>
 
           {/* Right: Booking Form */}
-          <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
-            <h3 className="text-xl font-bold mb-4 text-black dark:text-white">Book This Car</h3>
+          <div className="bg-card shadow-lg rounded-lg p-6">
+            <h3 className="text-xl font-bold mb-4 text-foreground">Book This Car</h3>
 
-            {/* Price & Driver Toggle */}
-            <div className="flex justify-between items-center mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            {/* Price section without driver toggle */}
+            <div className="flex items-center mb-4 p-4 bg-background border border-border rounded-lg">
               <div>
                 <span className="text-2xl font-bold text-primary">{formatCurrency(price)}</span>
-                <span className="text-gray-600 dark:text-gray-400">/day</span>
+                <span className="text-foreground/60">/day</span>
               </div>
-              {/* Driver Toggle */}
-              <label className="inline-flex items-center cursor-pointer">
-                <input type="checkbox" checked={withDriver} onChange={() => setWithDriver(!withDriver)} className="sr-only peer" />
-                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">With Driver</span>
-              </label>
             </div>
 
-            {/* Calendar */}
-            <DayPicker
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              disabled={bookedDays}
-              defaultMonth={new Date(2025, 8)}
-              className="custom-daypicker"
-            />
+            {/* Kalender */}
+            {/* Perbaikan: Menambahkan class untuk tampilan yang lebih baik */}
+            <div className="calendar-container">
+              <DayPicker
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                disabled={bookedDays}
+                defaultMonth={new Date()}
+                className="custom-daypicker"
+              />
+            </div>
 
             {/* Booking Form */}
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              <input type="text" placeholder="Name" className="w-full border rounded-lg px-4 py-2 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required />
-              <input type="email" placeholder="Email" className="w-full border rounded-lg px-4 py-2 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required />
-              <input type="tel" placeholder="Phone Number" className="w-full border rounded-lg px-4 py-2 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required />
-              <input type="text" placeholder="Pickup Location" className="w-full border rounded-lg px-4 py-2 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required />
-              <button type="submit" disabled={!selectedDate} className="w-full bg-primary text-black dark:text-white font-bold py-3 rounded-lg hover:brightness-90 disabled:opacity-50 disabled:cursor-not-allowed">
+              <input type="text" placeholder="Name" className="w-full border rounded-lg px-4 py-2 bg-background border-border text-foreground focus:ring-primary focus:ring-2 focus:outline-none transition" required />
+              <input type="email" placeholder="Email" className="w-full border rounded-lg px-4 py-2 bg-background border-border text-foreground focus:ring-primary focus:ring-2 focus:outline-none transition" required />
+              <input type="tel" placeholder="Phone Number" className="w-full border rounded-lg px-4 py-2 bg-background border-border text-foreground focus:ring-primary focus:ring-2 focus:outline-none transition" required />
+              <input type="text" placeholder="Pickup Location" className="w-full border rounded-lg px-4 py-2 bg-background border-border text-foreground focus:ring-primary focus:ring-2 focus:outline-none transition" required />
+              <button
+                type="submit"
+                disabled={!selectedDate}
+                className="w-full bg-primary text-foreground font-bold py-3 rounded-lg hover:brightness-90 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
                 Book Now
               </button>
             </form>

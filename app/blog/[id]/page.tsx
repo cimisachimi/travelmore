@@ -29,7 +29,7 @@ export default function BlogDetail({ params }: Props) {
     <div className="max-w-3xl mx-auto px-6 py-16">
       <Link
         href="/blog"
-        className="text-blue-600 font-medium hover:underline mb-6 inline-block"
+        className="text-primary font-medium hover:underline mb-6 inline-block"
       >
         ← Kembali ke Blog
       </Link>

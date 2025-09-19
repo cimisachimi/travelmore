@@ -5,12 +5,13 @@ import { blogs } from "@/data/blog";
 
 export default function BlogListPage() {
   return (
-    <section className="py-20 bg-gray-50">
+    // Menggunakan bg-background dan text-foreground untuk warna dinamis
+    <section className="py-20 bg-background text-foreground transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-800">Artikel & Blog</h2>
-          <p className="text-gray-500 mt-3 max-w-2xl mx-auto">
+          <h2 className="text-4xl font-bold">Artikel & Blog</h2>
+          <p className="text-foreground/70 mt-3 max-w-2xl mx-auto">
             Inspirasi perjalanan, tips liburan, dan cerita seru dari Travelmore.
           </p>
         </div>
@@ -21,7 +22,8 @@ export default function BlogListPage() {
             <Link
               key={blog.id}
               href={`/blog/${blog.id}`}
-              className="bg-white rounded-3xl shadow-md hover:shadow-2xl transition-transform transform hover:-translate-y-1 flex flex-col overflow-hidden group"
+              // Menggunakan bg-card untuk warna kartu
+              className="bg-card rounded-3xl shadow-md hover:shadow-2xl transition-transform transform hover:-translate-y-1 flex flex-col overflow-hidden group"
             >
               {/* Gambar */}
               <div className="relative h-60 w-full overflow-hidden">
@@ -35,19 +37,16 @@ export default function BlogListPage() {
 
               {/* Konten */}
               <div className="p-6 flex flex-col flex-1">
-                <span className="text-sm text-gray-400">{blog.date}</span>
-                <h3 className="text-xl font-semibold mt-2 text-gray-800 group-hover:text-blue-600 transition-colors">
+                <span className="text-sm text-foreground/50">{blog.date}</span>
+                <h3 className="text-xl font-semibold mt-2 text-foreground group-hover:text-primary transition-colors">
                   {blog.title}
                 </h3>
-                <p className="text-gray-600 mt-3 flex-1">{blog.excerpt}</p>
-                <span className="mt-4 text-sm font-medium text-gray-700">{blog.author}</span>
+                <p className="text-foreground/70 mt-3 flex-1">{blog.excerpt}</p>
+                <span className="mt-4 text-sm font-medium text-foreground/80">{blog.author}</span>
               </div>
             </Link>
           ))}
         </div>
-
-        {/* Hapus atau ubah tombol "Show More" jika tidak diperlukan lagi */}
-        {/* <div className="mt-12 flex justify-center">...</div> */}
       </div>
     </section>
   );
