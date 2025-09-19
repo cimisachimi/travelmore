@@ -1,17 +1,45 @@
-// components/HowItWorks.tsx
 "use client"; // Diperlukan untuk menggunakan hook
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 
-const Step = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
-  <div className="flex flex-col items-center text-center p-4 rounded-lg transition-all duration-300 hover:bg-card hover:shadow-lg">
-    <div className="flex-shrink-0 bg-primary/10 p-4 rounded-full mb-4">
-      {icon}
+// --- Komponen Step dengan Animasi ---
+const AnimatedStep = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const domRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => setIsVisible(entry.isIntersecting));
+    });
+
+    const currentRef = domRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+    
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, []);
+
+  return (
+    <div
+      ref={domRef}
+      className={`flex flex-col items-center text-center p-4 rounded-lg transition-all duration-700 ease-out 
+                  ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'} 
+                  hover:bg-card hover:shadow-lg`}
+    >
+      <div className="flex-shrink-0 bg-primary/10 p-4 rounded-full mb-4">
+        {icon}
+      </div>
+      <h3 className="text-lg font-bold mb-2 text-foreground">{title}</h3>
+      <p className="text-foreground/80">{description}</p>
     </div>
-    <h3 className="text-lg font-bold mb-2 text-foreground">{title}</h3>
-    <p className="text-foreground/80">{description}</p>
-  </div>
-);
+  );
+};
 
+// --- Komponen Utama HowItWorks ---
 const HowItWorks: React.FC = () => {
   const steps = [
     {
@@ -69,6 +97,7 @@ const HowItWorks: React.FC = () => {
       description: "Nikmati perjalanan Anda! Kami akan memastikan semuanya berjalan lancar.",
     },
   ];
+
   return (
     <section className="bg-background py-16">
       <div className="max-w-6xl mx-auto px-4">
@@ -78,7 +107,7 @@ const HowItWorks: React.FC = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
           {steps.map((step, index) => (
-            <Step key={index} icon={step.icon} title={step.title} description={step.description} />
+            <AnimatedStep key={index} icon={step.icon} title={step.title} description={step.description} />
           ))}
         </div>
       </div>
