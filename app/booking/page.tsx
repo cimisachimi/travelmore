@@ -37,6 +37,7 @@ const BookingForm = () => {
     name: '',
     email: '',
     phone: '',
+    address: '',
   });
 
   useEffect(() => {
@@ -82,6 +83,7 @@ const BookingForm = () => {
                   <FormInput label="Nama Lengkap" name="name" value={formData.name} onChange={handleChange} />
                   <FormInput label="Alamat Email" name="email" value={formData.email} onChange={handleChange} type="email" />
                   <FormInput label="Nomor Telepon (WhatsApp)" name="phone" value={formData.phone} onChange={handleChange} type="tel" />
+                  <FormInput label="Alamat Asal" name="address" value={formData.address} onChange={handleChange} placeholder="Contoh: Jakarta, Indonesia" />
                 </div>
               </div>
 
