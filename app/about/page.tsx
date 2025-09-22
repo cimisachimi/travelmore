@@ -49,7 +49,6 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-black opacity-50"></div>
         <div className="relative z-10 px-4">
           <h1 className="text-4xl md:text-5xl font-bold">Tentang Kami</h1>
-          <p className="text-lg mt-2">Beranda / Tentang Kami</p>
         </div>
       </section>
       
@@ -121,7 +120,7 @@ export default function AboutPage() {
       </section>
       
       {/* Call to Action Section */}
-      <section className="relative py-20 text-center text-white">
+      <section className="relative py-20 text-center text-white mb-16">
         <Image 
           src="/hero-2.jpg" // Using an existing relevant image
           alt="Tugu Yogyakarta" 
