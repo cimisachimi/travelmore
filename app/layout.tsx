@@ -5,7 +5,9 @@ import { Poppins, Montserrat, Lora } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
-// ✅ Configure fonts
+import Breadcrumbs from "@/components/Breadcrumps";
+
+// Font configurations remain the same...
 const fontPoppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
@@ -30,7 +32,12 @@ const fontSerif = Lora({
 export const metadata = {
   title: "TravelMore",
 };
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
       lang="en"
@@ -39,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg- text-foreground font-sans">
         <ThemeProvider>
           <Navbar />
+          <Breadcrumbs />
           <main>{children}</main>
           <Footer />
         </ThemeProvider>
