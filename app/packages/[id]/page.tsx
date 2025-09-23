@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
@@ -11,12 +11,14 @@ const CheckIcon = () => <svg className="w-5 h-5 text-green-500" fill="none" stro
 const XIcon = () => <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>;
 
 // --- FIX: `params` is a regular object in a Client Component ---
-export default function PackageDetail({ params }: { params: { id: string } }) {
+export default function PackageDetail({ params }: { params: Promise<{ id: string }> }) {
   const { theme } = useTheme();
-  const [activeTab, setActiveTab] = useState('Overview');
+  const [activeTab, setActiveTab] = useState("Overview");
 
-  // --- FIX: Access `id` directly from the params object ---
-  const pkg = packages.find((p) => p.id === params.id);
+  // unwrap params
+  const { id } = use(params);
+
+  const pkg = packages.find((p) => p.id === id);
 
   if (!pkg) {
     return (
@@ -25,7 +27,6 @@ export default function PackageDetail({ params }: { params: { id: string } }) {
       </div>
     );
   }
-
   // The rest of your component logic follows...
   const childPrice = pkg.childPrice || pkg.exclusivePrice * 0.5;
   const images = pkg.images || [];
