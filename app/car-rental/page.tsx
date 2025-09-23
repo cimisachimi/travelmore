@@ -44,7 +44,7 @@ function CarCard({ car }: { car: Car }) {
 }
 
 export default function CarRentalPage() {
-  const { theme } = useTheme();
+
 
   return (
     <div className="bg-background min-h-screen">

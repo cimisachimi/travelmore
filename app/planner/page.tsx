@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+
 import { useTheme } from "@/components/ThemeProvider";
 import ComparisonSection from "@/components/ComparisonSection";
 import PlannerForm from "./PlannerForm"; // Import dengan jalur relatif
@@ -65,7 +65,7 @@ export default function PlannerPage() {
   const handleCtaClick = () => {
     setShowForm(true);
   };
-  
+
   const handleBackToInfo = () => {
     setShowForm(false);
   };
@@ -73,7 +73,7 @@ export default function PlannerPage() {
   return (
     <main className="bg-background text-foreground transition-colors duration-300">
       <section className="container mx-auto px-4 py-16 space-y-20">
-        
+
         {!showForm ? (
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="text-left">
@@ -132,8 +132,8 @@ export default function PlannerPage() {
             <div className="max-w-2xl mx-auto px-4">
               <PlannerForm />
             </div>
-            <button 
-              onClick={handleBackToInfo} 
+            <button
+              onClick={handleBackToInfo}
               className="w-full text-center mt-6 text-sm text-gray-600 hover:underline"
             >
               ← Kembali ke Detail Layanan

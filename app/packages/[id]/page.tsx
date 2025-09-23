@@ -1,4 +1,4 @@
-"use client"; // 1. Declare it as a Client Component
+"use client";
 
 import React, { useState } from "react";
 import Image from "next/image";
@@ -10,16 +10,13 @@ import { packages } from "@/data/packages";
 const CheckIcon = () => <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>;
 const XIcon = () => <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>;
 
-export default function PackageDetail({ params }: { params: Promise<{ id: string }> }) {
-
-  // 2. Unwrap the params promise with React.use()
-  const resolvedParams = React.use(params);
-
-  // 3. Use the unwrapped value
-  const pkg = packages.find((p) => p.id === resolvedParams.id);
+// --- FIX: `params` is a regular object in a Client Component ---
+export default function PackageDetail({ params }: { params: { id: string } }) {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState('Overview');
 
+  // --- FIX: Access `id` directly from the params object ---
+  const pkg = packages.find((p) => p.id === params.id);
 
   if (!pkg) {
     return (
@@ -110,13 +107,15 @@ export default function PackageDetail({ params }: { params: Promise<{ id: string
                   {activeTab === 'Cost' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div>
-                        <h4 className={`text-lg font-bold mb-4 ${textClass}`}>What's Included</h4>
+                        {/* --- FIX: Escaped apostrophe --- */}
+                        <h4 className={`text-lg font-bold mb-4 ${textClass}`}>What&apos;s Included</h4>
                         <ul className="space-y-2">
                           {pkg.cost?.included.map(item => <li key={item} className="flex items-start gap-3"><CheckIcon /> <span className={textMutedClass}>{item}</span></li>)}
                         </ul>
                       </div>
                       <div>
-                        <h4 className={`text-lg font-bold mb-4 ${textClass}`}>What's Not Included</h4>
+                        {/* --- FIX: Escaped apostrophe --- */}
+                        <h4 className={`text-lg font-bold mb-4 ${textClass}`}>What&apos;s Not Included</h4>
                         <ul className="space-y-2">
                           {pkg.cost?.excluded.map(item => <li key={item} className="flex items-start gap-3"><XIcon /> <span className={textMutedClass}>{item}</span></li>)}
                         </ul>
@@ -197,14 +196,3 @@ export default function PackageDetail({ params }: { params: Promise<{ id: string
     </div>
   );
 }
-
-// You can remove the generateStaticParams function from this file
-// if you keep it as a client component, as it's a feature for
-// Server Components to pre-build static pages.
-/*
-export async function generateStaticParams() {
-  return packages.map((pkg) => ({
-    id: pkg.id,
-  }));
-}
-*/

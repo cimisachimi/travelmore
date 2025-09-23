@@ -4,7 +4,7 @@ import Link from "next/link";
 import { marked } from "marked";
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 // Tentukan id blog yang akan di-generate
@@ -12,7 +12,8 @@ export async function generateStaticParams() {
   return blogs.map((blog) => ({ id: blog.id }));
 }
 
-export default function BlogDetail({ params }: Props) {
+export default async function BlogDetail(props: Props) {
+  const params = await props.params;
   const blog = blogs.find((b) => b.id === params.id);
 
   if (!blog) {

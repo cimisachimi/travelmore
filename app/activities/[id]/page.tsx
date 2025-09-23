@@ -9,7 +9,8 @@ export async function generateStaticParams() {
   }));
 }
 
-export default function ActivityDetail({ params }: { params: { id: string } }) {
+export default async function ActivityDetail(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const activity = activities.find((a) => a.id === params.id);
 
   if (!activity) {
