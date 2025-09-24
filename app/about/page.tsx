@@ -35,22 +35,23 @@ export default function AboutPage() {
   const { theme } = useTheme();
   const isExclusive = theme === "exclusive";
 
+  // Theme-based class names from packages page
+  const textClass = theme === 'regular' ? 'text-gray-900' : 'text-white';
+  const textMutedClass = theme === 'regular' ? 'text-gray-600' : 'text-gray-300';
+  const headerBgClass = theme === 'regular' ? 'bg-white' : 'bg-gray-900';
+
+
   return (
     <main className="bg-background text-foreground transition-colors duration-300">
-      {/* Hero Section */}
-      <section className="relative h-60 md:h-80 flex items-center justify-center text-center text-white">
-        <Image 
-          src="/hero-1.jpg" // Using an existing relevant image
-          alt="Prambanan Temple" 
-          layout="fill" 
-          objectFit="cover" 
-          className="absolute inset-0 z-0" 
-        />
-        <div className="absolute inset-0 bg-black opacity-50"></div>
-        <div className="relative z-10 px-4">
-          <h1 className="text-4xl md:text-5xl font-bold">Tentang Kami</h1>
+      {/* Page Header */}
+      <header className={`py-12 ${headerBgClass} border-b ${theme === 'regular' ? 'border-gray-200' : 'border-gray-800'}`}>
+        <div className="container mx-auto px-4 lg:px-8 text-center">
+          <h1 className={`text-4xl md:text-5xl font-extrabold ${textClass}`}>Tentang Kami</h1>
+          <p className={`mt-4 text-lg max-w-2xl mx-auto ${textMutedClass}`}>
+            Mengenal lebih dekat tim di balik perjalanan tak terlupakan Anda di Yogyakarta.
+          </p>
         </div>
-      </section>
+      </header>
       
       {/* Main Content Section */}
       <section className="py-16 lg:py-24">
