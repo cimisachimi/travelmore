@@ -23,7 +23,7 @@ export const activities: Activity[] = [
     description: "Experience the thrill of an off-road adventure on the slopes of the active Merapi volcano, visiting key sites affected by its eruptions.",
     regularPrice: 450000,
     exclusivePrice: 600000,
-    image: "/activities/Parangtritis.webp",
+    image: "/activities/Merapi.webp",
     category: "Adventure",
     location: "Sleman, Yogyakarta",
     duration: "4 Hours",
@@ -38,7 +38,7 @@ export const activities: Activity[] = [
       { q: "Is this activity safe?", a: "Yes, all tours are conducted by experienced drivers who know the routes well. Safety equipment is provided." },
       { q: "What should I wear?", a: "Comfortable clothes, sturdy shoes, and a jacket are recommended as the weather can be cool." }
     ],
-    mapLink: "https://maps.app.goo.gl/uCa7z5A3nB1x9f8c6"
+    mapLink: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d32384.131625895912!2d110.4251244564241!3d-7.540716918240647!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a641ec0ff2fa5%3A0xe92612624cad8800!2sMount%20Merapi!5e1!3m2!1sen!2sid!4v1758857070467!5m2!1sen!2sid"
   },
   {
     id: "prambanan-ramayana-ballet",
@@ -61,7 +61,7 @@ export const activities: Activity[] = [
       { q: "Is there an indoor venue if it rains?", a: "Yes, during the rainy season, the performance is moved to a covered indoor stage." },
       { q: "Can I take photos?", a: "Yes, photography without flash is permitted during the performance." }
     ],
-    mapLink: "https://maps.app.goo.gl/qV2QhX8YmY3z9f8A6"
+    mapLink: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4046.0127134518434!2d110.48889247500459!3d-7.752020592266873!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5ae3dbd859d1%3A0x19e7a03b25955a2d!2sPrambanan%20Temple!5e1!3m2!1sen!2sid!4v1758856206621!5m2!1sen!2sid"
   },
   {
     id: "batik-making-class",
@@ -91,7 +91,7 @@ export const activities: Activity[] = [
     description: "Descend into the earth to witness the heavenly light of Jomblang Cave, a truly once-in-a-lifetime experience.",
     regularPrice: 750000,
     exclusivePrice: 950000,
-    image: "/activities/Nepal.webp",
+    image: "/activities/Jomblang.webp",
     category: "Adventure",
     location: "Gunung Kidul, Yogyakarta",
     duration: "6 Hours",
@@ -105,6 +105,6 @@ export const activities: Activity[] = [
     faqs: [
       { q: "Is there a physical fitness requirement?", a: "A moderate level of fitness is required. You should be able to walk on uneven and slippery terrain." }
     ],
-    mapLink: "https://maps.app.goo.gl/cK5rZ9jX7kL6f8bA8"
+    mapLink: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13599.894563842587!2d110.63206373066222!3d-8.032013586663405!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7bb41fce34d717%3A0xf9ffcb6f9fbd5cce!2sJomblang%20Cave!5e1!3m2!1sen!2sid!4v1758856493604!5m2!1sen!2sid"
   },
 ];
