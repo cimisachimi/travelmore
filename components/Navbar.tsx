@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useTheme } from "./ThemeProvider";
 
-
+// 🔘 Theme Switcher
 const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
 
@@ -31,7 +31,7 @@ const ThemeToggle = () => {
   );
 };
 
-
+// 🔗 Link Biasa
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <Link
@@ -52,18 +52,18 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   );
 }
 
-
+// 🔽 Dropdown “Lainnya”
 function DropdownLink({ title, items }: { title: string; items: { name: string; href: string }[] }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div
       className="relative group md:cursor-pointer"
-      onClick={() => setIsOpen(!isOpen)} // toggle di mobile
-      onMouseEnter={() => setIsOpen(true)} // hover di desktop
+      onClick={() => setIsOpen(!isOpen)} // mobile: toggle
+      onMouseEnter={() => setIsOpen(true)} // desktop: hover
       onMouseLeave={() => setIsOpen(false)}
     >
-      <button className="inline-flex items-center space-x-1 text-foreground font-medium">
+      <button className="inline-flex items-center space-x-1 text-foreground font-medium w-full justify-between md:w-auto">
         <span>{title}</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -81,14 +81,21 @@ function DropdownLink({ title, items }: { title: string; items: { name: string; 
         </svg>
       </button>
 
-      {/* Dropdown menu */}
+      {/* Dropdown Menu */}
       <div
-        className={`absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-background border border-border 
-        md:transition-all md:duration-200
-        ${isOpen ? "opacity-100 visible scale-100" : "opacity-0 invisible scale-95"}
-        md:origin-top-left md:group-hover:opacity-100 md:group-hover:visible md:group-hover:scale-100`}
+        className={`
+          md:absolute md:left-0 md:mt-2 md:w-48 
+          rounded-md md:shadow-lg bg-background  
+          transition-all duration-200 overflow-hidden
+          ${
+            isOpen
+              ? "opacity-100 visible scale-100 max-h-96"
+              : "opacity-0 invisible scale-95 max-h-0 md:group-hover:opacity-100 md:group-hover:visible md:group-hover:scale-100 md:max-h-96"
+          }
+          ${isOpen ? "block" : "hidden"} md:block
+        `}
       >
-        <div className="py-1" role="menu" aria-orientation="vertical">
+        <div className="py-1 md:py-2" role="menu" aria-orientation="vertical">
           {items.map((item) => (
             <Link
               key={item.name}
@@ -105,12 +112,12 @@ function DropdownLink({ title, items }: { title: string; items: { name: string; 
   );
 }
 
-
+// 🧭 Navbar utama
 export default function Navbar() {
   const { theme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // hanya galeri & tentang kami di dropdown
+  // item dalam menu “Lainnya”
   const pageLinks = [
     { name: "Galeri", href: "/gallery" },
     { name: "Tentang Kami", href: "/about" },
@@ -122,7 +129,7 @@ export default function Navbar() {
     <nav className="bg-background/80 dark:bg-card/80 backdrop-blur-lg shadow-md sticky top-0 z-50 border-b border-border transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center h-24 gap-6">
-          {/* Logo */}
+          {/* 🪪 Logo */}
           <Link href="/" className="flex items-center">
             <Image
               key={logoSrc}
@@ -134,20 +141,21 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* Desktop Menu */}
+          {/* 💻 Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             <NavLink href="/">Beranda</NavLink>
             <NavLink href="/planner">Trip Planner</NavLink>
             <NavLink href="/packages">Paket Wisata</NavLink>
             <NavLink href="/car-rental">City Tour</NavLink>
-            <NavLink href="/daily-activities">Aktivitas Harian</NavLink>
+            <NavLink href="/activities">Aktivitas Harian</NavLink>
             <DropdownLink title="Lainnya" items={pageLinks} />
           </div>
 
-          {/* Right Side */}
+          {/* 🎚 Kanan */}
           <div className="flex items-center space-x-6">
             <ThemeToggle />
-            {/* Hamburger for mobile */}
+
+            {/* 🍔 Mobile Hamburger */}
             <button
               className="md:hidden focus:outline-none"
               onClick={() => setMenuOpen(!menuOpen)}
@@ -161,12 +169,7 @@ export default function Navbar() {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
                 <svg
@@ -176,26 +179,21 @@ export default function Navbar() {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               )}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* 📱 Mobile Menu */}
         {menuOpen && (
-          <div className="md:hidden flex flex-col space-y-4 pb-4 animate-fadeIn">
+          <div className="md:hidden flex flex-col space-y-3 pb-4 animate-fadeIn">
             <NavLink href="/">Beranda</NavLink>
             <NavLink href="/planner">Trip Planner</NavLink>
             <NavLink href="/packages">Paket Wisata</NavLink>
             <NavLink href="/car-rental">City Tour</NavLink>
-            <NavLink href="/daily-activities">Aktivitas Harian</NavLink>
+            <NavLink href="/activities">Aktivitas Harian</NavLink>
             <DropdownLink title="Lainnya" items={pageLinks} />
           </div>
         )}
