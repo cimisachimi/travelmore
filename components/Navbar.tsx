@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useTheme } from "./ThemeProvider";
+import { useTranslations, useLocale } from "next-intl";
+import { Link, usePathname } from '@/i18n/navigation';
 
 // 🔘 Theme Switcher
 const ThemeToggle = () => {
@@ -13,20 +14,45 @@ const ThemeToggle = () => {
     <div className="flex items-center p-1 rounded-full bg-gray-200 dark:bg-gray-700">
       <button
         onClick={() => setTheme("regular")}
-        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${
-          theme === "regular" ? "bg-white text-black" : "text-gray-500"
-        }`}
+        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${theme === "regular" ? "bg-white text-black" : "text-gray-500"
+          }`}
       >
         Regular
       </button>
       <button
         onClick={() => setTheme("exclusive")}
-        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${
-          theme === "exclusive" ? "bg-primary text-black" : "text-gray-500"
-        }`}
+        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${theme === "exclusive" ? "bg-primary text-black" : "text-gray-500"
+          }`}
       >
         Exclusive
       </button>
+    </div>
+  );
+};
+
+// 🌐 Language Switcher (New)
+const LocaleSwitcher = () => {
+  const locale = useLocale();
+  const pathname = usePathname();
+
+  return (
+    <div className="flex items-center p-1 rounded-full bg-gray-200 dark:bg-gray-700">
+      <Link
+        href={pathname}
+        locale="id"
+        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${locale === "id" ? "bg-white text-black" : "text-gray-500"
+          }`}
+      >
+        ID
+      </Link>
+      <Link
+        href={pathname}
+        locale="en"
+        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${locale === "en" ? "bg-white text-black" : "text-gray-500"
+          }`}
+      >
+        EN
+      </Link>
     </div>
   );
 };
@@ -69,9 +95,8 @@ function DropdownLink({ title, items }: { title: string; items: { name: string; 
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
-          className={`h-5 w-5 transform transition-transform duration-300 ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`h-5 w-5 transform transition-transform duration-300 ${isOpen ? "rotate-180" : ""
+            }`}
         >
           <path
             fillRule="evenodd"
@@ -85,12 +110,11 @@ function DropdownLink({ title, items }: { title: string; items: { name: string; 
       <div
         className={`
           md:absolute md:left-0 md:mt-2 md:w-48 
-          rounded-md md:shadow-lg bg-background  
+          rounded-md md:shadow-lg bg-background   
           transition-all duration-200 overflow-hidden
-          ${
-            isOpen
-              ? "opacity-100 visible scale-100 max-h-96"
-              : "opacity-0 invisible scale-95 max-h-0 md:group-hover:opacity-100 md:group-hover:visible md:group-hover:scale-100 md:max-h-96"
+          ${isOpen
+            ? "opacity-100 visible scale-100 max-h-96"
+            : "opacity-0 invisible scale-95 max-h-0 md:group-hover:opacity-100 md:group-hover:visible md:group-hover:scale-100 md:max-h-96"
           }
           ${isOpen ? "block" : "hidden"} md:block
         `}
@@ -116,11 +140,12 @@ function DropdownLink({ title, items }: { title: string; items: { name: string; 
 export default function Navbar() {
   const { theme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
+  const t = useTranslations('Navbar');
 
-  // item dalam menu “Lainnya”
+  // item dalam menu “Lainnya” — now translated
   const pageLinks = [
-    { name: "Galeri", href: "/gallery" },
-    { name: "Tentang Kami", href: "/about" },
+    { name: t("gallery"), href: "/gallery" },
+    { name: t("about"), href: "/about" },
   ];
 
   const logoSrc = theme === "regular" ? "/logo-regular.png" : "/logo-exclusive.png";
@@ -141,19 +166,22 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* 💻 Desktop Menu */}
+          {/* 💻 Desktop Menu — now translated */}
           <div className="hidden md:flex items-center space-x-8">
-            <NavLink href="/">Beranda</NavLink>
-            <NavLink href="/planner">Trip Planner</NavLink>
-            <NavLink href="/packages">Paket Wisata</NavLink>
-            <NavLink href="/car-rental">City Tour</NavLink>
-            <NavLink href="/activities">Aktivitas Harian</NavLink>
-            <DropdownLink title="Lainnya" items={pageLinks} />
+            <NavLink href="/">{t('home')}</NavLink>
+            <NavLink href="/planner">{t('planner')}</NavLink>
+            <NavLink href="/packages">{t('packages')}</NavLink>
+            <NavLink href="/car-rental">{t('carRental')}</NavLink>
+            <NavLink href="/activities">{t('activities')}</NavLink>
+            <DropdownLink title={t('more')} items={pageLinks} />
           </div>
 
           {/* 🎚 Kanan */}
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-4">
             <ThemeToggle />
+            <div className="hidden md:block">
+              <LocaleSwitcher />
+            </div>
 
             {/* 🍔 Mobile Hamburger */}
             <button
@@ -186,15 +214,18 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* 📱 Mobile Menu */}
+        {/* 📱 Mobile Menu — now translated */}
         {menuOpen && (
           <div className="md:hidden flex flex-col space-y-3 pb-4 animate-fadeIn">
-            <NavLink href="/">Beranda</NavLink>
-            <NavLink href="/planner">Trip Planner</NavLink>
-            <NavLink href="/packages">Paket Wisata</NavLink>
-            <NavLink href="/car-rental">City Tour</NavLink>
-            <NavLink href="/activities">Aktivitas Harian</NavLink>
-            <DropdownLink title="Lainnya" items={pageLinks} />
+            <NavLink href="/">{t('home')}</NavLink>
+            <NavLink href="/planner">{t('planner')}</NavLink>
+            <NavLink href="/packages">{t('packages')}</NavLink>
+            <NavLink href="/car-rental">{t('carRental')}</NavLink>
+            <NavLink href="/activities">{t('activities')}</NavLink>
+            <DropdownLink title={t('more')} items={pageLinks} />
+            <div className="pt-2 self-center">
+              <LocaleSwitcher />
+            </div>
           </div>
         )}
       </div>

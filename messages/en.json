@@ -1,10 +1,11 @@
 {
   "Navbar": {
     "home": "Home",
-    "destinations": "Destinations",
-    "services": "Services",
-    "pages": "Pages",
-    "blog": "Blog",
+    "planner": "Trip Planner",
+    "packages": "Packages",
+    "carRental": "Car Rental",
+    "activities": "Activities",
+    "more": "More Menu",
     "contact": "Contact Us"
   },
   "PersonalizedTripPlanner": {

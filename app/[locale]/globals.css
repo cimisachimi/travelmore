@@ -1,6 +1,6 @@
 /* app/globals.css */
 @import "tailwindcss";
-@import "../styles/animation.css";
+@import "../../styles/animation.css";
 
 /* ✨ Animasi diimpor dari file terpisah */
 /* ✅ Light Mode (Default) */

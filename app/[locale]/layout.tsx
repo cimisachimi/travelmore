@@ -6,7 +6,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Breadcrumbs from "@/components/Breadcrumps";
-
+import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { routing } from "@/i18n/routing";
+import { notFound } from "next/navigation";
 // Font configurations remain the same...
 const fontPoppins = Poppins({
   subsets: ["latin"],
@@ -33,23 +35,31 @@ export const metadata = {
   title: "TravelMore",
 };
 
-export default function RootLayout({
-  children,
+export default async function RootLayout({
+  children, params
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
   return (
     <html
       lang="en"
       className={`${fontPoppins.variable} ${fontMontserrat.variable} ${fontSerif.variable}`}
     >
       <body className="bg- text-foreground font-sans">
-        <ThemeProvider>
-          <Navbar />
-          <Breadcrumbs />
-          <main>{children}</main>
-          <Footer />
-        </ThemeProvider>
+        <NextIntlClientProvider>
+          <ThemeProvider>
+            <Navbar />
+            <Breadcrumbs />
+            <main>{children}</main>
+            <Footer />
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

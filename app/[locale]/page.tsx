@@ -6,7 +6,7 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import CTASection from "@/components/CTASection";
 import PersonalizedTripPlanner from "@/components/PersonalizedTripPlanner";
 import Testimonials from "@/components/Testimoni";
-import BlogSection from "../components/BlogSection";
+import BlogSection from "../../components/BlogSection";
 import HowItWorks from "@/components/HowItWork";
 import OtherServices from "@/components/OtherServices"; // ✨ Import the new component
 
@@ -17,12 +17,12 @@ export default function Home() {
       <PersonalizedTripPlanner />
       <PopularPackages />
       <HowItWorks />
-      <OtherServices />  
+      <OtherServices />
       <WhyChooseUs />
       <CTASection />
       <BlogSection />
       <Testimonials />
-      
+
     </>
   );
 }
