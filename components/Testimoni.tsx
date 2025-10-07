@@ -1,4 +1,4 @@
-// components/Testimoni.tsx
+
 "use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -7,12 +7,18 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { testimonials, Testimonial } from "@/data/testi";
+import { useTranslations } from "next-intl";
 
 export default function Testimonials() {
+  const t = useTranslations("testimonials");
+
   return (
-    <section className="bg-card py-16 transition-colors duration-300"> {/* ✨ Changed */}
+    <section className="bg-card py-16 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 text-center">
-        <h2 className="text-3xl font-bold mb-12 text-foreground">Apa Kata Mereka?</h2> {/* ✨ Changed */}
+        <h2 className="text-3xl font-bold mb-12 text-foreground">
+          {t("title")}
+        </h2>
+
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
           spaceBetween={30}
@@ -31,15 +37,11 @@ export default function Testimonials() {
             1024: { slidesPerView: 3 },
           }}
         >
-          {testimonials.map((t: Testimonial, i: number) => (
+          {testimonials.map((tItem: Testimonial, i: number) => (
             <SwiperSlide key={i}>
-              {/* Card container with updated theme colors */}
-              <div className="bg-background rounded-2xl shadow-lg p-6 flex flex-col items-center justify-between min-h-[280px] border border-border"> {/* ✨ Changed */}
-                
-                {/* Bagian atas: Icon & Teks */}
+              <div className="bg-background rounded-2xl shadow-lg p-6 flex flex-col items-center justify-between min-h-[280px] border border-border">
                 <div className="flex flex-col items-center flex-1">
-                  {/* Avatar Icon */}
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 border-2 border-primary"> {/* ✨ Changed */}
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 border-2 border-primary">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -55,26 +57,26 @@ export default function Testimonials() {
                       />
                     </svg>
                   </div>
-                  {/* Testimonial Text */}
-                  <p className="text-foreground/80 italic mb-4 text-center">&ldquo;{t.text}&rdquo;</p> {/* ✨ Changed */}
+
+                  <p className="text-foreground/80 italic mb-4 text-center">
+                    &ldquo;{tItem.text}&rdquo;
+                  </p>
                 </div>
-                
-                {/* Bagian bawah: Nama & Peran */}
+
                 <div className="mt-auto">
-                  <h3 className="font-semibold text-foreground">{t.name}</h3> {/* ✨ Changed */}
-                  <span className="text-sm text-foreground/80">{t.role}</span> {/* ✨ Changed */}
+                  <h3 className="font-semibold text-foreground">{tItem.name}</h3>
+                  <span className="text-sm text-foreground/80">{tItem.role}</span>
                 </div>
               </div>
             </SwiperSlide>
           ))}
         </Swiper>
 
-        {/* Custom Navigation Buttons */}
         <div className="flex justify-center gap-6 mt-6">
-          <button className="custom-prev w-12 h-12 flex items-center justify-center rounded-full bg-primary text-black shadow-md hover:brightness-90 transition"> {/* ✨ Changed */}
+          <button className="custom-prev w-12 h-12 flex items-center justify-center rounded-full bg-primary text-black shadow-md hover:brightness-90 transition">
             ←
           </button>
-          <button className="custom-next w-12 h-12 flex items-center justify-center rounded-full bg-primary text-black shadow-md hover:brightness-90 transition"> {/* ✨ Changed */}
+          <button className="custom-next w-12 h-12 flex items-center justify-center rounded-full bg-primary text-black shadow-md hover:brightness-90 transition">
             →
           </button>
         </div>
@@ -82,3 +84,4 @@ export default function Testimonials() {
     </section>
   );
 }
+

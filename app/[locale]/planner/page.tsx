@@ -2,12 +2,13 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl"; // Import hook
 
 import { useTheme } from "@/components/ThemeProvider";
 import ComparisonSection from "@/components/ComparisonSection";
-import PlannerForm from "./PlannerForm"; // Import dengan jalur relatif
+import PlannerForm from "./PlannerForm";
 
-// --- Helper Icons (Tetap di sini) ---
+// --- Helper Icons (Tetap sama) ---
 const CheckIcon = ({ className = "" }: { className?: string }) => (
   <svg
     className={`w-6 h-6 flex-shrink-0 text-primary ${className}`}
@@ -27,40 +28,27 @@ const CheckIcon = ({ className = "" }: { className?: string }) => (
 
 // --- Main Planner Page Component ---
 export default function PlannerPage() {
+  const t = useTranslations("PlannerPage"); // Inisialisasi hook
   const { theme } = useTheme();
-  const isExclusive = theme === "exclusive";
-
-  const content = {
-    regular: {
-      title: "Konsultasi Trip Planner",
-      description: "Biarkan tim kami membantu menyusun rencana perjalanan sesuai budget, minat, dan gaya liburan Anda. Solusi tepat untuk perjalanan yang efisien dan berkesan.",
-      features: ["Itinerary yang dipersonalisasi", "Rekomendasi akomodasi & aktivitas", "Optimisasi budget perjalanan"],
-      price: "Rp 250.000 / paket",
-      terms: ["1x revisi itinerary", "Durasi layanan konsultasi: 7 hari", "Tidak termasuk biaya tiket, hotel, atau aktivitas"],
-      ctaText: "Pesan Konsultasi",
-      image: "/hero-1.jpg",
-    },
-    exclusive: {
-      title: "Exclusive Trip Planner Consultation",
-      description: "Nikmati pengalaman perjalanan premium dengan itinerary yang dibuat khusus oleh senior travel designer kami. Dapatkan akses eksklusif dan layanan prioritas sepanjang perjalanan.",
-      features: ["Revisi itinerary tanpa batas", "End-to-end booking (penerbangan, akomodasi premium, transportasi)", "Dedicated senior travel designer", "Layanan concierge 24/7 selama perjalanan", "Akses eksklusif & pengalaman lokal unik"],
-      price: "Rp 500.000 / paket",
-      terms: ["Durasi layanan konsultasi: 30 hari", "Layanan premium & prioritas", "Tidak termasuk biaya tiket, hotel, atau aktivitas (dibayar terpisah)"],
-      ctaText: "Pesan Konsultasi Exclusive",
-      image: "/hero-3.jpg",
-    },
-  };
-
-  const currentContent = isExclusive ? content.exclusive : content.regular;
   const [showForm, setShowForm] = useState(false);
 
-  const workflow = [
-    { title: "Isi Formulir", description: "Ceritakan kebutuhan perjalanan Anda melalui formulir singkat kami." },
-    { title: "Diskusi Awal", description: "Tim planner kami akan menghubungi Anda untuk diskusi lebih lanjut." },
-    { title: "Penyusunan Itinerary", description: "Kami akan menyusun draf itinerary berdasarkan hasil diskusi." },
-    { title: "Revisi & Finalisasi", description: "Anda dapat memberikan masukan untuk penyempurnaan itinerary." },
-    { title: "Selamat Berlibur!", description: "Itinerary final di tangan Anda, selamat menikmati perjalanan!" },
-  ];
+  // Tentukan kunci konten berdasarkan tema
+  const themeKey = theme === "exclusive" ? "exclusive" : "regular";
+
+  // Ambil data dari file JSON secara dinamis
+  const currentContent = {
+    title: t(`${themeKey}.title`),
+    description: t(`${themeKey}.description`),
+    price: t(`${themeKey}.price`),
+    ctaText: t(`${themeKey}.ctaText`),
+    image: themeKey === "exclusive" ? "/hero-3.jpg" : "/hero-1.jpg",
+  };
+
+  // Ambil keys untuk mapping list (lebih dinamis)
+  // `t.raw` digunakan untuk mengambil object dari JSON
+  const featureKeys = Object.keys(t.raw(`${themeKey}.features`));
+  const termKeys = Object.keys(t.raw(`${themeKey}.terms`));
+  const workflowKeys = Object.keys(t.raw('workflow'));
 
   const handleCtaClick = () => {
     setShowForm(true);
@@ -73,7 +61,6 @@ export default function PlannerPage() {
   return (
     <main className="bg-background text-foreground transition-colors duration-300">
       <section className="container mx-auto px-4 py-16 space-y-20">
-
         {!showForm ? (
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="text-left">
@@ -86,10 +73,12 @@ export default function PlannerPage() {
 
               <div className="bg-card p-6 rounded-lg shadow-md mb-8 border border-border">
                 <ul className="space-y-4">
-                  {currentContent.features.map((feature, index) => (
-                    <li key={index} className="flex items-center">
+                  {featureKeys.map((key) => (
+                    <li key={key} className="flex items-center">
                       <CheckIcon className="mr-3" />
-                      <span className="font-medium">{feature}</span>
+                      <span className="font-medium">
+                        {t(`${themeKey}.features.${key}` as any)}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -100,13 +89,14 @@ export default function PlannerPage() {
                 </p>
               </div>
               <div className="mb-8">
-                <h2 className="font-semibold mb-3">
-                  Ketentuan:
-                </h2>
+                <h2 className="font-semibold mb-3">{t("termsTitle")}</h2>
                 <ul className="space-y-2">
-                  {currentContent.terms.map((term, index) => (
-                    <li key={index} className="text-foreground/70 text-sm list-disc list-inside">
-                      {term}
+                  {termKeys.map((key) => (
+                    <li
+                      key={key}
+                      className="text-foreground/70 text-sm list-disc list-inside"
+                    >
+                      {t(`${themeKey}.terms.${key}` as any)}
                     </li>
                   ))}
                 </ul>
@@ -136,7 +126,7 @@ export default function PlannerPage() {
               onClick={handleBackToInfo}
               className="w-full text-center mt-6 text-sm text-gray-600 hover:underline"
             >
-              ← Kembali ke Detail Layanan
+              {t("backButton")}
             </button>
           </>
         )}
@@ -145,13 +135,16 @@ export default function PlannerPage() {
           <>
             <section className="bg-background rounded-lg shadow-xl p-8 md:p-12 border border-border transition-colors duration-300">
               <h2 className="text-3xl font-bold text-foreground text-center mb-10">
-                Cara Kerja Layanan Konsultasi
+                {t("workflowTitle")}
               </h2>
               <div className="relative max-w-5xl mx-auto">
                 <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-foreground/20 transform -translate-x-1/2"></div>
                 <div className="space-y-8">
-                  {workflow.map((step, index) => (
-                    <div key={index} className="relative grid grid-cols-2 gap-12 items-center">
+                  {workflowKeys.map((key, index) => (
+                    <div
+                      key={key}
+                      className="relative grid grid-cols-2 gap-12 items-center"
+                    >
                       <div className="absolute left-1/2 transform -translate-x-1/2 bg-primary text-black w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-md z-10">
                         {index + 1}
                       </div>
@@ -159,9 +152,11 @@ export default function PlannerPage() {
                         <>
                           <div className="pr-12 text-right">
                             <h3 className="text-xl font-semibold text-primary mb-2">
-                              {step.title}
+                              {t(`workflow.${key}.title` as any)}
                             </h3>
-                            <p className="text-foreground/70">{step.description}</p>
+                            <p className="text-foreground/70">
+                              {t(`workflow.${key}.description` as any)}
+                            </p>
                           </div>
                           <div></div>
                         </>
@@ -170,9 +165,11 @@ export default function PlannerPage() {
                           <div></div>
                           <div className="pl-12 text-left">
                             <h3 className="text-xl font-semibold text-primary mb-2">
-                              {step.title}
+                              {t(`workflow.${key}.title` as any)}
                             </h3>
-                            <p className="text-foreground/70">{step.description}</p>
+                            <p className="text-foreground/70">
+                              {t(`workflow.${key}.description` as any)}
+                            </p>
                           </div>
                         </>
                       )}

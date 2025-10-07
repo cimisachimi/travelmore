@@ -7,24 +7,28 @@ import { useTranslations, useLocale } from "next-intl";
 import { Link, usePathname } from '@/i18n/navigation';
 
 // 🔘 Theme Switcher
+// 🔘 Theme Switcher
 const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
+  const t = useTranslations("Navbar"); // ✅ tambahkan ini
 
   return (
     <div className="flex items-center p-1 rounded-full bg-gray-200 dark:bg-gray-700">
       <button
         onClick={() => setTheme("regular")}
-        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${theme === "regular" ? "bg-white text-black" : "text-gray-500"
-          }`}
+        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${
+          theme === "regular" ? "bg-white text-black" : "text-gray-500"
+        }`}
       >
-        Regular
+        {t("regular")}
       </button>
       <button
         onClick={() => setTheme("exclusive")}
-        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${theme === "exclusive" ? "bg-primary text-black" : "text-gray-500"
-          }`}
+        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${
+          theme === "exclusive" ? "bg-primary text-black" : "text-gray-500"
+        }`}
       >
-        Exclusive
+        {t("exclusive")}
       </button>
     </div>
   );
@@ -185,9 +189,9 @@ export default function Navbar() {
 
             {/* 🍔 Mobile Hamburger */}
             <button
-              className="md:hidden focus:outline-none"
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Toggle Menu"
+               className="md:hidden focus:outline-none"
+               onClick={() => setMenuOpen(!menuOpen)}
+              aria-label={t("toggleMenu")} // ✅ tambahkan ini
             >
               {menuOpen ? (
                 <svg

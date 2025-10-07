@@ -1,17 +1,24 @@
+
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { blogs } from "@/data/blog";
+import { useTranslations } from "next-intl";
 
 export default function BlogSection() {
+  const t = useTranslations("blogSection");
+
   return (
     <section className="bg-card py-20">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground">Artikel & Blog</h2>
+          <h2 className="text-4xl font-bold text-foreground">
+            {t("title")}
+          </h2>
           <p className="text-foreground/80 mt-3 max-w-2xl mx-auto">
-            Inspirasi perjalanan, tips liburan, dan cerita seru dari Travelmore.
+            {t("subtitle")}
           </p>
         </div>
 
@@ -40,7 +47,9 @@ export default function BlogSection() {
                   {blog.title}
                 </h3>
                 <p className="text-foreground/80 mt-3 flex-1">{blog.excerpt}</p>
-                <span className="mt-4 text-sm font-medium text-foreground">{blog.author}</span>
+                <span className="mt-4 text-sm font-medium text-foreground">
+                  {blog.author}
+                </span>
               </div>
             </Link>
           ))}
@@ -52,7 +61,7 @@ export default function BlogSection() {
             href="/blog"
             className="inline-flex items-center px-8 py-3 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary hover:text-black transition-colors"
           >
-            Lihat Semua Artikel
+            {t("button")}
             <svg
               className="ml-2 w-5 h-5"
               fill="none"
@@ -72,3 +81,4 @@ export default function BlogSection() {
     </section>
   );
 }
+

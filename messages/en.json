@@ -1,3 +1,5 @@
+
+
 {
   "Navbar": {
     "home": "Home",
@@ -6,11 +8,555 @@
     "carRental": "Car Rental",
     "activities": "Activities",
     "more": "More Menu",
-    "contact": "Contact Us"
+    "gallery": "Gallery",
+    "about": "About Us",
+    "regular": "Regular",
+    "exclusive": "Exclusive",
+    "toggleMenu": "Toggle Menu"
   },
-  "PersonalizedTripPlanner": {
-    "title": "Plan Your Dream Trip in Jogja",
-    "subtitle": "Forget rigid tour packages. We design every detail of the trip just for you.",
-    "cta": "Start Free Consultation"
+ "PersonalizedTripPlanner": {
+    "regularTitle": "Plan Your Dream Trip in Yogyakarta",
+    "exclusiveTitle": "Design Your Exclusive Journey",
+    "regularDesc": "Forget rigid tour packages. We design every travel detail tailored to you — your style, your budget, your experience.",
+    "exclusiveDesc": "From VIP access to premium culinary experiences, we craft every detail to deliver an unforgettable luxury trip in Yogyakarta.",
+    "customizeBasedOn": "We customize based on:",
+    "interests": "Interests & Hobbies",
+    "budget": "Travel Budget",
+    "groupSize": "Number of Travelers",
+    "tripStyle": "Travel Style",
+    "extraServicesTitle": "Additional Services:",
+    "extraServicesDesc": "We also offer <strong>City Tours</strong> for maximum flexibility during your stay in Jogja.",
+    "regularButton": "Start Consultation",
+    "exclusiveButton": "Start Exclusive Consultation",
+    "heroAlt": "Personalized Travel Planning in Yogyakarta"
+  },
+
+  
+  "WhyChooseUs": {
+    "title": "Why Choose Us?",
+    "heroAlt": "Happy traveler in Yogyakarta",
+    "guideTitle": "Expert Local Guides",
+    "guideDesc": "Our guides are local residents who will give you an authentic and memorable experience.",
+    "flexibleTitle": "Flexible Packages",
+    "flexibleDesc": "Customize your trip according to your interests and budget with our adaptable plans.",
+    "priceTitle": "Affordable Prices",
+    "priceDesc": "We offer competitive prices without compromising on quality.",
+    "supportTitle": "24/7 Support",
+    "supportDesc": "Our team is always ready to assist you, ensuring a smooth and worry-free journey."
+  },
+
+  
+  "ServiceHighlights": {
+    "title": "Our Service Highlights",
+    "subtitle": "We offer a range of services to make your trip unforgettable.",
+
+    "packageTitle": "Complete Package",
+    "packageFeatures": "Travel + Hotel/Homestay + Activities",
+    "packageDesc": "Perfect for those who want a stress-free vacation with everything arranged from start to finish.",
+
+    "tourTitle": "Travel Only",
+    "tourFeatures": "Guided Tours, Cultural Experiences, Day Trips",
+    "tourDesc": "Already have your stay covered? Join our expertly guided local tours and immerse yourself in the culture.",
+
+    "cityTitle": "City Tour",
+    "cityFeatures": "With or Without Driver",
+    "cityDesc": "Enjoy the flexibility to explore Yogyakarta at your own pace with our reliable and well-maintained vehicles."
+  },
+
+  
+  "HeroSlider": {
+    "slides": [
+      {
+        "subtitle": "Forget Rigid & Boring Itineraries",
+        "title": "Design Your Dream Adventure in Yogyakarta"
+      },
+      {
+        "subtitle": "Tailored to Your Interests, Budget, and Style",
+        "title": "From Local Culinary to Hidden Adventures"
+      },
+      {
+        "subtitle": "Guided by Local Experts",
+        "title": "Stress-Free Journeys Full of Unforgettable Moments"
+      }
+    ],
+    "cta": "Start Consultation"
+  },
+
+  
+  "PopularPackages": {
+    "title": "Explore Our Popular Packages",
+    "subtitle": "Curated itineraries for the best experiences in Yogyakarta.",
+    "packages": [
+      {
+        "id": "borobudur-prambanan",
+        "title": "2 Days: Borobudur & Prambanan",
+        "description": "Witness the majestic sunrise at Borobudur and explore the grand Prambanan Temple complex."
+      },
+      {
+        "id": "yogyakarta-adventure",
+        "title": "3 Days: Yogyakarta Adventure",
+        "description": "Feel the thrill of Jomblang Cave, Timang Beach, and Mount Merapi’s slopes."
+      },
+      {
+        "id": "cultural-immersion",
+        "title": "4 Days: Cultural Immersion",
+        "description": "Immerse yourself in Javanese culture with visits to the Palace, Taman Sari, and a batik workshop."
+      }
+    ],
+    "cta": "View Details →"
+  },
+  
+  "HowItWorks": {
+    "title": "How It Works",
+    "subtitle": "A simple process to plan your dream trip.",
+    "steps": [
+      {
+        "title": "Choose a Package",
+        "description": "Select the travel package or service that best suits your preferences."
+      },
+      {
+        "title": "Fill in Your Details",
+        "description": "Provide your name and contact number for the next step."
+      },
+      {
+        "title": "Pay the Deposit",
+        "description": "Make a down payment to secure your booking."
+      },
+      {
+        "title": "Service Preparation",
+        "description": "Our team will carefully prepare all your travel arrangements."
+      },
+      {
+        "title": "Final Confirmation",
+        "description": "We’ll contact you for final confirmation and important trip details."
+      },
+      {
+        "title": "Enjoy Your Trip",
+        "description": "Enjoy your journey! We’ll make sure everything goes smoothly."
+      }
+    ]
+  },
+
+  
+  "otherServices": {
+    "title": "Explore Our Other Services",
+    "subtitle": "Everything you need for a complete and flexible travel experience.",
+    "packages": {
+      "title": "Tour Packages",
+      "description": "Choose from our curated travel packages for a hassle-free holiday. We've combined the best destinations and activities.",
+      "button": "View Details"
+    },
+    "carRental": {
+      "title": "Car Rental",
+      "description": "Explore Yogyakarta freely with our well-maintained fleet, available with or without a driver.",
+      "button": "View Details"
+    },
+    "activities": {
+      "title": "Daily Activities",
+      "description": "Already have plans? Book daily activities or tours separately, from cooking classes to volcano jeep adventures.",
+      "button": "View Details"
+    }
+  },
+  "cta": {
+  "title": "Ready for Your Next Adventure?",
+  "subtitle": "Let our experts help you design the perfect Yogyakarta itinerary.",
+  "button": "Plan Your Trip With Us",
+  "contactText": "Or contact us directly via"
+},
+"blogSection": {
+  "title": "Articles & Blog",
+  "subtitle": "Travel inspirations, holiday tips, and exciting stories from Travelmore.",
+  "button": "View All Articles"
+},
+"testimonials": {
+  "title": "What They Say About Us"
+},
+"footer": {
+  "description": "Your trusted partner for unforgettable trips and reliable car rentals. Explore the world with ease and comfort!",
+  "quickLinks": {
+    "title": "Quick Links",
+    "destinations": "Destinations",
+    "carRental": "Car Rental",
+    "about": "About Us",
+    "contact": "Contact"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "address": "Jl. Magelang - Yogyakarta No.71, Sleman, Yogyakarta 55285, Indonesia",
+    "phone": "Phone:",
+    "email": "Email:"
+  },
+  "copyright": "All rights reserved."
+},
+"comparison": {
+  "title": "Service Comparison",
+  "columns": {
+    "feature": "Feature",
+    "regular": "Regular",
+    "exclusive": "Exclusive"
+  },
+  "features": {
+    "personalizedItinerary": "Personalized Itinerary",
+    "revision": "Itinerary Revision",
+    "accommodationBooking": "Accommodation Booking",
+    "transportBooking": "Ticket & Transport Booking",
+    "travelDesigner": "Dedicated Travel Designer",
+    "support247": "24/7 Trip Support"
+  },
+  "regular": {
+    "revision": "1 Session"
+  },
+  "exclusive": {
+    "revision": "Unlimited"
   }
+},
+
+
+  "about": {
+    "title": "About Us",
+    "subtitle": "We are dedicated to creating the best travel experiences, blending comfort, adventure, and local authenticity.",
+
+    "section": {
+      "about": {
+        "label": "About Travelmore",
+        "regularTitle": "Discover the World with Travelmore",
+        "exclusiveTitle": "Experience Premium Adventures with Travelmore",
+        "description": "At Travelmore, we combine professional service with a passion for exploration. Whether you’re traveling locally or abroad, our experienced team is ready to plan your journey with care and creativity.",
+        "contactButton": "Contact Us"
+      },
+      "skills": {
+        "label": "Our Expertise",
+        "title": "Why Choose Travelmore",
+        "description": "Our team brings together technology, creativity, and experience to deliver an unforgettable travel experience.",
+        "itinerary": "Trip Planning",
+        "localKnowledge": "Local Knowledge",
+        "customerService": "Customer Service"
+      }
+    },
+
+    "stats": {
+      "experience": "Years of Experience",
+      "trips": "Trips Completed",
+      "clients": "Happy Clients",
+      "support": "Customer Support"
+    },
+
+    "about_cta": {
+      "title": "We’re Ready to Take You to Your Dream Destination",
+      "subtitle": "Let us handle the details — all you need to do is enjoy every moment.",
+      "button": "Start Planning"
+    }
+  },
+
+  "activities": {
+    "title": "Daily Activities",
+    "subtitle": "Book separate activities or day tours, from cooking classes to volcano jeeps.",
+
+    "filters": {
+      "title": "Filters",
+      "price": "Price Range",
+      "upTo": "Up to",
+      "categories": "Categories"
+    },
+
+    "empty": {
+      "message": "No activities match your filters."
+    },
+
+    "buttons": {
+      "details": "View Details →"
+    }
+  },
+  
+  "activityDetail": {
+    "notFound": "Activity not found.",
+    "location": "Location",
+    "duration": "Duration",
+    "overview": "Overview",
+    "highlights": "Highlights",
+    "includes": "Included",
+    "excludes": "Not Included",
+    "faqTitle": "Frequently Asked Questions (FAQ)",
+    "locationMap": "Location",
+    "bookingTitle": "Book This Activity",
+    "startingFrom": "Starting from",
+    "bookNow": "Book Now",
+    "bookingNote": "You will be redirected to the booking form to complete your details."
+  },
+  
+  "blog": {
+    "title": "Articles & Blog",
+    "subtitle": "Travel inspirations, vacation tips, and exciting stories from Travelmore.",
+    "by": "by"
+  },
+  
+  "blogDetail": {
+    "back": "Back to Blog",
+    "notFound": "Article not found.",
+    "by": "by"
+  },
+  
+ 
+"packages": {
+"tabs": {
+"overview": "Overview",
+"itinerary": "Itinerary",
+"cost": "Cost",
+"faqs": "FAQs",
+"map": "Map"
+},
+"trip": {
+"about": "About This Trip",
+"days": "Days",
+"info": "Trip Info",
+"from": "From",
+"adult": "Adult",
+"child": "Child"
+},
+"cost": {
+"included": "What's Included",
+"excluded": "What's Not Included"
+},
+"booking": {
+"checkAvailability": "CHECK AVAILABILITY",
+"needHelp": "Need help with booking?",
+"sendMessage": "Send Us a Message"
+},
+"gallery": {
+"noImage": "No Image Available"
+},
+"buttons": {
+"back": "← Back to All Packages"
+},
+"status": {
+"notFound": "Package not found."
 }
+},
+
+  "PackagesPage": {
+    "title": "Explore Our Tour Packages",
+    "subtitle": "Find the perfect adventure in Yogyakarta, curated just for you. Adjust the filters to match your preferences.",
+    "filters": "Filters",
+    "priceRange": "Price Range",
+    "upTo": "Up to",
+    "categories": "Categories",
+    "showFilters": "Show Filters",
+    "closeFilters": "Close Filters",
+    "days": "Days",
+    "viewDetails": "View Details",
+    "noResults": "No packages match your filters."
+  },
+  
+  "PlannerPage": {
+    "regular": {
+      "title": "Trip Planner Consultation",
+      "description": "Let our team help arrange a travel plan according to your budget, interests, and vacation style. The right solution for an efficient and memorable trip.",
+      "features": {
+        "f1": "Personalized itinerary",
+        "f2": "Accommodation & activity recommendations",
+        "f3": "Travel budget optimization"
+      },
+      "price": "IDR 250,000 / package",
+      "terms": {
+        "t1": "1x itinerary revision",
+        "t2": "Consultation service duration: 7 days",
+        "t3": "Excludes costs for tickets, hotels, or activities"
+      },
+      "ctaText": "Book Consultation"
+    },
+    "exclusive": {
+      "title": "Exclusive Trip Planner Consultation",
+      "description": "Enjoy a premium travel experience with a custom-made itinerary by our senior travel designer. Get exclusive access and priority service throughout your journey.",
+      "features": {
+        "f1": "Unlimited itinerary revisions",
+        "f2": "End-to-end booking (flights, premium accommodation, transport)",
+        "f3": "Dedicated senior travel designer",
+        "f4": "24/7 concierge service during the trip",
+        "f5": "Exclusive access & unique local experiences"
+      },
+      "price": "IDR 500,000 / package",
+      "terms": {
+        "t1": "Consultation service duration: 30 days",
+        "t2": "Premium & priority service",
+        "t3": "Excludes costs for tickets, hotels, or activities (paid separately)"
+      },
+      "ctaText": "Book Exclusive Consultation"
+    },
+    "termsTitle": "Terms:",
+    "backButton": "← Back to Service Details",
+    "workflowTitle": "How Our Consultation Service Works",
+    "workflow": {
+      "s1": {
+        "title": "Fill the Form",
+        "description": "Tell us about your travel needs through our brief form."
+      },
+      "s2": {
+        "title": "Initial Discussion",
+        "description": "Our planner team will contact you for further discussion."
+      },
+      "s3": {
+        "title": "Itinerary Crafting",
+        "description": "We will draft an itinerary based on our discussion."
+      },
+      "s4": {
+        "title": "Revision & Finalization",
+        "description": "You can provide feedback to refine the itinerary."
+      },
+      "s5": {
+        "title": "Enjoy Your Holiday!",
+        "description": "With the final itinerary in hand, enjoy your trip!"
+      }
+    }
+  },
+  "PlannerForm": {
+    "title": "Trip Planner",
+    "stepProgress": "Step {step} of {totalSteps}",
+    "backButton": "← Back",
+    "continueButton": "Continue",
+    "submitButton": "Submit & Get Itinerary Recommendation",
+    "selectPlaceholder": "Select an option",
+    "submissionAlert": "Your consultation request has been sent!",
+    "step1_title": "Choose Your Type",
+    "step1_personal_title": "Personal",
+    "step1_personal_desc": "For individuals or small groups",
+    "step1_company_title": "Company",
+    "step1_company_desc": "For company events or trips",
+    "step2_title": "Contact Information",
+    "step2_fullName": "Full Name",
+    "step2_email": "Email",
+    "step2_whatsapp": "WhatsApp Number",
+    "step2_companyName": "Company Name",
+    "step2_brandName": "Brand Name (optional)",
+    "step3_title": "Your Trip Type",
+    "step3_domestic_title": "Domestic",
+    "step3_domestic_desc": "Within the country",
+    "step3_foreign_title": "Foreign",
+    "step3_foreign_desc": "Outside the country",
+    "step4_title": "Travel Destination",
+    "step4_province": "Province",
+    "step4_city": "City/Regency",
+    "step4_address": "Address",
+    "step4_postalCode": "Postal Code",
+    "step4_country": "Country",
+    "step4_cityState": "City/State/Province",
+    "step5_title": "Trip Type & Participants",
+    "step5_travelType": "Trip Type",
+    "step5_paxTitle": "Number of Participants (By Age Group)",
+    "step5_paxKids": "Children (0-12)",
+    "step5_paxTeens": "Teens (13-17)",
+    "step5_paxAdults": "Adults (18-40)",
+    "step5_paxSeniors": "Seniors (40+)",
+    "step6_title": "Time & Duration",
+    "step6_departureDate": "Departure Date",
+    "step6_duration": "Trip Duration",
+    "step6_duration_placeholder": "e.g., 3 Days 2 Nights",
+    "step7_title": "Budget Options",
+    "step7_addonTitle": "Add-ons (Documentation)",
+    "step8_title": "Priorities & Travel Style",
+    "step8_budgetPriorityTitle": "Budget Priority",
+    "step8_budgetPriorityDesc": "Please set your priorities using the drag & drop feature.",
+    "step8_dragDropPlaceholder": "Drag & Drop Feature (Placeholder)",
+    "step8_travelStyleTitle": "Travel Style",
+    "step8_personalityTitle": "Your Personality",
+    "step9_title": "Additional Preferences",
+    "step9_mustVisit": "Must-Visit Places",
+    "step9_mustVisit_placeholder": "e.g., Borobudur, Malioboro",
+    "step9_attractionPreference": "Attraction Preference",
+    "step9_attractionPreference_placeholder": "e.g., Museum, Beach, Historical Site",
+    "step9_foodPreference": "Food Preference",
+    "step9_accommodationPreference": "Accommodation Preference",
+    "step9_accommodationPreference_placeholder": "e.g., Glamping in nature, Villa on the beach",
+    "step10_title": "Consent & Additional Info",
+    "step10_consent": "I agree to receive itinerary recommendations and prices via WhatsApp.",
+    "step10_frequentTraveler": "Are you a frequent traveler?",
+    "options": {
+      "travelTypes": { "t1": "Family Trip", "t2": "Couple/Honeymoon", "t3": "Solo Traveler", "t4": "Group" },
+      "budgetPacks": {
+        "Backpacker": { "title": "Backpacker Pack", "description": "Perfect for those who love exploring simply, efficiently, and on a budget. All basic travel needs are met without breaking the bank. The focus is on experience, not luxury." },
+        "Traveler": { "title": "Traveler Pack", "description": "The most balanced choice for those who want comfort without hassle, while staying within budget. Activities, accommodation, and experiences are designed for travelers who want to fully enjoy." },
+        "Exclusive": { "title": "Exclusive Pack", "description": "For those who want a holiday with the best quality and uncompromising service. Every detail is premium, from transport and accommodation to exclusive experiences that not everyone can have." }
+      },
+      "addons": { "a1": "Photographer", "a2": "Videographer", "a3": "Drone" },
+      "travelStyles": { "s1": "Nature & Adventure", "s2": "Culture & Heritage", "s3": "Culinary & Lifestyle", "s4": "Wellness & Healing", "s5": "City & Urban Life", "s6": "Photography & Instagrammable", "s7": "Religious/Spiritual Travel", "s8": "Local Village & Green Travel", "s9": "Festival & Events", "s10": "Sports & Outdoor" },
+      "travelPersonalities": {
+        "p1": { "value": "The Explorer", "label": "The Explorer" },
+        "p2": { "value": "The Culture Seeker", "label": "The Culture Seeker" },
+        "p3": { "value": "Food Lovers", "label": "Food Lovers" },
+        "p4": { "value": "Chill and Heal", "label": "Chill and Heal" },
+        "p5": { "value": "The Social", "label": "The Social" }
+      },
+      "foodPreferences": { "f1": "Halal", "f2": "Vegan", "f3": "Spicy", "f4": "Local", "f5": "Western" },
+      "travelerRoutines": {
+        "r1": { "value": "Casual Traveler", "label": "Casual Traveler (<3x a year)" },
+        "r2": { "value": "Frequent Traveler", "label": "Frequent Traveler (>3x a year)" }
+      }
+    }
+  },
+  
+  "ServicesPage": {
+    "header_title": "Our Services",
+    "header_subtitle": "From private travel consultations to ready-made packages, we provide everything you need for an unforgettable adventure in Yogyakarta.",
+    "planner": {
+      "regular_title": "Trip Planner Consultation",
+      "regular_desc": "Let our local experts design a personalized itinerary based on your budget, interests, and travel style.",
+      "regular_f1": "Personalized itinerary",
+      "regular_f2": "Accommodation & activity recommendations",
+      "regular_f3": "Travel budget optimization",
+      "regular_cta": "Start Consultation",
+      "exclusive_title": "Exclusive Trip Planner",
+      "exclusive_desc": "Enjoy a premium service with a custom-designed itinerary by our senior travel designers for an unparalleled experience.",
+      "exclusive_f1": "Unlimited itinerary revisions",
+      "exclusive_f2": "End-to-end premium booking",
+      "exclusive_f3": "24/7 concierge support",
+      "exclusive_cta": "Start Exclusive Consultation"
+    },
+    "card_cta": "View Details",
+    "otherServices": {
+      "packages_title": "Tour Packages",
+      "packages_desc": "Choose from our curated tour packages for a hassle-free vacation. We've combined the best destinations and activities.",
+      "rental_title": "Vehicle Rental",
+      "rental_desc": "Explore Yogyakarta freely with our well-maintained fleet, available with or without a driver.",
+      "activities_title": "Daily Activities",
+      "activities_desc": "Already have plans? Book daily activities or tours separately, from cooking classes to volcano jeeps."
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
