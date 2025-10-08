@@ -1,3 +1,4 @@
+// app/[locale]/car-rental/page.tsx
 "use client";
 
 import React from "react";

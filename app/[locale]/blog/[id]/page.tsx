@@ -1,8 +1,9 @@
+// app/[locale]/blog/[id]/page.tsx
 import { blogs } from "@/data/blog";
 import Image from "next/image";
 import Link from "next/link";
 import { marked } from "marked";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -15,7 +16,9 @@ export async function generateStaticParams() {
 export default async function BlogDetail(props: Props) {
   const params = await props.params;
   const blog = blogs.find((b) => b.id === params.id);
-  const t = useTranslations("blogDetail");
+
+  // ✅ gunakan getTranslations, bukan useTranslations
+  const t = await getTranslations("blogDetail");
 
   if (!blog) {
     return (
