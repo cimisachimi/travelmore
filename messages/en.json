@@ -423,6 +423,28 @@
     }
   },
   "PlannerForm": {
+    "sidebar": {
+      "planYourTrip": "PLAN YOUR TRIP",
+      "title": "Tell us your travel preferences",
+      "description": "Our multi-step form makes it easy to provide all the necessary details for us to craft your perfect trip.",
+      "needHelp": "Need Help?",
+      "contactUs": "Contact us at",
+      "summary": {
+        "summaryTitle": "SUMMARY",
+        "reviewTitle": "Review Your Choices",
+        "reviewDescription": "Please review your selections below before submitting.",
+        "contactPerson": "Contact Person",
+        "tripType": "Trip Type",
+        "destination": "Destination",
+        "participants": "Participants",
+        "participantsValue": "{adults} Adults, {kids} Kids, {teens} Teens, {seniors} Seniors",
+        "departure": "Departure",
+        "duration": "Duration",
+        "budgetPack": "Budget Pack",
+        "addons": "Add-ons",
+        "travelStyle": "Travel Style"
+      }
+    },
     "title": "Trip Planner",
     "stepProgress": "Step {step} of {totalSteps}",
     "backButton": "← Back",
@@ -522,26 +544,11 @@
         "s10": "Sports & Outdoor"
       },
       "travelPersonalities": {
-        "p1": {
-          "value": "The Explorer",
-          "label": "The Explorer"
-        },
-        "p2": {
-          "value": "The Culture Seeker",
-          "label": "The Culture Seeker"
-        },
-        "p3": {
-          "value": "Food Lovers",
-          "label": "Food Lovers"
-        },
-        "p4": {
-          "value": "Chill and Heal",
-          "label": "Chill and Heal"
-        },
-        "p5": {
-          "value": "The Social",
-          "label": "The Social"
-        }
+        "p1": { "value": "The Explorer", "label": "The Explorer" },
+        "p2": { "value": "The Culture Seeker", "label": "The Culture Seeker" },
+        "p3": { "value": "Food Lovers", "label": "Food Lovers" },
+        "p4": { "value": "Chill and Heal", "label": "Chill and Heal" },
+        "p5": { "value": "The Social", "label": "The Social" }
       },
       "foodPreferences": {
         "f1": "Halal",
@@ -551,14 +558,8 @@
         "f5": "Western"
       },
       "travelerRoutines": {
-        "r1": {
-          "value": "Casual Traveler",
-          "label": "Casual Traveler (<3x a year)"
-        },
-        "r2": {
-          "value": "Frequent Traveler",
-          "label": "Frequent Traveler (>3x a year)"
-        }
+        "r1": { "value": "Casual Traveler", "label": "Casual Traveler (<3x a year)" },
+        "r2": { "value": "Frequent Traveler", "label": "Frequent Traveler (>3x a year)" }
       }
     }
   },
