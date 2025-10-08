@@ -37,7 +37,7 @@ interface IFormData {
     travelType: string;
 }
 
-// ✅ DIUBAH: Komponen Sidebar sekarang menerima `t` sebagai prop
+// --- Komponen Sidebar ---
 const FormSidebar = ({ step, formData, t }: { step: number; formData: IFormData; t: any }) => {
     const SummaryItem = ({ label, value }: { label: string; value: string | string[] | undefined | null }) => {
         if (!value || (Array.isArray(value) && value.length === 0)) return null;
@@ -55,7 +55,6 @@ const FormSidebar = ({ step, formData, t }: { step: number; formData: IFormData;
             {step < 10 ? (
                 <>
                     <div className="flex-grow">
-                        {/* ✅ DIUBAH: Menggunakan `t` */}
                         <p className="text-sm font-semibold text-primary uppercase tracking-wider">{t("sidebar.planYourTrip")}</p>
                         <h2 className="text-3xl font-bold mt-2 font-serif">
                             {t("sidebar.title")}
@@ -71,7 +70,6 @@ const FormSidebar = ({ step, formData, t }: { step: number; formData: IFormData;
                 </>
             ) : (
                 <div className="flex flex-col h-full">
-                    {/* ✅ DIUBAH: Menggunakan `t` */}
                     <p className="text-sm font-semibold text-primary uppercase tracking-wider">{t("sidebar.summary.summaryTitle")}</p>
                     <h2 className="text-3xl font-bold mt-2 font-serif">{t("sidebar.summary.reviewTitle")}</h2>
                     <p className="mt-4 mb-6 text-slate-300">{t("sidebar.summary.reviewDescription")}</p>
@@ -79,14 +77,14 @@ const FormSidebar = ({ step, formData, t }: { step: number; formData: IFormData;
                         <SummaryItem label={t("sidebar.summary.contactPerson")} value={formData.fullName || formData.companyName} />
                         <SummaryItem label={t("sidebar.summary.tripType")} value={formData.tripType} />
                         <SummaryItem label={t("sidebar.summary.destination")} value={formData.city || formData.country} />
-                        <SummaryItem 
-                            label={t("sidebar.summary.participants")} 
+                        <SummaryItem
+                            label={t("sidebar.summary.participants")}
                             value={t('sidebar.summary.participantsValue', {
                                 adults: Number(formData.paxAdults) || 0,
                                 kids: Number(formData.paxKids) || 0,
                                 teens: Number(formData.paxTeens) || 0,
                                 seniors: Number(formData.paxSeniors) || 0,
-                            })} 
+                            })}
                         />
                         <SummaryItem label={t("sidebar.summary.departure")} value={formData.departureDate} />
                         <SummaryItem label={t("sidebar.summary.duration")} value={formData.duration} />
@@ -100,7 +98,7 @@ const FormSidebar = ({ step, formData, t }: { step: number; formData: IFormData;
     );
 };
 
-
+// --- Komponen Input ---
 const FormInput = ({ label, name, value, onChange, placeholder, type = "text", as, options = [], onCheckboxChange, selectPlaceholder }: {
     label: string; name: keyof IFormData; value: string | string[];
     onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
@@ -112,11 +110,12 @@ const FormInput = ({ label, name, value, onChange, placeholder, type = "text", a
     
     const baseInputClasses = "w-full px-4 py-3 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 focus:ring-2 focus:ring-primary focus:outline-none transition placeholder:text-gray-400 dark:placeholder:text-gray-500";
     if (as === 'select') { return ( <div> <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{label}</label> <select name={name} value={value as string} onChange={onChange} className={baseInputClasses}> <option value="" disabled>{selectPlaceholder}</option> {options.map(opt => { const val = typeof opt === 'string' ? opt : opt.value; const lab = typeof opt === 'string' ? opt : opt.label; return <option key={val} value={val}>{lab}</option>; })} </select> </div> ); }
-    if (as === 'textarea') { return ( <div> <label className="block text-sm font-semibold text-gray-700 dark:text-gray-700 mb-2">{label}</label> <textarea name={name} value={value as string} onChange={onChange} placeholder={placeholder} rows={4} className={baseInputClasses} /> </div> ); }
+    if (as === 'textarea') { return ( <div> <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{label}</label> <textarea name={name} value={value as string} onChange={onChange} placeholder={placeholder} rows={4} className={baseInputClasses} /> </div> ); }
     if (as === 'checkbox-group' || as === 'radio-group') { const isCheckbox = as === 'checkbox-group'; return ( <div> <h4 className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{label}</h4> <div className="space-y-2"> {options.map(opt => { const optValue = typeof opt === 'string' ? opt : opt.value; const optLabel = typeof opt === 'string' ? opt : opt.label; return ( <label key={optValue} className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-primary/10 border-gray-200 dark:border-slate-600"> <input type={isCheckbox ? "checkbox" : "radio"} name={name} value={optValue} checked={isCheckbox ? (value as string[]).includes(optValue) : value === optValue} onChange={isCheckbox ? onCheckboxChange : onChange} className={`h-4 w-4 ${isCheckbox ? 'rounded' : 'rounded-full'} text-primary focus:ring-primary border-gray-400 bg-transparent`} /> <span className="text-sm text-foreground">{optLabel}</span> </label> ); })} </div> </div> ); }
     return ( <div> <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{label}</label> <input type={type} name={name} value={value as string} onChange={onChange} placeholder={placeholder} className={baseInputClasses} /> </div> );
 };
 
+// --- Komponen Formulir Utama ---
 export default function PlannerForm() {
     const t = useTranslations("PlannerForm");
     const [step, setStep] = useState(1);
@@ -159,7 +158,7 @@ export default function PlannerForm() {
                 <button 
                     type="button" 
                     onClick={handleBack} 
-                    className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-200 dark:bg-slate-600 text-foreground font-semibold hover:bg-gray-300 dark:hover:bg-slate-500 transition text-center"
+                    className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-200 dark:bg-slate-600 font-semibold hover:bg-gray-300 dark:hover:bg-slate-500 transition text-center dark:text-white"
                 >
                     {t("backButton")}
                 </button>
@@ -172,7 +171,8 @@ export default function PlannerForm() {
                     type="button" 
                     onClick={handleNext} 
                     disabled={(step === 1 && !formData.type) || (step === 3 && !formData.tripType)}
-                    className="w-full sm:w-auto px-6 py-3 rounded-lg bg-slate-800 text-white font-bold hover:bg-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-center"
+                    // ✅ DIUBAH: Mengganti warna background menjadi `bg-primary` dan menyesuaikan hover & text
+                    className="w-full sm:w-auto px-6 py-3 rounded-lg bg-primary text-black font-bold hover:brightness-90 transition disabled:opacity-50 disabled:cursor-not-allowed text-center"
                 >
                     {t("continueButton")}
                 </button>
@@ -195,7 +195,6 @@ export default function PlannerForm() {
             <div className="container mx-auto px-4">
                 <div className="w-full max-w-7xl mx-auto bg-card shadow-2xl rounded-xl flex flex-col lg:flex-row">
                     
-                    {/* ✅ DIUBAH: Mengirim `t` ke FormSidebar */}
                     <FormSidebar step={step} formData={formData} t={t} />
 
                     <div className="lg:w-[60%] p-8 lg:p-12 flex flex-col">
@@ -240,13 +239,42 @@ export default function PlannerForm() {
                                         </div>
                                     </div> 
                                 )}
-                                {step === 4 && ( <div className="space-y-5"> <h3 className="text-xl font-bold text-foreground">{t("step4_title")}</h3> {formData.tripType === 'domestic' ? ( <> <FormInput label={t("step4_province")} name="province" value={formData.province} onChange={handleChange} /> <FormInput label={t("step4_city")} name="city" value={formData.city} onChange={handleChange} /> </> ) : ( <> <FormInput label={t("step4_country")} name="country" value={formData.country} onChange={handleChange} /> <FormInput label={t("step4_cityState")} name="city" value={formData.city} onChange={handleChange} /> </> )} </div> )}
+                                
+                                {step === 4 && ( 
+                                    <div className="space-y-5">
+                                        <h3 className="text-xl font-bold text-foreground">{t("step4_title")}</h3>
+                                        {formData.tripType === 'domestic' ? ( 
+                                            <>
+                                                <FormInput label={t("step4_province")} name="province" value={formData.province} onChange={handleChange} />
+                                                <FormInput label={t("step4_city")} name="city" value={formData.city} onChange={handleChange} />
+                                                <FormInput as="textarea" label={t("step4_address")} name="address" value={formData.address} onChange={handleChange} />
+                                                <FormInput label={t("step4_postalCode")} name="postalCode" value={formData.postalCode} onChange={handleChange} type="number" />
+                                            </> 
+                                        ) : ( 
+                                            <>
+                                                <FormInput label={t("step4_country")} name="country" value={formData.country} onChange={handleChange} />
+                                                <FormInput label={t("step4_cityState")} name="city" value={formData.city} onChange={handleChange} />
+                                            </> 
+                                        )}
+                                    </div> 
+                                )}
+
                                 {step === 5 && ( <div className="space-y-5"> <h3 className="text-xl font-bold text-foreground">{t("step5_title")}</h3> <FormInput as="select" label={t("step5_travelType")} name="travelType" options={travelTypes} value={formData.travelType} onChange={handleChange} selectPlaceholder={t("selectPlaceholder")} /> <h4 className="font-semibold text-foreground pt-4">{t("step5_paxTitle")}</h4> <div className="grid grid-cols-2 gap-4"> <FormInput label={t("step5_paxKids")} name="paxKids" value={String(formData.paxKids)} onChange={handleChange} type="number" /> <FormInput label={t("step5_paxTeens")} name="paxTeens" value={String(formData.paxTeens)} onChange={handleChange} type="number" /> <FormInput label={t("step5_paxAdults")} name="paxAdults" value={String(formData.paxAdults)} onChange={handleChange} type="number" /> <FormInput label={t("step5_paxSeniors")} name="paxSeniors" value={String(formData.paxSeniors)} onChange={handleChange} type="number" /> </div> </div> )}
                                 {step === 6 && ( <div className="space-y-5"> <h3 className="text-xl font-bold text-foreground">{t("step6_title")}</h3> <FormInput label={t("step6_departureDate")} name="departureDate" value={formData.departureDate} onChange={handleChange} type="date" /> <FormInput label={t("step6_duration")} name="duration" value={formData.duration} onChange={handleChange} placeholder={t("step6_duration_placeholder")} /> </div> )}
                                 {step === 7 && ( <div className="space-y-5"> <h3 className="text-xl font-bold text-foreground">{t("step7_title")}</h3> <div className="space-y-4"> {Object.keys(budgetPacks).map(packKey => ( <div key={packKey} onClick={() => setFormData(p => ({ ...p, budgetPack: packKey }))} className={`p-4 border-2 rounded-lg cursor-pointer transition ${formData.budgetPack === packKey ? 'border-primary bg-primary/10' : 'border-gray-300 dark:primary/10 hover:bg-gray-50 dark:hover:bg-primary/10'}`}> <h4 className="font-bold text-foreground">{budgetPacks[packKey as keyof typeof budgetPacks].title}</h4> <p className="text-sm text-muted-foreground mt-1">{budgetPacks[packKey as keyof typeof budgetPacks].description}</p> </div> ))} </div> <FormInput as="checkbox-group" label={t("step7_addonTitle")} name="addons" options={addonOptions} value={formData.addons} onCheckboxChange={handleCheckboxChange} /> </div> )}
                                 {step === 8 && ( <div className="space-y-5"> <h3 className="text-xl font-bold text-foreground">{t("step8_title")}</h3> <FormInput as="checkbox-group" label={t("step8_travelStyleTitle")} name="travelStyle" options={travelStyles} value={formData.travelStyle} onCheckboxChange={handleCheckboxChange} /> <FormInput as="checkbox-group" label={t("step8_personalityTitle")} name="travelPersonality" options={travelPersonalities} value={formData.travelPersonality} onCheckboxChange={handleCheckboxChange} /> </div> )}
                                 {step === 9 && ( <div className="space-y-5"> <h3 className="text-xl font-bold text-foreground">{t("step9_title")}</h3> <FormInput as="textarea" label={t("step9_mustVisit")} name="mustVisit" value={formData.mustVisit} onChange={handleChange} placeholder={t("step9_mustVisit_placeholder")} /> <FormInput as="checkbox-group" label={t("step9_foodPreference")} name="foodPreference" options={foodPreferences} value={formData.foodPreference} onCheckboxChange={handleCheckboxChange} /> <FormInput as="textarea" label={t("step9_accommodationPreference")} name="accommodationPreference" value={formData.accommodationPreference} onChange={handleChange} placeholder={t("step9_accommodationPreference_placeholder")} /> </div> )}
-                                {step === 10 && ( <div className="space-y-5"> <h3 className="text-xl font-bold text-foreground">{t("step10_title")}</h3> <label className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600"> <input type="checkbox" name="consent" checked={formData.consent} onChange={e => setFormData(p => ({ ...p, consent: e.target.checked }))} className="h-4 w-4 rounded text-primary focus:ring-primary border-gray-400 bg-transparent" /> <span className="text-sm text-foreground">{t("step10_consent")}</span> </label> <FormInput as="radio-group" label={t("step10_frequentTraveler")} name="isFrequentTraveler" options={travelerRoutines} value={formData.isFrequentTraveler} onChange={handleChange} /> </div> )}
+                                {step === 10 && ( 
+                                    <div className="space-y-5">
+                                        <h3 className="text-xl font-bold text-foreground">{t("step10_title")}</h3>
+                                        {/* ✅ DIUBAH: Menyesuaikan warna background di dark mode */}
+                                        <label className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-primary/10 border border-gray-200 dark:border-slate-600">
+                                            <input type="checkbox" name="consent" checked={formData.consent} onChange={e => setFormData(p => ({ ...p, consent: e.target.checked }))} className="h-4 w-4 rounded text-primary focus:ring-primary border-gray-400 bg-transparent" />
+                                            <span className="text-sm text-foreground">{t("step10_consent")}</span>
+                                        </label>
+                                        <FormInput as="radio-group" label={t("step10_frequentTraveler")} name="isFrequentTraveler" options={travelerRoutines} value={formData.isFrequentTraveler} onChange={handleChange} />
+                                    </div> 
+                                )}
                             </div>
                             
                             {actionButtons}
@@ -257,3 +285,5 @@ export default function PlannerForm() {
         </div>
     );
 }
+
+
