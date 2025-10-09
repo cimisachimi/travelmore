@@ -137,7 +137,7 @@
     },
     "activities": {
       "title": "Daily Activities",
-      "description": "Already have plans? Book daily activities or tours separately, from cooking classes to volcano jeep adventures.",
+      "description": "Already have plans? Book daily activities or tours separately, from cooking classes to volcano adventures.",
       "button": "View Details"
     }
   },
@@ -493,13 +493,23 @@
     "step8_budgetPriorityDesc": "Please set your priorities using the drag & drop feature.",
     "step8_dragDropPlaceholder": "Drag & Drop Feature (Placeholder)",
     "step8_travelStyleTitle": "Travel Style",
+    "step8_selectStylePlaceholder": "Select your travel styles",
+    "step8_otherTravelStyleTitle": "Other Travel Style (Optional)",
+    "step8_otherTravelStylePlaceholder": "e.g., Backpacking, Digital Nomad",
     "step8_personalityTitle": "Your Personality",
+    "step8_selectPersonalityPlaceholder": "Select your travel personalities",
+    "step8_otherPersonalityTitle": "Other Personality (Optional)",
+    "step8_otherPersonalityPlaceholder": "e.g., The Historian, The Thrill-Seeker",
+    "step8_activityLevelTitle": "Daily Activities Level",
+    "step8_activityLevelPlaceholder": "Choose a level",
     "step9_title": "Additional Preferences",
     "step9_mustVisit": "Must-Visit Places",
     "step9_mustVisit_placeholder": "e.g., Borobudur, Malioboro",
     "step9_attractionPreference": "Attraction Preference",
     "step9_attractionPreference_placeholder": "e.g., Museum, Beach, Historical Site",
     "step9_foodPreference": "Food Preference",
+    "step9_otherFoodPreferenceTitle": "Other Food Preferences (Optional)",
+    "step9_otherFoodPreferencePlaceholder": "e.g., Gluten-free, no seafood",
     "step9_accommodationPreference": "Accommodation Preference",
     "step9_accommodationPreference_placeholder": "e.g., Glamping in nature, Villa on the beach",
     "step10_title": "Consent & Additional Info",
@@ -549,6 +559,13 @@
         "p3": { "value": "Food Lovers", "label": "Food Lovers" },
         "p4": { "value": "Chill and Heal", "label": "Chill and Heal" },
         "p5": { "value": "The Social", "label": "The Social" }
+      },
+      "activityLevels": {
+        "l1": { "value": "1", "label": "1 - Relaxed" },
+        "l2": { "value": "2", "label": "2 - Casual" },
+        "l3": { "value": "3", "label": "3 - Moderate" },
+        "l4": { "value": "4 - Active" },
+        "l5": { "value": "5", "label": "5 - Intense" }
       },
       "foodPreferences": {
         "f1": "Halal",
