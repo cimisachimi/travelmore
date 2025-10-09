@@ -1,7 +1,15 @@
+// components/PopularPackages.tsx
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useTranslations } from "next-intl"; // ✅ tambahkan ini
+import { useTranslations } from "next-intl";
+
+// ✅ 1. Definisikan tipe untuk satu 'package'
+interface IPackage {
+  id: string;
+  title: string;
+  description: string;
+}
 
 const PackageCard = ({
   id,
@@ -40,7 +48,9 @@ const PackageCard = ({
 
 const PopularPackages: React.FC = () => {
   const t = useTranslations("PopularPackages");
-  const packages = t.raw("packages"); // ✅ ambil array dari JSON
+  
+  // ✅ 2. Beri tahu TypeScript bahwa 'packages' adalah array dari IPackage
+  const packages = t.raw("packages") as IPackage[];
 
   return (
     <section className="bg-background py-16">
@@ -51,11 +61,12 @@ const PopularPackages: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {packages.map((pkg: any, index: number) => (
+          {/* ✅ 3. Hapus tipe 'any', TypeScript sekarang sudah tahu tipe 'pkg' */}
+          {packages.map((pkg, index) => (
             <PackageCard
               key={pkg.id}
               id={pkg.id}
-              imgSrc={`/hero-${index + 1}.jpg`}
+              imgSrc={`/hero-${index + 1}.jpg`} // Pastikan gambar ini ada
               title={pkg.title}
               description={pkg.description}
               cta={t("cta")}

@@ -1,6 +1,14 @@
+// components/HowItWorks.tsx
 "use client";
+
 import React, { useRef, useEffect, useState } from "react";
-import { useTranslations } from "next-intl"; // ✅ tambahkan ini
+import { useTranslations } from "next-intl";
+
+// ✅ 1. Definisikan tipe untuk satu 'step'
+interface IStep {
+  title: string;
+  description: string;
+}
 
 const AnimatedStep = ({
   icon,
@@ -42,10 +50,11 @@ const AnimatedStep = ({
 
 const HowItWorks: React.FC = () => {
   const t = useTranslations("HowItWorks");
-  const steps = t.raw("steps"); // ✅ ambil array langsung dari JSON
+
+  // ✅ 2. Beri tahu TypeScript bahwa 'steps' adalah array dari IStep
+  const steps = t.raw("steps") as IStep[]; 
 
   const icons = [
-    // ✅ tetap pakai ikon yang sama, tapi urutannya sesuai langkah
     <svg key="1" xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
     </svg>,
@@ -74,8 +83,14 @@ const HowItWorks: React.FC = () => {
           <p className="text-foreground/80">{t("subtitle")}</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
-          {steps.map((step: any, index: number) => (
-            <AnimatedStep key={index} icon={icons[index]} title={step.title} description={step.description} />
+          {/* ✅ 3. Hapus tipe 'any', TypeScript sekarang sudah tahu tipe 'step' adalah IStep */}
+          {steps.map((step, index) => (
+            <AnimatedStep 
+              key={index} 
+              icon={icons[index]} 
+              title={step.title} 
+              description={step.description} 
+            />
           ))}
         </div>
       </div>

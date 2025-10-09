@@ -42,9 +42,11 @@ export default function PlannerPage() {
     ctaText: t(`${themeKey}.ctaText`),
     image: themeKey === "exclusive" ? "/hero-3.jpg" : "/hero-1.jpg",
   };
-
-  const featureKeys = Object.keys(t.raw(`${themeKey}.features`));
-  const termKeys = Object.keys(t.raw(`${themeKey}.terms`));
+  
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const featureKeys = Object.keys(t.raw(`${themeKey}.features` as any));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const termKeys = Object.keys(t.raw(`${themeKey}.terms` as any));
   const workflowKeys = Object.keys(t.raw('workflow'));
 
   const handleCtaClick = () => {
@@ -93,6 +95,7 @@ export default function PlannerPage() {
                     <li key={key} className="flex items-center">
                       <CheckIcon className="mr-3" />
                       <span className="font-medium">
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         {t(`${themeKey}.features.${key}` as any)}
                       </span>
                     </li>
@@ -112,6 +115,7 @@ export default function PlannerPage() {
                       key={key}
                       className="text-foreground/70 text-sm list-disc list-inside"
                     >
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {t(`${themeKey}.terms.${key}` as any)}
                     </li>
                   ))}
@@ -153,9 +157,11 @@ export default function PlannerPage() {
                       <>
                         <div className="pr-12 text-right">
                           <h3 className="text-xl font-semibold text-primary mb-2">
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {t(`workflow.${key}.title` as any)}
                           </h3>
                           <p className="text-foreground/70">
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {t(`workflow.${key}.description` as any)}
                           </p>
                         </div>
@@ -166,9 +172,11 @@ export default function PlannerPage() {
                         <div></div>
                         <div className="pl-12 text-left">
                           <h3 className="text-xl font-semibold text-primary mb-2">
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {t(`workflow.${key}.title` as any)}
                           </h3>
                           <p className="text-foreground/70">
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {t(`workflow.${key}.description` as any)}
                           </p>
                         </div>
