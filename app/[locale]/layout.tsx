@@ -9,6 +9,10 @@ import Breadcrumbs from "@/components/Breadcrumps";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
+
+//Import Provider
+import { AuthProvider } from '@/contexts/AuthContext'
+
 // Font configurations remain the same...
 const fontPoppins = Poppins({
   subsets: ["latin"],
@@ -54,10 +58,12 @@ export default async function RootLayout({
       <body className="bg- text-foreground font-sans">
         <NextIntlClientProvider>
           <ThemeProvider>
-            <Navbar />
-            <Breadcrumbs />
-            <main>{children}</main>
-            <Footer />
+            <AuthProvider>
+              <Navbar />
+              <Breadcrumbs />
+              <main>{children}</main>
+              <Footer />
+            </AuthProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
