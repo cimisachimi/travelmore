@@ -1,0 +1,75 @@
+/* styles/prose.css */
+.prose {
+  color: var(--foreground-80);
+  line-height: 1.7;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  color: var(--foreground);
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.prose h1 {
+  font-size: 2.25rem; /* 36px */
+}
+
+.prose h2 {
+  font-size: 1.875rem; /* 30px */
+}
+
+.prose h3 {
+  font-size: 1.5rem; /* 24px */
+}
+
+.prose p {
+  margin-bottom: 1.25em;
+}
+
+.prose a {
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 1px solid var(--primary);
+}
+
+.prose a:hover {
+  opacity: 0.8;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.5em;
+  margin-bottom: 1.25em;
+}
+
+.prose li {
+  margin-bottom: 0.5em;
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--primary);
+  padding-left: 1em;
+  margin-left: 0;
+  font-style: italic;
+  color: var(--foreground-60);
+}
+
+.prose pre,
+.prose code {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 0.2em 0.4em;
+  font-family: monospace;
+}
+
+.prose pre {
+  padding: 1em;
+  overflow-x: auto;
+}

@@ -147,11 +147,6 @@
     "button": "Rencanakan Perjalanan Anda Bersama Kami",
     "contactText": "Atau hubungi kami langsung melalui"
   },
-  "blogSection": {
-    "title": "Artikel & Blog",
-    "subtitle": "Inspirasi perjalanan, tips liburan, dan cerita menarik dari Travelmore.",
-    "button": "Lihat Semua Artikel"
-  },
   "testimonials": {
     "title": "Apa Kata Mereka Tentang Kami"
   },
@@ -257,10 +252,70 @@
     "bookNow": "Pesan Sekarang",
     "bookingNote": "Anda akan diarahkan ke formulir pemesanan untuk melengkapi detail Anda."
   },
+  "blogSection": {
+    "title": "Artikel & Blog",
+    "subtitle": "Inspirasi perjalanan, tips liburan, dan kisah menarik dari Travelmore.",
+    "button": "Lihat Detail"
+  },
   "blog": {
     "title": "Artikel & Blog",
     "subtitle": "Inspirasi perjalanan, tips liburan, dan cerita menarik dari Travelmore.",
-    "by": "oleh"
+    "by": "oleh",
+    "destinasi-jogja-2025": {
+      "title": "10 Destinasi Wisata Hits di Jogja",
+      "excerpt": "Temukan tempat-tempat wisata terbaru dan populer di Yogyakarta yang wajib masuk daftar perjalanan Anda.",
+      "content": [
+        "### 1. Candi Borobudur",
+        "![Candi Prambanan](/hero-1.jpg)",
+        "**Alasan:** Sebagai candi Buddha terbesar di dunia dan Situs Warisan Dunia UNESCO, Borobudur adalah mahakarya arsitektur dan spiritual yang wajib dikunjungi. Kemegahan struktur, relief yang menceritakan kisah-kisah luhur, dan pemandangan matahari terbit yang magis dari puncaknya menawarkan pengalaman yang tak terlupakan. Ini bukan sekadar wisata, tetapi sebuah perjalanan spiritual dan sejarah.",
+        "",
+        "### 2. Candi Prambanan",
+        "![Candi Prambanan](/hero-1.jpg)",
+        "**Alasan:** Jika Borobudur adalah representasi keagungan Buddha, Prambanan adalah monumen epik Hindu. Kompleks candi ini didedikasikan untuk Trimurti (Brahma, Wisnu, Siwa) dengan arsitektur yang menjulang tinggi dan anggun. Alasan logis untuk berkunjung adalah untuk menyaksikan puncak keindahan arsitektur Hindu kuno di Indonesia dan memahami kisah Ramayana yang terukir indah di reliefnya. Pertunjukan Sendratari Ramayana di malam hari dengan latar Candi Prambanan adalah bonus yang spektakuler.",
+        "",
+        "### 3. Keraton Ngayogyakarta Hadiningrat",
+        "![Candi Prambanan](/hero-1.jpg)",
+        "**Alasan:** Ini adalah jantung dari budaya dan sejarah Yogyakarta. Mengunjungi Keraton memberikan Anda wawasan langsung tentang kehidupan keluarga kerajaan, arsitektur Jawa yang sarat makna filosofis, dan tradisi yang masih hidup hingga hari ini. Keraton adalah museum hidup di mana Anda bisa merasakan denyut nadi kebudayaan Jawa yang sesungguhnya.",
+        "",
+        "### 4. Taman Sari",
+        "![Candi Prambanan](/hero-1.jpg)",
+        "**Alasan:** Hanya berjarak singkat dari Keraton, Taman Sari adalah situs bersejarah dengan arsitektur unik yang merupakan perpaduan gaya Jawa dan Portugis. Dulunya merupakan taman dan pemandian bagi Sultan dan para selirnya. Alasan utama mengunjunginya adalah karena keindahan arsitekturnya yang fotogenik, lorong-lorong bawah tanah yang misterius, dan kisah-kisah sejarah di baliknya yang menarik.",
+        "",
+        "### 5. Jalan Malioboro",
+        "![Candi Prambanan](/hero-1.jpg)",
+        "**Alasan:** Malioboro adalah urat nadi perekonomian dan pariwisata Jogja. Ini adalah tempat terbaik untuk merasakan energi kota, berbelanja oleh-oleh khas (batik, bakpia, kerajinan tangan), dan mencicipi kuliner lesehan di malam hari. Mengunjungi Malioboro adalah cara paling mudah dan logis untuk menyelami suasana Jogja yang sesungguhnya dalam satu kawasan.",
+        "",
+        "### 6. Goa Pindul",
+        "![Candi Prambanan](/hero-1.jpg)",
+        "**Alasan:** Menawarkan pengalaman wisata petualangan yang unik dan aman untuk hampir semua usia. Aktivitas utamanya adalah cave tubing, yaitu menyusuri sungai bawah tanah dengan menggunakan ban pelampung sambil menikmati keindahan stalaktit dan stalagmit di dalam gua yang gelap. Ini adalah pilihan logis jika Anda mencari sensasi petualangan alam yang berbeda dari wisata candi atau kota.",
+        "",
+        "### 7. Tur Jip Lava Merapi",
+        "![Candi Prambanan](/hero-1.jpg)",
+        "**Alasan:** Wisata ini memberikan pengalaman yang memacu adrenalin sekaligus edukatif. Anda akan diajak menyusuri lereng Gunung Merapi dengan mobil jip, melewati desa-desa yang terkena dampak erupsi, dan berhenti di titik-titik penting seperti Museum Sisa Hartaku dan Bunker Kaliadem. Alasan kuat untuk memilihnya adalah untuk menyaksikan secara langsung kedahsyatan alam dan ketangguhan masyarakat lokal, sambil menikmati pemandangan alam pegunungan yang dramatis.",
+        "",
+        "### 8. Hutan Pinus Mangunan",
+        "![Candi Prambanan](/hero-1.jpg)",
+        "**Alasan:** Terletak di kawasan Dlingo, tempat ini mewakili tren wisata alam modern di Jogja yang sangat populer. Hutan pinus yang rimbun dan sejuk ini dilengkapi dengan berbagai gardu pandang dan spot foto yang artistik. Ini adalah pilihan logis bagi mereka yang mencari ketenangan, udara segar, dan foto-foto lanskap yang menakjubkan untuk media sosial.",
+        "",
+        "### 9. Pantai Timang",
+        "![Candi Prambanan](/hero-1.jpg)",
+        "**Alasan:** Mewakili keindahan pesisir selatan Jogja (Kabupaten Gunungkidul) yang eksotis dan menantang. Pantai Timang terkenal dengan gondola tradisional dan jembatan gantung yang ekstrem, yang digunakan untuk menyeberang ke Pulau Watu Panjang. Alasan berkunjung ke sini adalah untuk merasakan pengalaman yang mendebarkan dan melihat pemandangan laut yang liar dan dramatis, sangat berbeda dari pantai-pantai landai pada umumnya.",
+        "",
+        "### 10. Museum Ullen Sentalu",
+        "![Candi Prambanan](/hero-1.jpg)",
+        "**Alasan:** Sering disebut sebagai salah satu museum terbaik di Indonesia, Ullen Sentalu menyajikan budaya dan sejarah Kerajaan Mataram (Yogyakarta dan Surakarta) dengan cara yang sangat modern, elegan, dan mendalam. Dipandu oleh seorang pemandu, Anda akan diajak menyusuri lorong waktu. Ini adalah pilihan yang sangat logis jika Anda ingin memahami budaya Jawa secara lebih mendalam dengan cara yang tidak membosankan dan sangat berkesan."
+      ]
+    },
+    "tips-hemat-liburan-jogja": {
+      "title": "Tips Hemat Liburan di Yogyakarta",
+      "excerpt": "Nikmati perjalanan seru tanpa menguras dompet. Berikut tips hemat saat liburan di Jogja.",
+      "content": ["Isi lengkap artikel tips hemat liburan di Jogja..."]
+    },
+    "kuliner-khas-jogja": {
+      "title": "Kuliner Khas Jogja yang Wajib Dicoba",
+      "excerpt": "Tidak lengkap rasanya ke Jogja tanpa mencicipi makanan khasnya. Ini rekomendasi terbaik untuk Anda.",
+      "content": ["Isi lengkap artikel kuliner khas Jogja..."]
+    }
   },
   "blogDetail": {
     "back": "Kembali ke Blog",
