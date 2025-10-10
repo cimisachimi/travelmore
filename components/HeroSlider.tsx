@@ -1,9 +1,16 @@
+// components/HeroSlider.tsx
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+
+// Definisikan tipe data untuk satu slide
+interface ISlide {
+  subtitle: string;
+  title: string;
+}
 
 const CustomArrowButton = ({ direction, onClick }: { direction: "up" | "down"; onClick: () => void }) => (
   <button
@@ -34,7 +41,8 @@ const DotIndicator = ({ active, onClick }: { active: boolean; onClick: () => voi
 export default function HeroSlider() {
   const t = useTranslations("HeroSlider");
 
-  const slides = t.raw("slides");
+  // Berikan tipe yang benar saat mengambil data
+  const slides = t.raw("slides") as ISlide[];
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -49,11 +57,15 @@ export default function HeroSlider() {
   }, [isAnimating]);
 
   const goToNextSlide = useCallback(() => {
-    changeSlide((currentSlideIndex + 1) % slides.length);
-  }, [currentSlideIndex, changeSlide, slides.length]);
+    if (slides && slides.length > 0) {
+        changeSlide((currentSlideIndex + 1) % slides.length);
+    }
+  }, [currentSlideIndex, changeSlide, slides]);
 
   const goToPrevSlide = () => {
-    changeSlide((currentSlideIndex - 1 + slides.length) % slides.length);
+    if (slides && slides.length > 0) {
+        changeSlide((currentSlideIndex - 1 + slides.length) % slides.length);
+    }
   };
 
   useEffect(() => {
@@ -61,16 +73,17 @@ export default function HeroSlider() {
     return () => clearInterval(interval);
   }, [goToNextSlide]);
 
-  const currentSlide = slides[currentSlideIndex];
+  // Berikan fallback jika slides belum terdefinisi
+  const currentSlide = slides?.[currentSlideIndex] || { subtitle: "", title: "" };
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
       
-      {slides.map((_: any, index: number) => (
+      {slides.map((slide, index) => (
         <Image
           key={index}
           src={`/hero-${index + 1}.jpg`}
-          alt={`Background ${index + 1}`}
+          alt={slide.title || `Background ${index + 1}`}
           fill
           style={{ objectFit: "cover" }}
           priority={index === 0}
@@ -99,7 +112,7 @@ export default function HeroSlider() {
       <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-3 z-30">
         <CustomArrowButton direction="up" onClick={goToPrevSlide} />
         <div className="flex flex-col space-y-2">
-          {slides.map((_: any, index: number) => (
+          {slides.map((slide, index) => (
             <DotIndicator key={index} active={index === currentSlideIndex} onClick={() => changeSlide(index)} />
           ))}
         </div>
