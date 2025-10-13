@@ -14,7 +14,7 @@ const CustomizationFactor = ({
   text: string;
 }) => (
   <div className="flex items-center space-x-3">
-    <div className="flex-shrink-0 bg-primary/20 p-2 rounded-full">
+    <div className="flex-shrink-0 bg-primary p-2 rounded-full">
       <Image src={iconSrc} alt={`${text} icon`} width={20} height={20} />
     </div>
     <span className="text-foreground/90">{text}</span>

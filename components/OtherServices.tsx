@@ -22,7 +22,7 @@ const ServiceCard = ({ icon, title, description, href, buttonLabel }: {
 
   return (
     <div className="bg-card p-6 rounded-lg shadow-lg flex flex-col text-center items-center h-full border-t-4 border-primary hover:shadow-xl transition-shadow duration-300">
-      <div className="bg-primary/20 p-4 rounded-full mb-4">
+      <div className="bg-primary/50 p-4 rounded-full mb-4">
         <Image
           src={icon}
           alt={`${title} icon`}

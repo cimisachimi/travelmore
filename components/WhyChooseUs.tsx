@@ -13,7 +13,7 @@ const Feature = ({
   description: string;
 }) => (
   <div className="flex items-start space-x-4">
-    <div className="flex-shrink-0 bg-primary/20 p-3 rounded-full">
+    <div className="flex-shrink-0 bg-primary/50 p-3 rounded-full">
       <Image src={iconSrc} alt={`${title} icon`} width={24} height={24} />
     </div>
     <div>
