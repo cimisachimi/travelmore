@@ -158,12 +158,12 @@ export default function PlannerForm() {
                                         {t("sidebar.title")} 
                                     </h2>
                                     <p className="mt-4 text-slate-600 leading-relaxed max-w-lg">
-                                       👉 {t("sidebar.description")}
+                                       {t("sidebar.description")}
                                     </p>
                                 </div>
                                 <div className="mt-12 border-t pt-8">
-                                    <h3 className="font-semibold text-slate-800">🤔 {t("sidebar.needHelp")}</h3>
-                                    <p className="text-slate-600">📧 {t("sidebar.contactUs")} <a href="mailto:info@travelmore.travel" className="text-primary font-semibold hover:underline">info@travelmore.travel</a></p>
+                                    <h3 className="font-semibold text-slate-800"> {t("sidebar.needHelp")}</h3>
+                                    <p className="text-slate-600">{t("sidebar.contactUs")} <a href="mailto:info@travelmore.travel" className="text-primary font-semibold hover:underline">info@travelmore.travel</a></p>
                                 </div>
                             </div>
                         ) : (
@@ -260,7 +260,7 @@ export default function PlannerForm() {
                                                 <h3 className="text-xl font-bold text-foreground">✅ {t("step10_title")}</h3>
                                                 <label className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-primary/10 border border-gray-200 dark:border-slate-600">
                                                     <input type="checkbox" name="consent" checked={formData.consent} onChange={e => setFormData(p => ({ ...p, consent: e.target.checked }))} className="h-4 w-4 rounded text-primary focus:ring-primary border-gray-400 bg-transparent" />
-                                                    <span className="text-sm text-foreground">👍 {t("step10_consent")}</span>
+                                                    <span className="text-sm text-foreground"> {t("step10_consent")}</span>
                                                 </label>
                                                 <FormInput as="radio-group" label={`🔁 ${t("step10_frequentTraveler")}`} name="isFrequentTraveler" options={travelerRoutines} value={formData.isFrequentTraveler} onChange={handleChange} />
                                             </div> 
