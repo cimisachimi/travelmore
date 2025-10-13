@@ -559,7 +559,7 @@
     },
     "title": "Trip Planner",
     "stepProgress": "Step {step} of {totalSteps}",
-    "backButton": "← Back",
+    "backButton": " Back",
     "continueButton": "Continue",
     "submitButton": "Submit & Get Itinerary Recommendation",
     "selectPlaceholder": "Select an option",
