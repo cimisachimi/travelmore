@@ -1,44 +1,60 @@
-// app/[locale]/car-rental/[id]/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import { useTheme } from "@/components/ThemeProvider";
 import { useTranslations } from "next-intl";
-import type { Car } from "@/data/cars";
-import { cars } from "@/data/cars";
 
+import "@/styles/calendar.css";
 
-import "@/styles/calendar.css"; 
+// Define a type for the car data from your API
+interface ApiCar {
+  id: number;
+  car_model: string;
+  brand: string;
+  description: string | null;
+  price_per_day: string;
+}
 
 export default function CarDetailPage() {
-  const { theme } = useTheme();
   const t = useTranslations("carDetail");
   const params = useParams();
-
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id ?? "";
 
+  // State for the car, loading, and error
+  const [car, setCar] = useState<ApiCar | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const car = cars.find((c: Car) => String(c.id) === id);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
- 
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  // Fetch the specific car's data from the API
+  useEffect(() => {
+    if (!id) return; // Don't fetch if there's no ID
 
-  if (!car) {
-    return <div className="p-10 text-center text-foreground">{t("notFound")}</div>;
-  }
+    const fetchCar = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/car-rentals/${id}`);
+        if (!response.ok) {
+          throw new Error("Car not found.");
+        }
+        const data = await response.json();
+        setCar(data);
+      } catch (err) { // ✅ FIXED: Handle the error type safely
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const price =
-    theme === "regular"
-      ? car.regularPriceWithDriver
-      : car.exclusivePriceWithDriver;
-
-  const bookedDays = car.bookedDates
-    .map((d: string) => new Date(d))
-    .filter((d) => !isNaN(d.getTime()));
+    fetchCar();
+  }, [id]); // Refetch if the ID ever changes
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("id-ID", {
@@ -49,13 +65,30 @@ export default function CarDetailPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!car || !selectedDate) return;
+
     alert(
       t("alert", {
-        car: car.name,
+        car: `${car.brand} ${car.car_model}`,
         date: selectedDate.toLocaleDateString(),
       })
     );
   };
+
+  // --- Render logic for different states ---
+
+  if (loading) {
+    return <div className="p-10 text-center text-foreground">Loading car details...</div>;
+  }
+
+  if (error || !car) {
+    return <div className="p-10 text-center text-red-500">{t("notFound")}</div>;
+  }
+
+  const carName = `${car.brand} ${car.car_model}`;
+  const price = parseFloat(car.price_per_day);
+  // The API doesn't provide booked dates yet, so this will be empty
+  const bookedDays: Date[] = [];
 
   return (
     <div className="bg-background text-foreground min-h-screen">
@@ -64,13 +97,14 @@ export default function CarDetailPage() {
           {/* Left: Car info */}
           <div>
             <div className="relative w-full h-72 rounded-lg overflow-hidden shadow-lg">
-              <Image src={car.image} alt={car.name} fill className="object-cover" />
+              {/* Using a placeholder since the API doesn't provide an image */}
+              <Image src="/cars/avanza.jpg" alt={carName} fill className="object-cover" />
             </div>
 
             <h2 className="text-3xl font-bold mt-6 text-foreground">
-              {car.name}
+              {carName}
             </h2>
-            <p className="mt-2 text-foreground/70">{car.description}</p>
+            <p className="mt-2 text-foreground/70">{car.description || "No description provided."}</p>
 
             <div className="mt-6 p-4 bg-card rounded-lg border border-border">
               <h3 className="font-semibold mb-2 text-foreground">
@@ -103,7 +137,7 @@ export default function CarDetailPage() {
               <DayPicker
                 mode="single"
                 selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
+                onSelect={setSelectedDate}
                 disabled={bookedDays}
                 defaultMonth={new Date()}
                 className="custom-daypicker"
@@ -149,4 +183,3 @@ export default function CarDetailPage() {
     </div>
   );
 }
-
