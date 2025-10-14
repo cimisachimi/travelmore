@@ -79,7 +79,7 @@ export default function CarRentalPage() {
   useEffect(() => {
     const fetchCars = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/car-rentals");
+        const response = await fetch("https://api.travelmore.travel/api/car-rentals");
         if (!response.ok) {
           throw new Error("Failed to fetch data from the server.");
         }

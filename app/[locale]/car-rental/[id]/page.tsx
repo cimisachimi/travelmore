@@ -36,7 +36,7 @@ export default function CarDetailPage() {
 
     const fetchCar = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/car-rentals/${id}`);
+        const response = await fetch(`https://api.travelmore.travel/api/car-rentals/${id}`);
         if (!response.ok) {
           throw new Error("Car not found.");
         }
