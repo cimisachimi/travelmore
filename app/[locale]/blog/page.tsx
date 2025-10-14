@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 
 export default function BlogListPage() {
   const t = useTranslations("blog");
+  const tBlog = useTranslations("blog"); // Tambahkan ini untuk mengambil data spesifik blog
 
   return (
     <section className="py-20 bg-background text-foreground transition-colors duration-300">
@@ -31,7 +32,7 @@ export default function BlogListPage() {
               <div className="relative h-60 w-full overflow-hidden">
                 <Image
                   src={blog.image}
-                  alt={blog.title}
+                  alt={tBlog(`${blog.id}.title`)} // Gunakan judul yang sudah diterjemahkan
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
@@ -41,9 +42,11 @@ export default function BlogListPage() {
               <div className="p-6 flex flex-col flex-1">
                 <span className="text-sm text-foreground/50">{blog.date}</span>
                 <h3 className="text-xl font-semibold mt-2 text-foreground group-hover:text-primary transition-colors">
-                  {blog.title}
+                  {tBlog(`${blog.id}.title`)} {/* Ganti ini */}
                 </h3>
-                <p className="text-foreground/70 mt-3 flex-1">{blog.excerpt}</p>
+                <p className="text-foreground/70 mt-3 flex-1">
+                  {tBlog(`${blog.id}.excerpt`)} {/* Ganti ini juga untuk konsistensi */}
+                </p>
                 <span className="mt-4 text-sm font-medium text-foreground/80">
                   {t("by")} {blog.author}
                 </span>

@@ -14,7 +14,7 @@ export const blogs: Blog[] = [
     id: "destinasi-jogja-2025",
     title: "10 Destinasi Wisata Hits di Jogja 2025",
     excerpt: "Temukan tempat-tempat wisata terbaru dan populer di Yogyakarta yang wajib masuk daftar perjalanan Anda.",
-    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    image: "/articles-image/cover1.webp",
     date: "5 September 2025",
     author: "Travelmore Team",
     content: "Ini isi lengkap artikel untuk 10 Destinasi Wisata Hits di Jogja 2025..."
@@ -23,7 +23,7 @@ export const blogs: Blog[] = [
     id: "tips-hemat-liburan-jogja",
     title: "Tips Hemat Liburan di Yogyakarta",
     excerpt: "Nikmati perjalanan seru tanpa menguras dompet. Berikut tips hemat saat liburan di Jogja.",
-    image: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80",
+    image: "/articles-image/cover2.webp",
     date: "28 Agustus 2025",
     author: "Travelmore Team",
     content: "Isi lengkap artikel tips hemat liburan di Jogja..."
@@ -32,7 +32,7 @@ export const blogs: Blog[] = [
     id: "kuliner-khas-jogja",
     title: "Kuliner Khas Jogja yang Wajib Dicoba",
     excerpt: "Tidak lengkap rasanya ke Jogja tanpa mencicipi makanan khasnya. Ini rekomendasi terbaik untuk Anda.",
-    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    image: "/articles-image/cover3.webp",
     date: "20 Agustus 2025",
     author: "Travelmore Team",
     content: "Isi lengkap artikel kuliner khas Jogja..."
