@@ -9,6 +9,7 @@ import Breadcrumbs from "@/components/Breadcrumps";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 //Import Provider
 
@@ -56,16 +57,19 @@ export default async function RootLayout({
       className={`${fontPoppins.variable} ${fontMontserrat.variable} ${fontSerif.variable}`}
     >
       <body className="bg- text-foreground font-sans">
-        <NextIntlClientProvider>
-          <ThemeProvider>
+        <AuthProvider>
+          <NextIntlClientProvider>
+            <ThemeProvider>
 
-            <Navbar />
-            <Breadcrumbs />
-            <main>{children}</main>
-            <Footer />
 
-          </ThemeProvider>
-        </NextIntlClientProvider>
+              <Navbar />
+              <Breadcrumbs />
+              <main>{children}</main>
+              <Footer />
+
+            </ThemeProvider>
+          </NextIntlClientProvider>
+        </AuthProvider>
       </body>
     </html>
   );

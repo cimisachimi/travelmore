@@ -559,7 +559,7 @@
     },
     "title": "Perencana Perjalanan",
     "stepProgress": "Langkah {step} dari {totalSteps}",
-    "backButton": "← Kembali",
+    "backButton": " Kembali",
     "continueButton": "Lanjutkan",
     "submitButton": "Kirim & Dapatkan Rekomendasi Itinerari",
     "selectPlaceholder": "Pilih salah satu opsi",
