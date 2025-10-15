@@ -420,6 +420,7 @@
   },
   "carRental": {
     "title": "City Car Rental",
+    "subtitle": "Find the perfect vehicle for your trip in Yogyakarta. Easy, reliable, and ready to go.",
     "pricePerDay": "/day",
     "card": {
       "priceLabel": "Starts from"
@@ -666,18 +667,47 @@
         "s10": "Sports & Outdoor"
       },
       "travelPersonalities": {
-        "p1": { "value": "The Explorer", "label": "The Explorer" },
-        "p2": { "value": "The Culture Seeker", "label": "The Culture Seeker" },
-        "p3": { "value": "Food Lovers", "label": "Food Lovers" },
-        "p4": { "value": "Chill and Heal", "label": "Chill and Heal" },
-        "p5": { "value": "The Social", "label": "The Social" }
+        "p1": {
+          "value": "The Explorer",
+          "label": "The Explorer"
+        },
+        "p2": {
+          "value": "The Culture Seeker",
+          "label": "The Culture Seeker"
+        },
+        "p3": {
+          "value": "Food Lovers",
+          "label": "Food Lovers"
+        },
+        "p4": {
+          "value": "Chill and Heal",
+          "label": "Chill and Heal"
+        },
+        "p5": {
+          "value": "The Social",
+          "label": "The Social"
+        }
       },
       "activityLevels": {
-        "l1": { "value": "1", "label": "1 - Relaxed" },
-        "l2": { "value": "2", "label": "2 - Casual" },
-        "l3": { "value": "3", "label": "3 - Moderate" },
-        "l4": { "value": "4 - Active" },
-        "l5": { "value": "5", "label": "5 - Intense" }
+        "l1": {
+          "value": "1",
+          "label": "1 - Relaxed"
+        },
+        "l2": {
+          "value": "2",
+          "label": "2 - Casual"
+        },
+        "l3": {
+          "value": "3",
+          "label": "3 - Moderate"
+        },
+        "l4": {
+          "value": "4 - Active"
+        },
+        "l5": {
+          "value": "5",
+          "label": "5 - Intense"
+        }
       },
       "foodPreferences": {
         "f1": "Halal",
@@ -687,8 +717,14 @@
         "f5": "Western"
       },
       "travelerRoutines": {
-        "r1": { "value": "Casual Traveler", "label": "Casual Traveler (<3x a year)" },
-        "r2": { "value": "Frequent Traveler", "label": "Frequent Traveler (>3x a year)" }
+        "r1": {
+          "value": "Casual Traveler",
+          "label": "Casual Traveler (<3x a year)"
+        },
+        "r2": {
+          "value": "Frequent Traveler",
+          "label": "Frequent Traveler (>3x a year)"
+        }
       }
     }
   },
