@@ -98,8 +98,12 @@ export default function CarDetailPage() {
         toast.success(`Booking created successfully!`);
         setBookingSuccess(true);
       }
-    } catch (err: any) {
-      const message = err.response?.data?.message || "Booking failed. Please try again.";
+    } catch (err: unknown) {
+      let message = "Booking failed. Please try again.";
+      if (typeof err === "object" && err !== null && "response" in err) {
+        // @ts-expect-error: err may have response property
+        message = err.response?.data?.message || message;
+      }
       toast.error(message);
     } finally {
       setIsSubmitting(false);

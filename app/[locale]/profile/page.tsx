@@ -5,6 +5,22 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 
+declare global {
+  interface Window {
+    snap: {
+      pay: (
+        token: string,
+        options?: {
+          onSuccess?: () => void;
+          onPending?: () => void;
+          onError?: () => void;
+          onClose?: () => void;
+        }
+      ) => void;
+    };
+  }
+}
+
 // --- Type Definitions ---
 interface Bookable {
   brand?: string;
@@ -82,7 +98,7 @@ const BookingHistoryTab = () => {
         alert("Could not get payment token. Please try again.");
         return;
       }
-      (window as any).snap.pay(snap_token, {
+      window.snap.pay(snap_token, {
         onSuccess: () => {
           alert("Payment successful!");
           fetchBookings();
