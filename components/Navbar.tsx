@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 // --- Sub-components for better organization ---
 
 // 🔘 Theme Switcher
+/*
 const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
   const t = useTranslations("Navbar");
@@ -33,7 +34,7 @@ const ThemeToggle = () => {
     </div>
   );
 };
-
+*/
 // 🌐 Language Switcher
 const LocaleSwitcher = () => {
   const locale = useLocale();
@@ -229,7 +230,7 @@ function MobileMenu({ pageLinks, closeMenu }: { pageLinks: { name: string; href:
       )}
 
       <div className="pt-4 flex justify-around items-center">
-        <ThemeToggle />
+
         <LocaleSwitcher />
       </div>
     </div>
@@ -279,7 +280,7 @@ export default function Navbar() {
           {/* Right-side Controls */}
           <div className="flex items-center space-x-4">
             <div className="hidden md:flex items-center space-x-4">
-              <ThemeToggle />
+
               <LocaleSwitcher />
               <AuthButtons />
             </div>

@@ -42,7 +42,7 @@ interface IFormData {
     travelType: string;
 }
 
-// ✅ --- FIX: Define type for Midtrans Snap to avoid 'any' ---
+// --- Define type for Midtrans Snap to avoid 'any' ---
 interface Snap {
     pay(
         token: string,
@@ -106,9 +106,7 @@ export default function PlannerForm() {
             try {
                 const response = await api.get('/trip-planner');
                 if (response.data) {
-                    // ✅ --- FIX: Replaced 'any' with 'unknown' ---
                     const sanitizedData: { [key: string]: unknown } = {};
-                    // ✅ --- NEW: Convert incoming snake_case keys to camelCase ---
                     for (const key in response.data) {
                         const camelKey = key.replace(/_([a-z])/g, g => g[1].toUpperCase());
                         if (response.data[key] === null) {
@@ -119,7 +117,6 @@ export default function PlannerForm() {
                     }
                     setFormData(prev => ({
                         ...prev, ...sanitizedData,
-                        // ✅ --- FIX: Add type assertions for 'unknown' properties ---
                         addons: (sanitizedData.addons as string[]) || [],
                         budgetPriorities: (sanitizedData.budgetPriorities as string[]) || [],
                         travelStyle: (sanitizedData.travelStyle as string[]) || [],
@@ -144,19 +141,15 @@ export default function PlannerForm() {
         setFormData(prev => ({ ...prev, [name]: newValues }));
     };
 
-    // ✅ --- FIX: Removed unused function 'handleMultiSelectToggle' ---
-
     const handleBack = () => setStep(prev => prev - 1);
 
-    // ✅ --- THIS IS THE FIX ---
-    // This function now converts all form data keys from camelCase to snake_case
-    // before sending it to the Laravel backend.
+    // ✅ --- BACKEND CONNECTION ---
+    // This function converts camelCase keys to snake_case for the Laravel backend.
     const saveData = useCallback(async () => {
         if (!formData.type) return;
 
         setIsSaving(true);
         try {
-            // ✅ --- FIX: Replaced 'any' with 'unknown' ---
             const snakeCaseData: { [key: string]: unknown } = {};
             for (const key in formData) {
                 const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
@@ -171,11 +164,13 @@ export default function PlannerForm() {
         }
     }, [formData]);
 
+    // ✅ --- Saves data on every "next" click ---
     const handleNext = async () => {
         await saveData();
         setStep(prev => prev + 1);
     };
 
+    // ✅ --- Saves data on final "Save Progress" click ---
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         await saveData();
@@ -183,6 +178,8 @@ export default function PlannerForm() {
         alert("Your trip plan has been saved!");
     };
 
+    // ✅ --- BACKEND CONNECTION (Booking) ---
+    // Saves final data, then attempts to create booking & get payment token.
     const handleBookNow = async () => {
         if (!formData.consent) {
             alert("Please agree to the terms and conditions first.");
@@ -190,7 +187,7 @@ export default function PlannerForm() {
         }
         setIsBooking(true);
         try {
-            await saveData();
+            await saveData(); // Save the latest data first
             const bookingResponse = await api.post('/trip-planner/book');
             const newBooking = bookingResponse.data;
             if (!newBooking || !newBooking.id) {
@@ -199,7 +196,6 @@ export default function PlannerForm() {
             const paymentResponse = await api.post('/payment/token', { booking_id: newBooking.id });
             const { snap_token } = paymentResponse.data;
 
-            // ✅ --- FIX: Replaced 'any' with specific 'Snap' type and 'unknown' for results ---
             if (snap_token && (window as Window & { snap?: Snap }).snap) {
                 (window as Window & { snap?: Snap }).snap?.pay(snap_token, {
                     onSuccess: (result: unknown) => { alert("Payment success!"); console.log(result); },
@@ -215,18 +211,20 @@ export default function PlannerForm() {
         }
     };
 
-    const totalSteps = 6;
+    // ✅ --- REFACTORED FOR 10 STEPS ---
+    const totalSteps = 10;
     const progress = (step / totalSteps) * 100;
 
+    // --- Translation/Options Data ---
     const travelTypes = Object.values(t.raw("options.travelTypes")) as string[];
     const budgetPacks = t.raw("options.budgetPacks") as Record<string, { title: string; description: string }>;
     const addonOptions = Object.values(t.raw("options.addons")) as string[];
-    // ✅ --- FIX: Removed unused variable 'travelStyles' ---
     const travelPersonalities = Object.values(t.raw("options.travelPersonalities")) as { value: string; label: string }[];
     const foodPreferences = Object.values(t.raw("options.foodPreferences")) as string[];
     const travelerRoutines = Object.values(t.raw("options.travelerRoutines")) as { value: string; label: string }[];
     const activityLevelOptions = Object.values(t.raw("options.activityLevels")) as { value: string; label: string }[];
 
+    // --- Summary Helper Functions ---
     const getTravelPersonalityLabels = () => {
         if (!formData.travelPersonality) return [];
         return formData.travelPersonality.map(value => travelPersonalities.find(p => p.value === value)?.label).filter((l): l is string => Boolean(l));
@@ -234,6 +232,7 @@ export default function PlannerForm() {
     const getActivityLevelLabel = () => activityLevelOptions.find(opt => opt.value === formData.activityLevel)?.label;
     const getFrequentTravelerLabel = () => travelerRoutines.find(opt => opt.value === formData.isFrequentTraveler)?.label;
 
+    // --- Action Buttons (Dynamic based on step) ---
     const actionButtons = (
         <div className="mt-auto pt-8 flex flex-col-reverse sm:flex-row gap-4">
             {step > 1 && (
@@ -242,11 +241,13 @@ export default function PlannerForm() {
                 </button>
             )}
             <div className="flex-grow"></div>
+            {/* ✅ --- Updated for 10 steps --- */}
             {step < totalSteps && (
                 <button type="button" onClick={handleNext} disabled={(step === 1 && (!formData.type || !formData.tripType)) || isSaving} className="w-full sm:w-auto px-8 py-3 rounded-lg bg-primary text-black font-bold hover:brightness-90 transition disabled:opacity-50 disabled:cursor-not-allowed text-center">
                     {isSaving ? "Saving..." : `${t("continueButton")} ➡️`}
                 </button>
             )}
+            {/* ✅ --- Updated for 10 steps (now step 10) --- */}
             {step === totalSteps && (
                 <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-4">
                     <button type="submit" disabled={isSaving || isBooking} className="w-full sm:w-auto px-8 py-3 rounded-lg bg-slate-200 text-black font-bold hover:bg-slate-300 transition disabled:opacity-50 text-center">
@@ -268,6 +269,7 @@ export default function PlannerForm() {
         <div className="bg-background w-full">
             <div className="w-full px-4 sm:px-6 lg:px-16 py-12 lg:py-16">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+                    {/* --- Sidebar / Summary --- */}
                     <div className="lg:col-span-5 lg:sticky lg:top-16">
                         {step === 1 ? (
                             <div className="flex flex-col h-full">
@@ -292,7 +294,6 @@ export default function PlannerForm() {
                                     {isSaving && <p className="text-sm text-slate-500 animate-pulse">Saving...</p>}
                                 </div>
                                 <h2 className="text-3xl font-bold mt-2 font-serif">🔍 {step === totalSteps ? "Review Your Plan" : "Your Plan So Far"}</h2>
-                                {/* ✅ --- FIX: Replaced ' with &apos; --- */}
                                 <p className="mt-4 mb-6 text-slate-600">✅ {step === totalSteps ? "Please review the details before booking." : "Here&apos;s a preview of your selections."}</p>
                                 <div className="flex-grow space-y-4 overflow-y-auto pr-2 border-l-2 border-primary/20 pl-4">
                                     <SummaryItem label="Contact Person" value={formData.fullName || formData.companyName} />
@@ -311,18 +312,23 @@ export default function PlannerForm() {
                             </div>
                         )}
                     </div>
+
+                    {/* --- Form Area --- */}
                     <div className="lg:col-span-7">
                         <div className="bg-card shadow-xl rounded-2xl w-full">
                             <div className="p-6 md:p-10 flex flex-col">
                                 <form onSubmit={handleSubmit} className="flex flex-col flex-grow min-h-[500px]">
+                                    {/* --- Progress Bar --- */}
                                     <div className="text-left mb-8">
                                         <p className="text-sm text-muted-foreground">{t("stepProgress", { step, totalSteps })}</p>
                                         <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2 mt-2">
                                             <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
                                         </div>
                                     </div>
+
+                                    {/* --- Dynamic Step Content --- */}
                                     <div className="flex-grow">
-                                        {/* --- NEW STEP 1: Trip Basics --- */}
+                                        {/* --- STEP 1: Trip Basics --- */}
                                         {step === 1 && (
                                             <div className="space-y-8">
                                                 <div>
@@ -353,7 +359,8 @@ export default function PlannerForm() {
                                                 </div>
                                             </div>
                                         )}
-                                        {/* --- NEW STEP 2: Traveler Details --- */}
+
+                                        {/* --- STEP 2: Contact Info --- */}
                                         {step === 2 && (
                                             <div className="space-y-5">
                                                 <h3 className="text-xl font-bold text-foreground">📇 Contact Information</h3>
@@ -373,7 +380,8 @@ export default function PlannerForm() {
                                                 )}
                                             </div>
                                         )}
-                                        {/* --- NEW STEP 3: Trip Details --- */}
+
+                                        {/* --- STEP 3: Destination --- */}
                                         {step === 3 && (
                                             <div className="space-y-8">
                                                 <div>
@@ -390,6 +398,12 @@ export default function PlannerForm() {
                                                         </div>
                                                     )}
                                                 </div>
+                                            </div>
+                                        )}
+
+                                        {/* --- STEP 4: Dates & Duration --- */}
+                                        {step === 4 && (
+                                            <div className="space-y-8">
                                                 <div>
                                                     <h3 className="text-xl font-bold text-foreground mb-4">🗓️ When & How Long?</h3>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -399,14 +413,13 @@ export default function PlannerForm() {
                                                 </div>
                                             </div>
                                         )}
-                                        {/* --- NEW STEP 4: Traveler Preferences --- */}
-                                        {step === 4 && (
+
+                                        {/* --- STEP 5: Traveler Count --- */}
+                                        {step === 5 && (
                                             <div className="space-y-8">
                                                 <div>
-                                                    {/* ✅ --- FIX: Replaced ' with &apos; --- */}
                                                     <h3 className="text-xl font-bold text-foreground">👥 Who&apos;s Traveling?</h3>
                                                     <div className="space-y-5">
-                                                        <FormInput as="select" label="✈️ Trip Type" name="travelType" options={travelTypes} value={formData.travelType} onChange={handleChange} selectPlaceholder="Select a travel type" />
                                                         <h4 className="font-semibold text-foreground pt-4">👨‍👩‍👧‍👦 Number of Travelers</h4>
                                                         <div className="grid grid-cols-2 gap-4">
                                                             <FormInput label="👩 Adults" name="paxAdults" value={String(formData.paxAdults)} onChange={handleChange} type="number" />
@@ -416,18 +429,27 @@ export default function PlannerForm() {
                                                         </div>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        )}
+
+                                        {/* --- STEP 6: Travel Style & Activity --- */}
+                                        {step === 6 && (
+                                            <div className="space-y-8">
                                                 <div>
-                                                    {/* ✅ --- FIX: Replaced ' with &apos; --- */}
                                                     <h3 className="text-xl font-bold text-foreground mb-4">🎨 What&apos;s Your Style?</h3>
-                                                    <FormInput as="select" label="🤸 Activity Level" name="activityLevel" value={formData.activityLevel} onChange={handleChange} options={activityLevelOptions} selectPlaceholder="Select an activity level" />
+                                                    <div className="space-y-5">
+                                                        <FormInput as="select" label="✈️ Trip Type" name="travelType" options={travelTypes} value={formData.travelType} onChange={handleChange} selectPlaceholder="Select a travel type" />
+                                                        <FormInput as="select" label="🤸 Activity Level" name="activityLevel" value={formData.activityLevel} onChange={handleChange} options={activityLevelOptions} selectPlaceholder="Select an activity level" />
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}
-                                        {/* --- NEW STEP 5: Budget and Preferences --- */}
-                                        {step === 5 && (
+
+                                        {/* --- STEP 7: Budget --- */}
+                                        {step === 7 && (
                                             <div className="space-y-8">
                                                 <div>
-                                                    <h3 className="text-xl font-bold text-foreground mb-4">💸 Budget & Extras</h3>
+                                                    <h3 className="text-xl font-bold text-foreground mb-4">💸 Budget</h3>
                                                     <div className="space-y-4">
                                                         {Object.keys(budgetPacks).map(packKey => (
                                                             <div key={packKey} onClick={() => setFormData(p => ({ ...p, budgetPack: packKey }))} className={`p-4 border-2 rounded-lg cursor-pointer transition ${formData.budgetPack === packKey ? 'border-primary bg-primary/10' : 'border-gray-300 dark:primary/10 hover:bg-gray-50 dark:hover:bg-primary/10'}`}>
@@ -436,10 +458,23 @@ export default function PlannerForm() {
                                                             </div>
                                                         ))}
                                                     </div>
-                                                    <div className="mt-6">
-                                                        <FormInput as="checkbox-group" label="✨ Optional Add-ons" name="addons" options={addonOptions} value={formData.addons} onCheckboxChange={handleCheckboxChange} />
-                                                    </div>
                                                 </div>
+                                            </div>
+                                        )}
+
+                                        {/* --- STEP 8: Add-ons --- */}
+                                        {step === 8 && (
+                                            <div className="space-y-8">
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-foreground mb-4">✨ Optional Add-ons</h3>
+                                                    <FormInput as="checkbox-group" label="" name="addons" options={addonOptions} value={formData.addons} onCheckboxChange={handleCheckboxChange} />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* --- STEP 9: Preferences --- */}
+                                        {step === 9 && (
+                                            <div className="space-y-8">
                                                 <div>
                                                     <h3 className="text-xl font-bold text-foreground mb-4">❤️ Your Preferences</h3>
                                                     <div className="space-y-5">
@@ -450,8 +485,9 @@ export default function PlannerForm() {
                                                 </div>
                                             </div>
                                         )}
-                                        {/* --- NEW STEP 6: Finalize & Book --- */}
-                                        {step === 6 && (
+
+                                        {/* --- STEP 10: Finalize & Book --- */}
+                                        {step === 10 && (
                                             <div className="space-y-5">
                                                 <h3 className="text-xl font-bold text-foreground">✅ Almost Done!</h3>
                                                 <label className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-primary/10 border border-gray-200 dark:border-slate-600">
@@ -462,6 +498,8 @@ export default function PlannerForm() {
                                             </div>
                                         )}
                                     </div>
+
+                                    {/* --- Renders Back/Next/Submit buttons --- */}
                                     {actionButtons}
                                 </form>
                             </div>
