@@ -34,7 +34,7 @@
   /* Yellow */
 }
 
-/* ✅ Tailwind theme extension */
+
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -49,4 +49,46 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-sans);
   transition: background-color 0.3s, color 0.3s;
+}
+
+
+.swiper-button-prev,
+.swiper-button-next {
+  width: 44px !important;
+  height: 44px !important;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  border-radius: 50% !important;
+  color: #ffffff !important;
+  transition: background-color 0.2s ease;
+ 
+}
+
+
+.swiper-button-prev::after,
+.swiper-button-next::after {
+  font-size: 1.25rem !important;
+ 
+  font-weight: 800 !important;
+ 
+}
+
+
+.swiper-button-prev:hover,
+.swiper-button-next:hover {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+
+}
+
+
+.swiper-pagination-bullet {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+
+  width: 8px !important;
+  height: 8px !important;
+  opacity: 1 !important;
+}
+
+.swiper-pagination-bullet-active {
+  background-color: #ffffff !important;
+
 }
