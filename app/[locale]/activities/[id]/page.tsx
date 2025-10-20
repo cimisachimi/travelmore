@@ -1,248 +1,252 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
+import { useTranslations } from "next-intl";
 import { activities } from "@/data/activities";
 import type { Activity } from "@/data/activities";
-import { useTranslations } from "next-intl";
 
-// --- Komponen-Komponen Kecil (Sub-components) ---
+// --- Impor Swiper untuk Slider ---
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
-const Breadcrumbs = ({ activityTitle, locale }: { activityTitle: string; locale: string | string[] | undefined }) => (
-  <div className="container mx-auto px-4 pt-6">
-    <nav className="text-sm text-foreground/60" aria-label="Breadcrumb">
-      <ol className="list-none p-0 inline-flex">
-        <li className="flex items-center">
-          <Link href={`/${locale}`} className="hover:underline">Home</Link>
-        </li>
-        <li className="flex items-center">
-          <span className="mx-2">/</span>
-          <Link href={`/${locale}/activities`} className="hover:underline capitalize">Activities</Link>
-        </li>
-        <li className="flex items-center">
-          <span className="mx-2">/</span>
-          <span className="font-medium text-foreground">{activityTitle}</span>
-        </li>
-      </ol>
-    </nav>
-  </div>
-);
-
-const ActivityHeader = ({ title, category, imageSrc }: { title: string; category: string; imageSrc: string }) => (
-  <>
-    <div className="relative w-full h-80 lg:h-[450px] rounded-lg overflow-hidden shadow-lg mb-6">
-      <Image src={imageSrc} alt={title} fill className="object-cover" />
-    </div>
-    <span className="inline-block bg-teal-600 text-white text-sm font-semibold px-3 py-1 rounded-md mb-3">
-      {category}
-    </span>
-    <h1 className="text-3xl lg:text-4xl font-bold text-foreground">{title}</h1>
-  </>
-);
-
-const KeyFeatures = ({ location, duration }: { location: string; duration: string }) => {
-  const t = useTranslations("activityDetail");
-  return (
-    <div className="flex flex-wrap gap-8 my-6 border-y border-border py-4">
-      <div className="flex items-center space-x-3">
-        <LocationIcon />
-        <div>
-          <p className="text-sm font-semibold text-foreground/80">{t("location")}</p>
-          <p className="font-bold text-foreground">{location}</p>
+// --- Komponen Slider untuk Mobile (Diambil dari PackageDetail) ---
+const MobileImageSlider = ({
+  images,
+  title,
+}: {
+  images: string[];
+  title: string;
+}) => (
+  <Swiper
+    modules={[Navigation, Pagination]}
+    navigation
+    pagination={{ clickable: true }}
+    loop={true}
+    className="w-full h-96"
+  >
+    {images.map((src, i) => (
+      <SwiperSlide key={i}>
+        <div className="relative w-full h-full">
+          <Image
+            src={src}
+            alt={`${title}-${i}`}
+            fill
+            className="object-cover"
+            priority={i === 0}
+          />
         </div>
-      </div>
-      <div className="flex items-center space-x-3">
-        <ClockIcon />
-        <div>
-          <p className="text-sm font-semibold text-foreground/80">{t("duration")}</p>
-          <p className="font-bold text-foreground">{duration}</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const BookingCard = ({ price, activityTitle, locale }: { price: number; activityTitle: string; locale: string | string[] | undefined }) => {
-  const t = useTranslations("activityDetail");
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(amount);
-
-  return (
-   
-    <div className="bg-slate-800 shadow-xl rounded-lg p-6 sticky top-28 border border-slate-700">
-      
-    
-      <h3 className="text-xl font-bold mb-4 text-white/90">{t("bookingTitle")}</h3>
-      
-      <div className="mb-6">
-      
-        <p className="text-sm text-slate-300">{t("startingFrom")}</p>
-        <p className="text-3xl font-bold text-primary">{formatCurrency(price)}</p>
-      </div>
-      
-      <Link
-        href={`/${locale}/booking?activity=${encodeURIComponent(activityTitle)}`}
-        className="w-full block text-center bg-primary text-black font-bold py-3 rounded-lg hover:brightness-90 transition transform hover:scale-105"
-      >
-        {t("bookNow")}
-      </Link>
-
-     
-      <p className="text-xs text-center text-slate-400 mt-4">{t("bookingNote")}</p>
-    </div>
-  );
-};
-
-const DetailSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="py-8">
-    <h2 className="text-2xl font-bold text-foreground mb-4 pb-2 border-b-2 border-primary inline-block">{title}</h2>
-    <div className="mt-4">{children}</div>
-  </div>
+      </SwiperSlide>
+    ))}
+  </Swiper>
 );
 
-const OverviewSection = ({ activity }: { activity: Activity }) => {
-    const t = useTranslations("activityDetail");
-    return (
-        <DetailSection title={t("overview")}>
-            <p className="text-foreground/80 leading-relaxed mb-6">{activity.description}</p>
-            <h3 className="text-lg font-bold text-foreground mb-3">{t("highlights")}</h3>
-            <ul className="space-y-2 mb-6">
-                {activity.highlights.map(item => (
-                    <li key={item} className="flex items-center">
-                        <CheckCircleIcon /> <span className="ml-2 text-foreground/80">{item}</span>
-                    </li>
-                ))}
-            </ul>
-            <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                    <h3 className="text-lg font-bold text-foreground mb-3">{t("includes")}</h3>
-                    <ul className="space-y-2">
-                        {activity.includes.map(item => (
-                            <li key={item} className="flex items-center">
-                                <CheckCircleIcon /> <span className="ml-2 text-foreground/80">{item}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div>
-                    <h3 className="text-lg font-bold text-foreground mb-3">{t("excludes")}</h3>
-                    <ul className="space-y-2">
-                        {activity.excludes.map(item => (
-                            <li key={item} className="flex items-center">
-                                <XCircleIcon /> <span className="ml-2 text-foreground/80">{item}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
-        </DetailSection>
-    );
-};
 
-const FaqSection = ({ faqs }: { faqs: { q: string, a: string }[] }) => {
-  const t = useTranslations("activityDetail");
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-  return (
-    <DetailSection title={t("faqTitle")}>
-      <div className="space-y-2">
-        {faqs.map((faq, index) => (
-          <div key={index} className="border-b border-border">
-            <button onClick={() => setOpenIndex(openIndex === index ? null : index)} className="w-full flex justify-between items-center text-left py-4">
-              <span className="font-semibold text-foreground">{faq.q}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 text-primary transition-transform ${openIndex === index ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {openIndex === index && (
-              <div className="pb-4 text-foreground/80">
-                <p>{faq.a}</p>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </DetailSection>
-  );
-};
+const CheckIcon = () => ( <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /> </svg> );
+const XIcon = () => ( <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> </svg> );
+const ClockIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}> <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 Sio 11-18 0 9 9 0 0118 0z" /> </svg> );
+const LocationIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}> <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /> <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /> </svg> );
 
 
 // --- Komponen Utama Halaman ---
-
 export default function ActivityDetailPage() {
   const { theme } = useTheme();
   const params = useParams();
   const t = useTranslations("activityDetail");
+  const tPackages = useTranslations("packages");
+  const [activeTab, setActiveTab] = useState("Overview");
 
   const activity = activities.find(a => a.id.toString() === params.id);
 
   if (!activity) {
-    return <div className="p-10 text-center">{t("notFound")}</div>;
+    return <div className="min-h-screen flex items-center justify-center text-gray-500">{t("notFound")}</div>;
   }
+  
+  
+  const images = [activity.image, activity.image, activity.image, activity.image];
 
+  const tripInfo = [
+    { label: t('location'), value: activity.location, icon: <LocationIcon /> },
+    { label: t('duration'), value: activity.duration, icon: <ClockIcon /> }
+  ];
+  
+  const tabs = ["Overview", "FAQs", "Map"];
   const price = theme === 'regular' ? activity.regularPrice : activity.exclusivePrice;
 
-  return (
-    <div className="bg-background">
-      <Breadcrumbs activityTitle={activity.title} locale={params.locale} />
+  // Class styling dinamis berdasarkan tema
+  const mainBgClass = theme === "regular" ? "bg-gray-50" : "bg-black";
+  const cardBgClass = theme === "regular" ? "bg-white" : "bg-gray-800";
+  const textClass = theme === "regular" ? "text-gray-900" : "text-white";
+  const textMutedClass = theme === "regular" ? "text-gray-600" : "text-gray-300";
+  const borderClass = theme === "regular" ? "border-gray-200" : "border-gray-700";
+  
+  const formatCurrency = (amount: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(amount);
 
-      <main className="container mx-auto px-4 pt-4 pb-12">
-        <div className="grid lg:grid-cols-3 gap-10">
-          
-          {/* Kolom Kiri: Detail Aktivitas */}
-          <div className="lg:col-span-2">
-            <ActivityHeader title={activity.title} category={activity.category} imageSrc={activity.image} />
-            <KeyFeatures location={activity.location} duration={activity.duration} />
-            <OverviewSection activity={activity} />
-            <FaqSection faqs={activity.faqs} />
-            <DetailSection title={t("locationMap")}>
-              <iframe
-                src={activity.mapLink}
-                width="100%"
-                height="450"
-                style={{ border: 0 }}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="rounded-lg shadow-md"
-              ></iframe>
-            </DetailSection>
-          </div>
+  // --- Fungsi Render Galeri ---
+  const renderGallery = () => {
+    const count = images.length;
+    if (count === 0) return ( <div className={`w-full h-[400px] ${theme === "regular" ? "bg-gray-200" : "bg-gray-900"} rounded-lg flex items-center justify-center text-gray-500`}> {t("gallery.noImage")} </div> );
 
-          {/* Kolom Kanan: Kartu Booking */}
-          <div className="lg:col-span-1">
-            <BookingCard price={price} activityTitle={activity.title} locale={params.locale} />
-          </div>
-
+    return (
+      <>
+        {/* Tampilan Mobile: Slider */}
+        <div className="md:hidden">
+          <MobileImageSlider images={images} title={activity.title} />
         </div>
-      </main>
+
+        {/* Tampilan Desktop: Grid Mosaic */}
+        <div className="hidden md:grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-2 h-96 md:h-[600px]">
+            <div className="relative md:col-span-2 md:row-span-2">
+                <Image src={images[0]} alt={activity.title} fill className="object-cover" priority />
+            </div>
+            {images.slice(1, 4).map((src, i) => (
+                <div key={i} className="relative">
+                    <Image src={src} alt={`${activity.title}-${i + 1}`} fill className="object-cover" />
+                </div>
+            ))}
+        </div>
+      </>
+    );
+  };
+
+
+  return (
+    <div className={mainBgClass}>
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
+        
+        {/* --- Breadcrumbs --- */}
+        <nav className="text-sm text-foreground/60 mb-4" aria-label="Breadcrumb">
+          <ol className="list-none p-0 inline-flex">
+            <li className="flex items-center"> <Link href={`/${params.locale}`} className="hover:underline">Home</Link> </li>
+            <li className="flex items-center"> <span className="mx-2">/</span> <Link href={`/${params.locale}/activities`} className="hover:underline capitalize">Activities</Link> </li>
+            <li className="flex items-center"> <span className="mx-2">/</span> <span className="font-medium text-foreground">{activity.title}</span> </li>
+          </ol>
+        </nav>
+
+        <div className={`${cardBgClass} rounded-2xl shadow-2xl overflow-hidden`}>
+          {renderGallery()}
+
+          <div className={`p-6 md:p-10 border-b ${borderClass}`}>
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+              <div className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular" ? "bg-teal-100 text-teal-800" : "bg-teal-900 text-teal-200"}`}>
+                {activity.category}
+              </div>
+            </div>
+            <h1 className={`text-3xl md:text-5xl font-extrabold ${textClass}`}>{activity.title}</h1>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 md:p-10">
+            {/* --- Kolom Kiri: Konten Utama --- */}
+            <div className="lg:col-span-2">
+              <div className="w-full">
+                
+                {/* Navigasi Tab */}
+                <div className={`w-full border-b ${borderClass} overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}>
+                  <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+                    {tabs.map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className={`${ activeTab === tab ? "border-primary text-primary" : `border-transparent ${textMutedClass} hover:border-gray-300 hover:text-gray-700` } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                      >
+                        {tPackages(`tabs.${tab.toLowerCase()}`)}
+                      </button>
+                    ))}
+                  </nav>
+                </div>
+
+                {/* Konten Tab */}
+                <div className="py-8">
+                  {activeTab === "Overview" && (
+                    <div className="space-y-6">
+                        <p className={`text-lg leading-relaxed ${textMutedClass}`}>{activity.description}</p>
+                        <h3 className={`text-xl font-bold ${textClass}`}>{t("highlights")}</h3>
+                        <ul className="space-y-2">
+                            {activity.highlights.map(item => ( <li key={item} className="flex items-start gap-3"> <CheckIcon /> <span className={textMutedClass}>{item}</span> </li> ))}
+                        </ul>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                            <div>
+                                <h4 className={`text-lg font-bold mb-4 ${textClass}`}>{t("includes")}</h4>
+                                <ul className="space-y-2">
+                                    {activity.includes.map((item) => ( <li key={item} className="flex items-start gap-3"> <CheckIcon /> <span className={textMutedClass}>{item}</span> </li> ))}
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className={`text-lg font-bold mb-4 ${textClass}`}>{t("excludes")}</h4>
+                                <ul className="space-y-2">
+                                    {activity.excludes.map((item) => ( <li key={item} className="flex items-start gap-3"> <XIcon /> <span className={textMutedClass}>{item}</span> </li> ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                  )}
+
+                  {activeTab === "FAQs" && (
+                     <div className="space-y-6">
+                        {activity.faqs.map((faq, index) => (
+                          <div key={index} className={`pb-4 border-b ${borderClass} last:border-b-0`}>
+                            <h4 className={`font-bold text-lg ${textClass} mb-1`}>{faq.q}</h4>
+                            <p className={textMutedClass}>{faq.a}</p>
+                          </div>
+                        ))}
+                      </div>
+                  )}
+
+                  {activeTab === "Map" && (
+                    <iframe src={activity.mapLink} width="100%" height="450" style={{ border: 0 }} allowFullScreen={false} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="rounded-lg"></iframe>
+                  )}
+                </div>
+              </div>
+
+              {/* Info Penting */}
+              <div className={`mt-10 pt-10 border-t ${borderClass}`}>
+                <h2 className={`text-2xl font-bold mb-6 ${textClass}`}>{tPackages("trip.info")}</h2>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-8">
+                  {tripInfo.map((item) => (
+                    <div key={item.label} className="flex items-start space-x-4">
+                      <div className="text-2xl mt-1 text-primary">{item.icon}</div>
+                      <div>
+                        <p className={`text-sm ${textMutedClass}`}>{item.label}</p>
+                        <p className={`font-bold ${textClass}`}>{item.value}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-1">
+              <div className={`border ${borderClass} rounded-xl shadow-lg p-6 sticky top-28`}>
+                <div className="text-center mb-5">
+                    <p className={`text-sm ${textMutedClass}`}>{t("startingFrom")}</p>
+                    <p className="text-3xl font-bold text-primary">{formatCurrency(price)}</p>
+                    
+                    <p className={`text-sm ${textMutedClass}`}>/ {tPackages("trip.adult")}</p>
+                </div>
+                <Link
+                  href={`/${params.locale}/booking?activity=${encodeURIComponent(activity.title)}`}
+                  className="w-full block text-center bg-primary text-black font-bold py-3 px-4 rounded-lg transition transform hover:scale-105 hover:brightness-90"
+                >
+                  {t("bookNow")}
+                </Link>
+                <p className="text-center text-xs text-gray-500 mt-4">
+                  {t("bookingNote")}
+                </p>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }
 
-
-// --- Definisi Ikon (diletakkan di bawah agar tidak mengganggu) ---
-
-const ClockIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-const LocationIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-);
-const CheckCircleIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-const XCircleIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
