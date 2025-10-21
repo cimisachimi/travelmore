@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -31,10 +32,7 @@ export default function PackagesPage() {
 
   const priceBounds = useMemo(() => {
     if (packages.length === 0) return { min: 0, max: 10000000 };
-    const allPrices = packages.flatMap((p) => [
-      p.regularPrice,
-      p.exclusivePrice,
-    ]);
+    const allPrices = packages.flatMap((p) => [p.regularPrice, p.exclusivePrice]);
     return { min: Math.min(...allPrices), max: Math.max(...allPrices) };
   }, []);
 
@@ -77,8 +75,7 @@ export default function PackagesPage() {
   const mainBgClass = theme === "regular" ? "bg-gray-50" : "bg-black";
   const cardBgClass = theme === "regular" ? "bg-white" : "bg-gray-800";
   const textClass = theme === "regular" ? "text-gray-900" : "text-white";
-  const textMutedClass =
-    theme === "regular" ? "text-gray-600" : "text-gray-300";
+  const textMutedClass = theme === "regular" ? "text-gray-600" : "text-gray-300";
   const headerBgClass = theme === "regular" ? "bg-white" : "bg-gray-900";
 
   return (
@@ -103,9 +100,7 @@ export default function PackagesPage() {
         <div className="flex flex-col md:flex-row gap-8">
           {/* Filter Sidebar */}
           <aside
-            className={`w-full md:w-1/4 md:block ${
-              isFilterOpen ? "block" : "hidden"
-            }`}
+            className={`w-full md:w-1/4 md:block ${isFilterOpen ? "block" : "hidden"}`}
           >
             <div
               className={`${cardBgClass} p-6 rounded-lg shadow-md sticky top-24`}
@@ -149,9 +144,7 @@ export default function PackagesPage() {
                         onChange={handleCategoryChange}
                         className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
                       />
-                      <span className={`ml-3 ${textMutedClass}`}>
-                        {category}
-                      </span>
+                      <span className={`ml-3 ${textMutedClass}`}>{category}</span>
                     </label>
                   ))}
                 </div>
@@ -195,17 +188,13 @@ export default function PackagesPage() {
                         </div>
                       </div>
                       <div className="p-6 flex flex-col flex-grow">
-                        <p
-                          className={`text-sm font-semibold text-blue-500 mb-2`}
-                        >
+                        <p className={`text-sm font-semibold text-blue-500 mb-2`}>
                           {pkg.category}
                         </p>
                         <h2 className={`text-xl font-bold mb-2 ${textClass}`}>
                           {pkg.title.split(": ")[1]}
                         </h2>
-                        <p
-                          className={`mb-4 flex-grow ${textMutedClass} text-sm`}
-                        >
+                        <p className={`mb-4 flex-grow ${textMutedClass} text-sm`}>
                           {pkg.description}
                         </p>
                         <div
@@ -246,3 +235,4 @@ export default function PackagesPage() {
     </div>
   );
 }
+
