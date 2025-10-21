@@ -629,10 +629,22 @@
     "step10_frequentTraveler": "Apakah Anda sering bepergian?",
     "options": {
       "travelTypes": {
-        "t1": "Liburan Keluarga",
-        "t2": "Pasangan/Bulan Madu",
-        "t3": "Wisatawan Tunggal",
-        "t4": "Grup"
+        "family": {
+          "title": "Liburan Keluarga",
+          "description": "Aktivitas menyenangkan dan aman yang cocok untuk semua umur."
+        },
+        "couple": {
+          "title": "Pasangan/Bulan Madu",
+          "description": "Destinasi romantis dan pengalaman intim."
+        },
+        "solo": {
+          "title": "Wisatawan Tunggal",
+          "description": "Rencana perjalanan fleksibel yang berfokus pada eksplorasi dan keselamatan."
+        },
+        "group": {
+          "title": "Grup",
+          "description": "Kegiatan terkoordinasi dan transportasi untuk kelompok besar."
+        }
       },
       "budgetPacks": {
         "Backpacker": {
@@ -669,7 +681,10 @@
         "p1": { "value": "The Explorer", "label": "Sang Penjelajah" },
         "p2": { "value": "The Culture Seeker", "label": "Pencari Budaya" },
         "p3": { "value": "Food Lovers", "label": "Pecinta Makanan" },
-        "p4": { "value": "Chill and Heal", "label": "Santai dan Memulihkan Diri" },
+        "p4": {
+          "value": "Chill and Heal",
+          "label": "Santai dan Memulihkan Diri"
+        },
         "p5": { "value": "The Social", "label": "Si Sosial" }
       },
       "activityLevels": {
@@ -680,15 +695,36 @@
         "l5": { "value": "5", "label": "5 - Intens" }
       },
       "foodPreferences": {
-        "f1": "Halal",
-        "f2": "Vegan",
-        "f3": "Pedas",
-        "f4": "Lokal",
-        "f5": "Barat"
+        "halal": {
+          "title": "Halal",
+          "description": "Makanan yang disiapkan sesuai syariat Islam."
+        },
+        "vegan": {
+          "title": "Vegan",
+          "description": "Tanpa produk hewani sama sekali (daging, susu, telur, madu)."
+        },
+        "spicy": {
+          "title": "Pedas",
+          "description": "Menyukai makanan dengan cita rasa pedas yang kuat."
+        },
+        "local": {
+          "title": "Lokal",
+          "description": "Ingin mencoba masakan khas daerah tujuan."
+        },
+        "western": {
+          "title": "Barat",
+          "description": "Preferensi untuk masakan gaya Eropa atau Amerika."
+        }
       },
       "travelerRoutines": {
-        "r1": { "value": "Casual Traveler", "label": "Pelancong Santai (<3x setahun)" },
-        "r2": { "value": "Frequent Traveler", "label": "Sering Bepergian (>3x setahun)" }
+        "r1": {
+          "value": "Casual Traveler",
+          "label": "Pelancong Santai (<3x setahun)"
+        },
+        "r2": {
+          "value": "Frequent Traveler",
+          "label": "Sering Bepergian (>3x setahun)"
+        }
       }
     }
   },

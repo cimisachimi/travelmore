@@ -630,10 +630,22 @@
     "step10_frequentTraveler": "Are you a frequent traveler?",
     "options": {
       "travelTypes": {
-        "t1": "Family Trip",
-        "t2": "Couple/Honeymoon",
-        "t3": "Solo Traveler",
-        "t4": "Group"
+        "family": {
+          "title": "Family Trip",
+          "description": "Fun and safe activities suitable for all ages."
+        },
+        "couple": {
+          "title": "Couple/Honeymoon",
+          "description": "Romantic destinations and intimate experiences."
+        },
+        "solo": {
+          "title": "Solo Traveler",
+          "description": "Flexible itineraries focused on exploration and safety."
+        },
+        "group": {
+          "title": "Group",
+          "description": "Coordinated activities and transport for larger groups."
+        }
       },
       "budgetPacks": {
         "Backpacker": {
