@@ -21,3 +21,86 @@
   color: white;
   font-weight: bold;
 }
+
+/* Add these new classes to your calendar.css file */
+
+/* --- Available Dates (Green) --- */
+.rdp-day_available:not(.rdp-day_outside) {
+  background-color: #dcfce7;
+  /* Light green background */
+  color: #166534;
+  /* Dark green text */
+  font-weight: 600;
+}
+
+/* For dark mode */
+@media (prefers-color-scheme: dark) {
+  .rdp-day_available:not(.rdp-day_outside) {
+    background-color: #14532d;
+    color: #dcfce7;
+  }
+}
+
+.rdp-day_available:not(.rdp-day_outside):hover {
+  background-color: #bbf7d0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .rdp-day_available:not(.rdp-day_outside):hover {
+    background-color: #166534;
+  }
+}
+
+/* --- Booked Dates (Red) --- */
+.rdp-day_booked:not(.rdp-day_outside) {
+  background-color: #fee2e2;
+  /* Light red background */
+  color: #991b1b;
+  /* Dark red text */
+  text-decoration: line-through;
+  opacity: 0.6;
+  /* Make them more muted than 'disabled' */
+}
+
+/* For dark mode */
+@media (prefers-color-scheme: dark) {
+  .rdp-day_booked:not(.rdp-day_outside) {
+    background-color: #7f1d1d;
+    color: #fee2e2;
+  }
+}
+
+/* --- Maintenance Dates (Yellow) --- */
+.rdp-day_maintenance:not(.rdp-day_outside) {
+  background-color: #fef9c3;
+  /* Light yellow background */
+  color: #854d0e;
+  /* Dark yellow/brown text */
+  opacity: 0.7;
+}
+
+/* For dark mode */
+@media (prefers-color-scheme: dark) {
+  .rdp-day_maintenance:not(.rdp-day_outside) {
+    background-color: #713f12;
+    color: #fef9c3;
+  }
+}
+
+/* Ensure selected range overrides modifier colors */
+.rdp-day_available.rdp-day_range_start,
+.rdp-day_available.rdp-day_range_end,
+.rdp-day_available.rdp-day_range_middle {
+  background-color: var(--rdp-selected-color);
+  color: white;
+}
+
+@media (prefers-color-scheme: dark) {
+
+  .rdp-day_available.rdp-day_range_start,
+  .rdp-day_available.rdp-day_range_end,
+  .rdp-day_available.rdp-day_range_middle {
+    background-color: var(--rdp-selected-color);
+    color: white;
+  }
+}
