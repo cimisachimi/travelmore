@@ -13,6 +13,8 @@ import api from "@/lib/api";
 import Link from "next/link";
 import { differenceInDays } from "date-fns";
 import { AxiosError } from "axios";
+import { Car, Fuel, Gauge, Luggage, User as UserIcon, Settings } from 'lucide-react'; // Import icons
+
 // --- Interfaces ---
 interface ApiCarImage {
   url: string;
@@ -39,8 +41,6 @@ interface ApiCar {
   images: ApiCarImage[];
 }
 
-// ✅ REMOVED: BookingOrder interface no longer needed here
-
 export default function CarDetailPage() {
   const t = useTranslations("carDetail");
   const params = useParams();
@@ -58,19 +58,13 @@ export default function CarDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
-  // ✅ REMOVED: Payment-related states
-  // const [isPaying, setIsPaying] = useState(false);
-  // const [newOrder, setNewOrder] = useState<BookingOrder | null>(null);
-
-  // Form state
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [phone, setPhone] = useState("");
   const [pickupLocation, setPickupLocation] = useState("");
 
-  // Re-usable function to fetch availability
   const fetchAvailability = async () => {
-    // ... (this function is unchanged)
+    // ... (unchanged)
     if (!id) return;
     try {
       const availabilityResponse = await api.get(
@@ -83,7 +77,7 @@ export default function CarDetailPage() {
   };
 
   useEffect(() => {
-    // ... (this function is unchanged)
+    // ... (unchanged)
     if (!id) return;
     const fetchCarAndAvailability = async () => {
       try {
@@ -116,16 +110,15 @@ export default function CarDetailPage() {
   }, [id, locale, t]);
 
   useEffect(() => {
-    // ... (this function is unchanged)
+    // ... (unchanged)
     if (user) {
       setName(user.name);
       setEmail(user.email);
     }
   }, [user]);
 
-  // ✅ REMOVED: Midtrans Snap script loader useEffect
-
   const handleSubmit = async (e: React.FormEvent) => {
+    // ... (unchanged)
     e.preventDefault();
     if (!car || !selectedRange?.from || !selectedRange?.to) {
       toast.error("Please select a valid start and end date.");
@@ -146,17 +139,18 @@ export default function CarDetailPage() {
         start_date: selectedRange.from.toISOString().split("T")[0],
         end_date: selectedRange.to.toISOString().split("T")[0],
         total_price: totalPrice,
+        // Include booking details if needed by backend (example)
+        // name: name,
+        // email: email,
+        // phone: phone,
+        // pickup_location: pickupLocation,
       });
 
       if (response.status === 201) {
-        // ✅ MODIFIED: Simplified success flow
         toast.success(
           `Booking created! Please complete payment in your profile.`
         );
         setBookingSuccess(true);
-        // ✅ REMOVED: setNewOrder(order);
-
-        // Refetch availability and clear selection
         fetchAvailability();
         setSelectedRange(undefined);
       }
@@ -172,16 +166,16 @@ export default function CarDetailPage() {
     }
   };
 
-  // ✅ REMOVED: handlePayment function
-
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
+      minimumFractionDigits: 0, // Ensure no decimal places for IDR
+      maximumFractionDigits: 0,
     }).format(amount);
 
   const { availableDays, bookedDays, maintenanceDays } = useMemo(() => {
-    // ... (this function is unchanged)
+    // ... (unchanged)
     const available: Date[] = [];
     const booked: Date[] = [];
     const maintenance: Date[] = [];
@@ -231,7 +225,7 @@ export default function CarDetailPage() {
         <div className="grid lg:grid-cols-2 gap-10">
           {/* --- LEFT: Gallery + Info --- */}
           <div>
-            {/* ... (gallery and info section is unchanged) ... */}
+            {/* Gallery (unchanged) */}
             <div className="relative w-full h-80 rounded-lg overflow-hidden shadow-lg mb-4">
               <Image
                 src={activeImage}
@@ -248,8 +242,8 @@ export default function CarDetailPage() {
                   <div
                     key={index}
                     className={`relative w-20 h-20 rounded-lg cursor-pointer border-2 ${img.full === activeImage
-                      ? "border-primary"
-                      : "border-transparent"
+                        ? "border-primary"
+                        : "border-transparent"
                       }`}
                     onClick={() => setActiveImage(img.full)}
                   >
@@ -266,13 +260,68 @@ export default function CarDetailPage() {
             )}
             <h2 className="text-3xl font-bold mt-6">{carName}</h2>
             <p className="mt-2 text-foreground/70">
-              {car.description || "No description."}
+              {car.description || "No description available."}
             </p>
-            {/* ... (car details are unchanged) ... */}
+
+            {/* --- ✅ ADDED: Car Details Section --- */}
+            <div className="mt-8 border-t pt-6">
+              <h3 className="text-xl font-bold mb-4">{t('details.title')}</h3>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                {car.car_type && (
+                  <div className="flex items-center gap-2">
+                    <Car size={16} className="text-primary" />
+                    <span className="text-foreground/80">{t('details.type')}:</span>
+                    <span className="font-semibold">{car.car_type}</span>
+                  </div>
+                )}
+                {car.transmission && (
+                  <div className="flex items-center gap-2">
+                    <Settings size={16} className="text-primary" />
+                    <span className="text-foreground/80">{t('details.transmission')}:</span>
+                    <span className="font-semibold">{car.transmission}</span>
+                  </div>
+                )}
+                {car.fuel_type && (
+                  <div className="flex items-center gap-2">
+                    <Fuel size={16} className="text-primary" />
+                    <span className="text-foreground/80">{t('details.fuel')}:</span>
+                    <span className="font-semibold">{car.fuel_type}</span>
+                  </div>
+                )}
+                {car.capacity && (
+                  <div className="flex items-center gap-2">
+                    <UserIcon size={16} className="text-primary" />
+                    <span className="text-foreground/80">{t('details.capacity')}:</span>
+                    <span className="font-semibold">{car.capacity} {t('details.seats')}</span>
+                  </div>
+                )}
+                {car.trunk_size && (
+                  <div className="flex items-center gap-2">
+                    <Luggage size={16} className="text-primary" />
+                    <span className="text-foreground/80">{t('details.trunk')}:</span>
+                    <span className="font-semibold">{car.trunk_size} {t('details.bags')}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* --- ✅ ADDED: Car Features Section --- */}
+            {car.features && car.features.length > 0 && (
+              <div className="mt-8 border-t pt-6">
+                <h3 className="text-xl font-bold mb-4">{t('details.features')}</h3>
+                <ul className="list-disc list-inside space-y-1 text-foreground/80">
+                  {car.features.map((feature, index) => (
+                    <li key={index}>{feature}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {/* --- END ADDITIONS --- */}
+
           </div>
 
-          {/* --- RIGHT: Booking Form --- */}
-          <div className="bg-card shadow-lg rounded-lg p-6">
+          {/* --- RIGHT: Booking Form (unchanged logic, updated UI) --- */}
+          <div className="bg-card shadow-lg rounded-lg p-6 sticky top-8"> {/* Added sticky */}
             <h3 className="text-xl font-bold mb-4">{t("form.title")}</h3>
             <div className="mb-4 p-4 bg-background border rounded-lg">
               <span className="text-2xl font-bold text-primary">
@@ -282,7 +331,6 @@ export default function CarDetailPage() {
             </div>
 
             <div className="calendar-container">
-              {/* ... (DayPicker is unchanged) ... */}
               <DayPicker
                 mode="range"
                 selected={selectedRange}
@@ -302,7 +350,6 @@ export default function CarDetailPage() {
             </div>
 
             {user ? (
-              // ✅ MODIFIED: Show simple success message, not payment options
               bookingSuccess ? (
                 <div className="mt-6 text-center p-4 bg-green-100 dark:bg-green-900/50 border border-green-300 dark:border-green-700 rounded-lg">
                   <h4 className="font-bold text-lg text-green-800 dark:text-green-200">
@@ -313,7 +360,7 @@ export default function CarDetailPage() {
                     in your profile.
                   </p>
                   <Link
-                    href="/profile" // ✅ ADDED: Link to profile page
+                    href="/profile"
                     className="mt-4 inline-block bg-primary text-primary-foreground font-bold py-2 px-4 rounded-lg hover:bg-primary/90"
                   >
                     Go to My Profile
@@ -321,6 +368,7 @@ export default function CarDetailPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                  {/* Form fields (unchanged) */}
                   <input
                     type="text"
                     placeholder={t("form.name")}

@@ -416,6 +416,17 @@
       "phone": "Phone Number",
       "pickup": "Pickup Location",
       "button": "Book Now"
+    },
+    "details": {
+      "title": "Car Details",
+      "type": "Type",
+      "transmission": "Transmission",
+      "fuel": "Fuel Type",
+      "capacity": "Capacity",
+      "seats": "seats",
+      "trunk": "Trunk Size",
+      "bags": "bags",
+      "features": "Features"
     }
   },
   "carRental": {
@@ -443,13 +454,14 @@
       "child": "Child"
     },
     "cost": {
-      "included": "What's Included",
+      "facilitiesIncluded": "What's Included",
       "excluded": "What's Not Included"
     },
     "booking": {
       "checkAvailability": "CHECK AVAILABILITY",
       "needHelp": "Need help with booking?",
-      "sendMessage": "Send Us a Message"
+      "sendMessage": "Send Us a Message",
+      "loginToBook": "Please Login first to book "
     },
     "gallery": {
       "noImage": "No Image Available"
@@ -458,7 +470,9 @@
       "back": "← Back to All Packages"
     },
     "status": {
-      "notFound": "Package not found."
+      "notFound": "Package not found.",
+      "loading": "Loading Packages",
+      "fetchError": "error"
     }
   },
   "PackagesPage": {
@@ -472,7 +486,12 @@
     "closeFilters": "Close Filters",
     "days": "Days",
     "viewDetails": "View Details",
-    "noResults": "No packages match your filters."
+    "noResults": "No packages match your filters.",
+    "status": {
+      "loading": "Loading packages...",
+      "noCategories": "No categories found.",
+      "fetchError": "Failed to load packages. Please try again."
+    }
   },
   "PlannerPage": {
     "regular": {
