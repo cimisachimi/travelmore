@@ -1,14 +1,34 @@
-
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
-import { packages } from "@/data/packages";
 import { useTranslations } from "next-intl";
+import api from "@/lib/api";
 
-// Helper Icon for the filter button
+// --- Interfaces ---
+interface PackageListItem {
+  id: number;
+  name: string;
+  location?: string;
+  duration: number;
+  price_regular: number;
+  price_exclusive: number;
+  rating?: number;
+  category: string;
+  images_url: string[]; // Masih ada untuk fallback
+  thumbnail_url: string | null; // ✅ TAMBAHKAN INI
+}
+
+interface ApiResponse {
+  data: PackageListItem[];
+  links?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
+}
+
+
+// --- Helper Icon ---
 const FilterIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -24,24 +44,74 @@ const FilterIcon = () => (
   </svg>
 );
 
+// --- Komponen Utama ---
 export default function PackagesPage() {
   const { theme } = useTheme();
-  const t = useTranslations("PackagesPage"); // ✅ ganti namespace
+  const t = useTranslations("PackagesPage");
+
+  const [apiPackages, setApiPackages] = useState<PackageListItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  const priceBounds = useMemo(() => {
-    if (packages.length === 0) return { min: 0, max: 10000000 };
-    const allPrices = packages.flatMap((p) => [p.regularPrice, p.exclusivePrice]);
-    return { min: Math.min(...allPrices), max: Math.max(...allPrices) };
-  }, []);
-
-  const [maxPrice, setMaxPrice] = useState<number>(priceBounds.max);
+  const [maxPrice, setMaxPrice] = useState<number>(10000000);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
+  const fetchErrorString = t("status.fetchError",);
+  const loadingString = t('status.loading');
+  const noCategoriesString = t('status.noCategories');
+  const noResultsString = t("noResults");
+
+  useEffect(() => {
+    const fetchPackages = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await api.get<ApiResponse>('/public/packages');
+        const packagesData = response.data.data || [];
+        setApiPackages(packagesData);
+
+        if (packagesData.length > 0) {
+          const allPrices = packagesData.flatMap((p) => [
+            p.price_regular,
+            p.price_exclusive,
+          ]);
+          const numericPrices = allPrices.filter(p => typeof p === 'number' && !isNaN(p));
+          if (numericPrices.length > 0) {
+            setMaxPrice(Math.max(...numericPrices));
+          } else {
+            setMaxPrice(10000000);
+          }
+        } else {
+          setMaxPrice(10000000);
+        }
+
+      } catch (err: unknown) {
+        console.error("Failed to fetch packages:", err);
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError(fetchErrorString);
+        }
+      }
+
+    };
+
+    fetchPackages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchErrorString]);
+
+  const priceBounds = useMemo(() => {
+    if (apiPackages.length === 0) return { min: 0, max: 10000000 };
+    const allPrices = apiPackages.flatMap((p) => [p.price_regular, p.price_exclusive]);
+    const numericPrices = allPrices.filter(p => typeof p === 'number' && !isNaN(p));
+    if (numericPrices.length === 0) return { min: 0, max: 10000000 };
+    return { min: Math.min(...numericPrices), max: Math.max(...numericPrices) };
+  }, [apiPackages]);
+
   const allCategories = useMemo(
-    () => [...new Set(packages.map((pkg) => pkg.category))],
-    []
+    () => [...new Set(apiPackages.map((pkg) => pkg.category).filter(Boolean))], // Filter out null/undefined categories
+    [apiPackages]
   );
 
   const handleCategoryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,23 +124,24 @@ export default function PackagesPage() {
   };
 
   const filteredPackages = useMemo(() => {
-    return packages.filter((pkg) => {
-      const currentPrice =
-        theme === "regular" ? pkg.regularPrice : pkg.exclusivePrice;
+    return apiPackages.filter((pkg) => {
+      const currentPrice = pkg.price_exclusive;
       const priceMatch = currentPrice <= maxPrice;
       const categoryMatch =
         selectedCategories.length === 0 ||
         selectedCategories.includes(pkg.category);
       return priceMatch && categoryMatch;
     });
-  }, [maxPrice, selectedCategories, theme]);
+  }, [apiPackages, maxPrice, selectedCategories]);
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("id-ID", {
+  const formatCurrency = (amount: number | string | null | undefined): string => {
+    const numericAmount = Number(amount) || 0;
+    return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
       minimumFractionDigits: 0,
-    }).format(amount);
+    }).format(numericAmount);
+  }
 
   const mainBgClass = theme === "regular" ? "bg-gray-50" : "bg-black";
   const cardBgClass = theme === "regular" ? "bg-white" : "bg-gray-800";
@@ -80,11 +151,9 @@ export default function PackagesPage() {
 
   return (
     <div className={`${mainBgClass}`}>
-      {/* Header */}
       <header
-        className={`py-12 ${headerBgClass} border-b ${
-          theme === "regular" ? "border-gray-200" : "border-gray-800"
-        }`}
+        className={`py-12 ${headerBgClass} border-b ${theme === "regular" ? "border-gray-200" : "border-gray-800"
+          }`}
       >
         <div className="container mx-auto px-4 lg:px-8 text-center">
           <h1 className={`text-4xl md:text-5xl font-extrabold ${textClass}`}>
@@ -98,7 +167,6 @@ export default function PackagesPage() {
 
       <div className="container mx-auto px-4 lg:px-8 py-12">
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Filter Sidebar */}
           <aside
             className={`w-full md:w-1/4 md:block ${isFilterOpen ? "block" : "hidden"}`}
           >
@@ -123,7 +191,8 @@ export default function PackagesPage() {
                   step="100000"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                  disabled={loading}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 disabled:opacity-50"
                 />
                 <div className={`mt-2 ${textMutedClass}`}>
                   {t("upTo")}: <strong>{formatCurrency(maxPrice)}</strong>
@@ -135,26 +204,30 @@ export default function PackagesPage() {
                   {t("categories")}
                 </h4>
                 <div className="space-y-2">
-                  {allCategories.map((category) => (
-                    <label key={category} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        name={category}
-                        checked={selectedCategories.includes(category)}
-                        onChange={handleCategoryChange}
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
-                      />
-                      <span className={`ml-3 ${textMutedClass}`}>{category}</span>
-                    </label>
-                  ))}
+                  {loading ? (
+                    <p className={textMutedClass}>{loadingString}</p>
+                  ) : allCategories.length > 0 ? (
+                    allCategories.map((category) => (
+                      <label key={category} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name={category}
+                          checked={selectedCategories.includes(category)}
+                          onChange={handleCategoryChange}
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                        />
+                        <span className={`ml-3 ${textMutedClass}`}>{category}</span>
+                      </label>
+                    ))
+                  ) : (
+                    <p className={textMutedClass}>{noCategoriesString}</p>
+                  )}
                 </div>
               </div>
             </div>
           </aside>
 
-          {/* Packages Grid */}
           <main className="w-full md:w-3/4">
-            {/* Mobile Filter Button */}
             <div className="md:hidden mb-4">
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -165,74 +238,76 @@ export default function PackagesPage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {filteredPackages.length > 0 ? (
-                filteredPackages.map((pkg) => (
-                  <Link key={pkg.id} href={`/packages/${pkg.id}`}>
-                    <div
-                      className={`${cardBgClass} rounded-lg shadow-lg overflow-hidden flex flex-col group transition hover:shadow-2xl hover:-translate-y-1 h-full`}
-                    >
-                      <div className="relative h-56 w-full overflow-hidden">
-                        <Image
-                          src={
-                            pkg.images && pkg.images.length > 0
-                              ? pkg.images[0]
-                              : "/placeholder.jpg"
-                          }
-                          alt={pkg.title}
-                          fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                        <div className="absolute top-4 right-4 bg-black bg-opacity-60 text-white py-1 px-3 rounded-full text-sm font-bold backdrop-blur-sm">
-                          {pkg.duration} {t("days")}
+            {loading && (
+              <div className="text-center py-16">
+                <p className={`${textMutedClass} text-xl`}>{loadingString}</p>
+              </div>
+            )}
+            {error && !loading && (
+              <div className="text-center py-16">
+                <p className="text-red-500 text-xl">{error}</p>
+              </div>
+            )}
+
+            {!loading && !error && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {filteredPackages.length > 0 ? (
+                  filteredPackages.map((pkg) => (
+                    <Link key={pkg.id} href={`/packages/${pkg.id}`}>
+                      <div
+                        className={`${cardBgClass} rounded-lg shadow-lg overflow-hidden flex flex-col group transition hover:shadow-2xl hover:-translate-y-1 h-full`}
+                      >
+                        <div className="relative h-56 w-full overflow-hidden">
+                          <Image
+                            // Uses thumbnail_url if available, otherwise falls back to placeholder.jpg
+                            src={pkg.thumbnail_url || "/placeholder.jpg"}
+                            alt={pkg.name}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            sizes="(max-width: 1023px) 100vw, 50vw"
+                          />
+                          <div className="absolute top-4 right-4 bg-black bg-opacity-60 text-white py-1 px-3 rounded-full text-sm font-bold backdrop-blur-sm">
+                            {pkg.duration} {t("days")}
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-6 flex flex-col flex-grow">
-                        <p className={`text-sm font-semibold text-blue-500 mb-2`}>
-                          {pkg.category}
-                        </p>
-                        <h2 className={`text-xl font-bold mb-2 ${textClass}`}>
-                          {pkg.title.split(": ")[1]}
-                        </h2>
-                        <p className={`mb-4 flex-grow ${textMutedClass} text-sm`}>
-                          {pkg.description}
-                        </p>
-                        <div
-                          className={`flex justify-between items-center mt-auto pt-4 border-t ${
-                            theme === "regular"
+                        <div className="p-6 flex flex-col flex-grow">
+                          <p className={`text-sm font-semibold text-blue-500 mb-2`}>
+                            {pkg.category}
+                          </p>
+                          <h2 className={`text-xl font-bold mb-2 ${textClass}`}>
+                            {pkg.name.split(": ")[1] || pkg.name}
+                          </h2>
+                          <div
+                            className={`flex justify-between items-center mt-auto pt-4 border-t ${theme === "regular"
                               ? "border-gray-100"
                               : "border-gray-700"
-                          }`}
-                        >
-                          <p
-                            className={`text-lg font-bold text-blue-600 dark:text-blue-400`}
+                              }`}
                           >
-                            {formatCurrency(
-                              theme === "regular"
-                                ? pkg.regularPrice
-                                : pkg.exclusivePrice
-                            )}
-                          </p>
-                          <span
-                            className={`text-sm font-semibold ${textClass} group-hover:text-blue-500 transition`}
-                          >
-                            {t("viewDetails")} →
-                          </span>
+                            <p
+                              className={`text-lg font-bold text-blue-600 dark:text-blue-400`}
+                            >
+                              {formatCurrency(pkg.price_exclusive)}
+                            </p>
+                            <span
+                              className={`text-sm font-semibold ${textClass} group-hover:text-blue-500 transition`}
+                            >
+                              {t("viewDetails")} →
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                ))
-              ) : (
-                <div className="lg:col-span-2 text-center py-16">
-                  <p className="text-gray-500 text-xl">{t("noResults")}</p>
-                </div>
-              )}
-            </div>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="lg:col-span-2 text-center py-16">
+                    <p className="text-gray-500 text-xl">{noResultsString}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </main>
         </div>
       </div>
     </div>
   );
 }
-
