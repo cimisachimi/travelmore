@@ -58,6 +58,36 @@ export default function PlannerPage() {
     setShowForm(false);
     window.scrollTo(0, 0); // Scroll ke atas saat kembali
   };
+  const ThemeToggleButton = () => {
+  const { theme, setTheme } = useTheme();
+  const tNav = useTranslations("Navbar"); // Menggunakan terjemahan dari Navbar untuk "Regular" & "Exclusive"
+
+  return (
+    <div className="flex items-center p-1 rounded-full bg-gray-200 dark:bg-gray-700">
+      <button
+        onClick={() => setTheme("regular")}
+        className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300 ${
+          theme === "regular"
+            ? "bg-white text-black shadow-sm"
+            : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+        }`}
+      >
+        {tNav("regular")}
+      </button>
+      <button
+        onClick={() => setTheme("exclusive")}
+        className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300 ${
+          theme === "exclusive"
+            ? "bg-primary text-black shadow-sm" // Gunakan warna primer untuk eksklusif
+            : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+        }`}
+      >
+        {tNav("exclusive")}
+      </button>
+    </div>
+  );
+
+};
 
   return (
     <main className="bg-background text-foreground transition-colors duration-300">
@@ -83,6 +113,9 @@ export default function PlannerPage() {
         <section className="container mx-auto px-4 py-16 space-y-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="text-left">
+              <div className="mb-6 flex justify-start"> {/* Wrapper untuk positioning */}
+                <ThemeToggleButton />
+              </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 {currentContent.title}
               </h1>
