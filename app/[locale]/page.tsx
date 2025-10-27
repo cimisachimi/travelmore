@@ -16,12 +16,12 @@ export default function Home() {
       <HeroSlider />
       <PersonalizedTripPlanner />
       <PopularPackages />
-      <HowItWorks />
+      {/* <HowItWorks /> */}
       <OtherServices />
       <WhyChooseUs />
       <CTASection />
       <BlogSection />
-      <Testimonials />
+      {/* <Testimonials /> */}
 
     </>
   );

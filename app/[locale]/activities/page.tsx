@@ -9,8 +9,9 @@ import { useTranslations } from "next-intl";
 import { activities } from "@/data/activities";
 
 export default function ActivitiesPage() {
-  const { theme } = useTheme();
+  const { theme, setTheme } = useTheme(); // Pindahkan useTheme ke sini
   const t = useTranslations("activities");
+  const tNav = useTranslations("Navbar"); // Untuk teks "Regular" & "Exclusive"
 
   // State for filters
   const [maxPrice, setMaxPrice] = useState<number>(1000000);
@@ -63,6 +64,34 @@ export default function ActivitiesPage() {
   const textMutedClass = theme === "regular" ? "text-gray-600" : "text-gray-300";
   const headerBgClass = theme === "regular" ? "bg-white" : "bg-gray-900";
 
+  const ThemeToggleButton = () => {
+    // useTheme sudah dipanggil di atas, jadi kita gunakan variabelnya langsung
+    return (
+      <div className="flex items-center p-1 rounded-full bg-gray-200 dark:bg-gray-700">
+        <button
+          onClick={() => setTheme("regular")}
+          className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300 ${
+            theme === "regular"
+              ? "bg-white text-black shadow-sm"
+              : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          }`}
+        >
+          {tNav("regular")}
+        </button>
+        <button
+          onClick={() => setTheme("exclusive")}
+          className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300 ${
+            theme === "exclusive"
+              ? "bg-primary text-black shadow-sm" // Gunakan warna primer untuk eksklusif
+              : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          }`}
+        >
+          {tNav("exclusive")}
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className={`${mainBgClass}`}>
       {/* Header */}
@@ -82,6 +111,11 @@ export default function ActivitiesPage() {
       </header>
 
       <div className="container mx-auto px-4 lg:px-8 py-12">
+
+        <div className="mb-6 flex justify-center md:justify-end"> {/* Positioning */}
+          <ThemeToggleButton />
+        </div>
+        
         <div className="flex flex-col md:flex-row gap-8">
           {/* Filter Sidebar */}
           <aside className="w-full md:w-1/4">

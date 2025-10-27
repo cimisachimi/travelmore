@@ -301,7 +301,7 @@ export default function PackagesPage() {
             {/* Error State */}
             {error && !loading && (
               <div className="text-center py-16 p-4 bg-red-100 dark:bg-red-900/50 border border-red-300 dark:border-red-700 rounded-lg">
-                <p className="text-red-700 dark:text-red-200 font-semibold">{t('status.fetchErrorTitle', { defaultMessage: "Error Loading Packages" })}</p>
+                <p className="text-red-700 dark:text-red-200 font-semibold">{t('status.fetchError', { defaultMessage: "Error Loading Packages" })}</p>
                 <p className="text-red-600 dark:text-red-300 text-sm mt-1">{error}</p>
               </div>
             )}
