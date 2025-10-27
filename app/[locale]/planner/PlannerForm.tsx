@@ -311,7 +311,7 @@ export default function PlannerForm() {
         if (response.data) {
           // Sanitize and map data
           // Use a generic string-indexed container so we can safely assign arrays and other shapes coming from the API
-          const sanitizedData: { [key: string]: any } = {};
+          const sanitizedData: { [key: string]: string | number | boolean | string[] } = {};
           for (const key in response.data) {
             const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase()) as string;
             // Ensure array fields are arrays, handle nulls gracefully
