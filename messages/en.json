@@ -224,6 +224,9 @@
   "activities": {
     "title": "Daily Activities",
     "subtitle": "Book separate activities or day tours, from cooking classes to volcano jeeps.",
+    "popularActivities": "Popular Activities",
+    "popularActivitiesDesc": "Explore the most popular activities and adventures in Yogyakarta.",
+    "showMore": "Show More",
     "filters": {
       "title": "Filters",
       "price": "Price Range",
@@ -752,7 +755,8 @@
           "label": "3 - Moderate"
         },
         "l4": {
-          "value": "4 - Active"
+          "value": "4",
+          "label": "4 - Active"
         },
         "l5": {
           "value": "5",
@@ -806,3 +810,4 @@
     }
   }
 }
+

@@ -1,3 +1,4 @@
+// app/[locale]/activities/[id]/page.tsx
 "use client";
 
 import React, { useState } from "react";
