@@ -57,6 +57,13 @@ export interface AuthUser {
   email: string;
 }
 
+// [UPDATED] Interface for new price tiers
+export interface PackagePriceTier {
+  min_pax: number;
+  max_pax: number;
+  price: number;
+}
+
 export interface HolidayPackage {
   id: number;
   name: string;
@@ -70,10 +77,11 @@ export interface HolidayPackage {
   cost: { included: string[]; excluded: string[] };
   faqs: { question: string; answer: string }[];
   tripInfo: { label: string; value: string; icon: string }[];
-  mapUrl: string; // Ensure this matches the backend (map_url or mapUrl)
-  regularPrice: number; // Ensure this matches the backend (price_regular or regularPrice)
-  exclusivePrice: number; // Ensure this matches the backend (price_exclusive or exclusivePrice)
-  childPrice: number; // Ensure this matches the backend (price_child or childPrice)
+  mapUrl: string;
+
+  // [NEW] Updated pricing fields
+  price_tiers: PackagePriceTier[];
+  starting_from_price: number | null;
 }
 
 export type TFunction = (key: string, defaultMessage?: string) => string;
@@ -145,20 +153,12 @@ export default function PackageDetailPage() {
     ? { included: Array.isArray(pkg.cost.included) ? pkg.cost.included : [], excluded: Array.isArray(pkg.cost.excluded) ? pkg.cost.excluded : [] }
     : { included: [], excluded: [] };
 
-  interface LegacyPackage {
-    price_regular?: number;
-    price_exclusive?: number;
-    price_child?: number;
-    map_url?: string;
-  }
+  // [REMOVED] Old price logic
 
-  const legacyPkg = pkg as Partial<LegacyPackage>;
-
-  const regularPrice = pkg.regularPrice ?? legacyPkg.price_regular ?? 0;
-  const exclusivePrice = pkg.exclusivePrice ?? legacyPkg.price_exclusive ?? 0;
-  const childPrice = pkg.childPrice ?? legacyPkg.price_child ?? 0;
-  const mapUrl = pkg.mapUrl ?? legacyPkg.map_url ?? '';
-
+  // [NEW] Use new fields directly
+  const startingPrice = pkg.starting_from_price ?? 0;
+  const priceTiers = Array.isArray(pkg.price_tiers) ? pkg.price_tiers : [];
+  const mapUrl = pkg.mapUrl ?? '';
 
   const images = pkg.images_url || [];
   // Ensure itinerary is an array
@@ -166,7 +166,9 @@ export default function PackageDetailPage() {
   const tripInfo = Array.isArray(pkg.tripInfo) ? pkg.tripInfo : [];
   const faqsData = Array.isArray(pkg.faqs) ? pkg.faqs : [];
   const title = pkg.name.split(": ")[1] || pkg.name;
-  const tabs = ["Overview", "Itinerary", "Cost", "FAQs", "Map"];
+
+  // [UPDATED] Added "Pricing" tab
+  const tabs = ["Overview", "Itinerary", "Pricing", "Cost", "FAQs", "Map"];
 
   const mainBgClass = theme === "regular" ? "bg-gray-50" : "bg-black";
   const cardBgClass = theme === "regular" ? "bg-white" : "bg-gray-800";
@@ -183,6 +185,13 @@ export default function PackageDetailPage() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount);
+  };
+
+  // [NEW] Helper to format pax range
+  const formatPaxRange = (min: number, max: number): string => {
+    if (min === max) return `${min} pax`;
+    if (!max || max === 0) return `${min}+ pax`;
+    return `${min}–${max} pax`;
   };
 
 
@@ -396,6 +405,44 @@ export default function PackageDetailPage() {
                       )}
                     </div>
                   )}
+                  {/* [NEW] Pricing Tab */}
+                  {activeTab === "Pricing" && (
+                    <div>
+                      <h3 className={`text-2xl font-bold mb-4 ${textClass}`}>
+                        {t("tabs.pricing")}
+                      </h3>
+                      {priceTiers.length > 0 ? (
+                        <div className={`border ${borderClass} rounded-lg overflow-hidden`}>
+                          <table className="w-full divide-y ${borderClass}">
+                            <thead className={theme === "regular" ? "bg-gray-50" : "bg-gray-700"}>
+                              <tr>
+                                <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${textMutedClass} uppercase tracking-wider`}>
+                                  {t("pricing.pax", { defaultMessage: "Participants" })}
+                                </th>
+                                <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${textMutedClass} uppercase tracking-wider`}>
+                                  {t("pricing.pricePerPax", { defaultMessage: "Price per Pax" })}
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className={`divide-y ${borderClass} ${cardBgClass}`}>
+                              {priceTiers.map((tier) => (
+                                <tr key={tier.min_pax}>
+                                  <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${textClass}`}>
+                                    {formatPaxRange(tier.min_pax, tier.max_pax)}
+                                  </td>
+                                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${textMutedClass}`}>
+                                    {formatPrice(tier.price)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className={textMutedClass}>{t("status.noPricing", { defaultMessage: "No pricing details available." })}</p>
+                      )}
+                    </div>
+                  )}
                   {activeTab === "Cost" && (
                     <div>
                       <h3 className={`text-2xl font-bold mb-6 ${textClass}`}>
@@ -412,6 +459,23 @@ export default function PackageDetailPage() {
                         </ul>
                       ) : (
                         <p className={textMutedClass}>{t("cost.noIncludedItems")}</p>
+                      )}
+
+                      {/* [NEW] Excluded Items */}
+                      <h3 className={`text-2xl font-bold mt-10 mb-6 ${textClass}`}>
+                        {t("cost.facilitiesExcluded")}
+                      </h3>
+                      {costData.excluded && costData.excluded.length > 0 ? (
+                        <ul className="space-y-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                          {costData.excluded.map((item, index) => (
+                            <li key={index} className="flex items-center gap-3">
+                              <XIcon className="w-5 h-5 text-red-500 flex-shrink-0" /> {/* Assuming you add XIcon import */}
+                              <span className={textMutedClass}>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className={textMutedClass}>{t("cost.noExcludedItems")}</p>
                       )}
                     </div>
                   )}
@@ -486,46 +550,17 @@ export default function PackageDetailPage() {
               <div
                 className={`border ${borderClass} rounded-xl shadow-lg p-6 sticky top-8`}
               >
-                <div
-                  className={`flex justify-between divide-x ${borderClass} text-center mb-5`}
-                >
-                  <div className="pr-4 flex-1">
-                    {/* Display Regular Price only if it's different and higher */}
-                    {regularPrice > exclusivePrice && (
-                      <>
-                        <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-full mb-2">
-                          SALE
-                        </span>
-                        <p className={`${textMutedClass} text-sm`}>
-                          {t("trip.from")}{" "}
-                          <span className="line-through">
-                            {formatPrice(regularPrice)}
-                          </span>
-                        </p>
-                      </>
-                    )}
-                    <p className={`text-2xl font-bold ${textClass} ${regularPrice <= exclusivePrice ? 'mt-9' : ''}`}> {/* Add margin if no sale */}
-                      {formatPrice(exclusivePrice)}
-                    </p>
-                    <p className={`text-sm ${textMutedClass}`}>
-                      / {t("trip.adult")}
-                    </p>
-                  </div>
-                  {childPrice > 0 && ( // Only show child price if available
-                    <div className="pl-4 flex-1">
-                      <p
-                        className={`${textMutedClass} text-sm mt-[26px]`} // Adjust margin based on whether sale is shown
-                      >
-                        {t("trip.from")}
-                      </p>
-                      <p className={`text-2xl font-bold ${textClass}`}>
-                        {formatPrice(childPrice)}
-                      </p>
-                      <p className={`text-sm ${textMutedClass}`}>
-                        / {t("trip.child")}
-                      </p>
-                    </div>
-                  )}
+                {/* [UPDATED] Price Display */}
+                <div className="mb-5">
+                  <p className={`text-sm ${textMutedClass}`}>
+                    {t("trip.from")}
+                  </p>
+                  <p className={`text-3xl font-bold ${textClass}`}>
+                    {formatPrice(startingPrice)}
+                  </p>
+                  <p className={`text-sm ${textMutedClass}`}>
+                    / {t("trip.person")}
+                  </p>
                 </div>
 
                 <button
@@ -577,3 +612,22 @@ export default function PackageDetailPage() {
     </div>
   );
 }
+
+// [NEW] Helper icon (add to lucide imports if you prefer)
+const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </svg>
+);

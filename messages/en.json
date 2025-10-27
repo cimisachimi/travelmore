@@ -443,36 +443,63 @@
       "itinerary": "Itinerary",
       "cost": "Cost",
       "faqs": "FAQs",
-      "map": "Map"
+      "map": "Map",
+      "pricing": "Pricing"
     },
     "trip": {
       "about": "About This Trip",
       "days": "Days",
       "info": "Trip Info",
       "from": "From",
+      "person": "Person",
       "adult": "Adult",
       "child": "Child"
     },
     "cost": {
       "facilitiesIncluded": "What's Included",
-      "excluded": "What's Not Included"
+      "facilitiesExcluded": "What's Not Included",
+      "noIncludedItems": "No included items listed.",
+      "noExcludedItems": "No excluded items listed."
     },
     "booking": {
       "checkAvailability": "CHECK AVAILABILITY",
       "needHelp": "Need help with booking?",
       "sendMessage": "Send Us a Message",
-      "loginToBook": "Please Login first to book "
+      "loginToBook": "Please Login first to book",
+      "title": "Book Your Trip",
+      "startDate": "Select Start Date",
+      "total": "Total Price",
+      "submitting": "Booking...",
+      "confirm": "Book Now",
+      "success": {
+        "message": "Booking created! Redirecting..."
+      },
+      "errors": {
+        "notLoggedIn": "You must be logged in to book.",
+        "noDate": "Please select a start date.",
+        "noPrice": "Price could not be calculated for this number of participants.",
+        "general": "Booking failed. Please try again."
+      }
     },
-    "gallery": {
-      "noImage": "No Image Available"
-    },
-    "buttons": {
-      "back": "← Back to All Packages"
+    "pricing": {
+      "pax": "Participants",
+      "pricePerPax": "Price per Pax"
     },
     "status": {
+      "loading": "Loading package details...",
+      "noCategories": "No categories found.",
+      "fetchError": "Failed to load package data. Please try again.",
       "notFound": "Package not found.",
-      "loading": "Loading Packages",
-      "fetchError": "error"
+      "noItinerary": "No itinerary details available.",
+      "noFaqs": "No frequently asked questions available.",
+      "noMap": "Map location not available.",
+      "noPricing": "No pricing details available."
+    },
+    "gallery": {
+      "noImage": "No images available for this package."
+    },
+    "buttons": {
+      "back": "Back to Packages"
     }
   },
   "PackagesPage": {
@@ -491,7 +518,8 @@
       "loading": "Loading packages...",
       "noCategories": "No categories found.",
       "fetchError": "Failed to load packages. Please try again."
-    }
+    },
+    "from": "test"
   },
   "PlannerPage": {
     "regular": {

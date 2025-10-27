@@ -9,18 +9,26 @@ import api from "@/lib/api";
 import { AxiosError } from "axios"; // Import AxiosError for better error handling
 
 // --- Interfaces ---
-// Interface matching the expected API response data
+
+// [UPDATED] Interface to match new API response with price_tiers
+interface PackagePriceTier {
+  min_pax: number;
+  max_pax: number;
+  price: number;
+}
+
 interface PackageListItem {
   id: number;
   name: string; // From translation
   location?: string | null; // From translation
   duration: number;
-  regularPrice?: number; // From accessor (price_regular) - Use correct keys
-  exclusivePrice: number; // From accessor (price_exclusive) - Use correct keys
   rating?: number | null;
   category?: string | null; // From translation
   thumbnail_url: string | null; // From accessor
-  // images_url is likely available but not strictly needed for this list view
+
+  // [NEW] Use new pricing fields
+  price_tiers: PackagePriceTier[];
+  starting_from_price: number | null; // From accessor
 }
 
 // Interface for the overall paginated API response
@@ -94,9 +102,9 @@ export default function PackagesPage() {
           setApiPackages(packagesData);
 
           if (packagesData.length > 0) {
-            // Use exclusivePrice which should always exist based on backend logic
-            const allPrices = packagesData.map((p) => p.exclusivePrice);
-            const numericPrices = allPrices.filter(p => typeof p === 'number' && !isNaN(p));
+            // [UPDATED] Use starting_from_price for filtering
+            const allPrices = packagesData.map((p) => p.starting_from_price);
+            const numericPrices = allPrices.filter((p): p is number => typeof p === 'number' && !isNaN(p));
 
             if (numericPrices.length > 0) {
               const calculatedMax = Math.max(...numericPrices);
@@ -136,8 +144,9 @@ export default function PackagesPage() {
   // Calculate price bounds for the slider's min/max attributes
   const priceBounds = useMemo(() => {
     if (apiPackages.length === 0) return { min: 0, max: priceSliderMax }; // Use slider max
-    const allPrices = apiPackages.map((p) => p.exclusivePrice);
-    const numericPrices = allPrices.filter(p => typeof p === 'number' && !isNaN(p));
+    // [UPDATED] Use starting_from_price
+    const allPrices = apiPackages.map((p) => p.starting_from_price);
+    const numericPrices = allPrices.filter((p): p is number => typeof p === 'number' && !isNaN(p));
     if (numericPrices.length === 0) return { min: 0, max: priceSliderMax };
     // Set min to 0 or the actual min, max uses the pre-calculated slider max
     return { min: Math.min(0, ...numericPrices), max: priceSliderMax };
@@ -159,8 +168,8 @@ export default function PackagesPage() {
 
   const filteredPackages = useMemo(() => {
     return apiPackages.filter((pkg) => {
-      // Filter by exclusive price which should always be present
-      const priceMatch = pkg.exclusivePrice <= maxPrice;
+      // [UPDATED] Filter by starting_from_price
+      const priceMatch = (pkg.starting_from_price || 0) <= maxPrice;
       const categoryMatch =
         selectedCategories.length === 0 ||
         (pkg.category && selectedCategories.includes(pkg.category));
@@ -168,7 +177,7 @@ export default function PackagesPage() {
     });
   }, [apiPackages, maxPrice, selectedCategories]);
 
-  // Ensure formatCurrency handles potential null/undefined and uses exclusivePrice
+  // Ensure formatCurrency handles potential null/undefined
   const formatCurrency = (amount: number | null | undefined): string => {
     const numericAmount = Number(amount) || 0;
     return new Intl.NumberFormat("id-ID", {
@@ -353,11 +362,15 @@ export default function PackagesPage() {
                           <div
                             className={`flex justify-between items-center mt-auto pt-4 border-t ${borderClass}`}
                           >
-                            <p
-                              className={`text-lg font-bold text-blue-600 dark:text-blue-400`}
-                            >
-                              {formatCurrency(pkg.exclusivePrice)}
-                            </p>
+                            {/* [UPDATED] Show starting price */}
+                            <div>
+                              <span className={`text-xs ${textMutedClass}`}>{t("from")}</span>
+                              <p
+                                className={`text-lg font-bold text-blue-600 dark:text-blue-400`}
+                              >
+                                {formatCurrency(pkg.starting_from_price)}
+                              </p>
+                            </div>
                             <span
                               className={`text-sm font-semibold ${textClass} group-hover:text-blue-500 transition-colors duration-300`} // Smoother transition
                             >

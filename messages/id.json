@@ -443,6 +443,7 @@
       "itinerary": "Itinerari",
       "cost": "Biaya",
       "faqs": "FAQ",
+      "pricing": "Harga",
       "map": "Peta"
     },
     "trip": {
@@ -451,7 +452,8 @@
       "info": "Info Perjalanan",
       "from": "Mulai",
       "adult": "Dewasa",
-      "child": "Anak"
+      "child": "Anak",
+      "person": "Orang"
     },
     "cost": {
       "included": "Termasuk",
@@ -481,6 +483,7 @@
     "priceRange": "Rentang Harga",
     "upTo": "Hingga",
     "categories": "Kategori",
+    "from": "Harga mulai dari",
     "showFilters": "Tampilkan Filter",
     "closeFilters": "Tutup Filter",
     "days": "Hari",

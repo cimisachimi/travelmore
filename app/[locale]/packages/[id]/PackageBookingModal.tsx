@@ -1,20 +1,19 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
+import React, { useState, FormEvent, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { X } from "lucide-react";
 import { AxiosError } from "axios";
-// ✅ PERBAIKAN TS2307: Impor tipe dari './page' (file page.tsx)
-import { HolidayPackage, TFunction, AuthUser } from "./page";
+// [UPDATED] Import new types
+import { HolidayPackage, TFunction, AuthUser, PackagePriceTier } from "./page";
 
-// ✅ Tentukan props untuk modal
 interface PackageBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   pkg: HolidayPackage;
-  user: AuthUser | null; // ✅ PERBAIKAN TS2305: Menggunakan tipe AuthUser lokal
+  user: AuthUser | null;
   t: TFunction;
 }
 
@@ -34,6 +33,47 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
 
   const today = new Date().toISOString().split("T")[0];
 
+  // [NEW] Memoized logic to find the price per pax
+  const { pricePerPax, totalPax } = useMemo(() => {
+    const totalPax = adults + children;
+    let foundPrice = 0;
+
+    if (pkg.price_tiers && pkg.price_tiers.length > 0) {
+      // Find the correct tier
+      const tier = pkg.price_tiers.find(t =>
+        totalPax >= t.min_pax && (totalPax <= t.max_pax || !t.max_pax || t.max_pax === 0)
+      );
+
+      if (tier) {
+        foundPrice = tier.price;
+      } else {
+        // Fallback: if no tier matches (e.g., above max), use the last tier's price
+        foundPrice = pkg.price_tiers[pkg.price_tiers.length - 1].price;
+      }
+    }
+
+    // Fallback if price is still 0 (e.g., empty price_tiers array)
+    if (foundPrice === 0) {
+      foundPrice = pkg.starting_from_price || 0;
+    }
+
+    return { pricePerPax: foundPrice, totalPax };
+  }, [adults, children, pkg.price_tiers, pkg.starting_from_price]);
+
+  // [NEW] Total price calculation
+  const total = useMemo(() => {
+    return pricePerPax * totalPax;
+  }, [pricePerPax, totalPax]);
+
+  const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -43,6 +83,10 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
     }
     if (!startDate) {
       toast.error(t("booking.errors.noDate", "Please select a start date."));
+      return;
+    }
+    if (total <= 0 || pricePerPax <= 0) {
+      toast.error(t("booking.errors.noPrice", "Price could not be calculated for this number of participants."));
       return;
     }
 
@@ -56,8 +100,14 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
       });
 
       if (response.status === 201) {
-        toast.success(t("booking.success.message", "Booking created! Redirecting to payment..."));
-        router.push('/profile/orders');
+        toast.success(t("booking.success.message", "Booking created! Redirecting..."));
+        // [UPDATED] Redirect to the specific order details page
+        const orderId = response.data?.id; // Assuming API returns the order
+        if (orderId) {
+          router.push(`/profile/orders/${orderId}`);
+        } else {
+          router.push('/profile/orders');
+        }
         onClose();
       }
     } catch (err: unknown) {
@@ -72,8 +122,6 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
   };
 
   if (!isOpen) return null;
-
-  const total = (pkg.exclusivePrice * adults) + (pkg.childPrice * children);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -136,18 +184,34 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
             </div>
           </div>
 
+          {/* [UPDATED] Price calculation display */}
           <div className="pt-4 border-t dark:border-gray-700">
-            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-              {t("booking.total", "Total Price")}:
-            </p>
-            <p className="text-2xl font-bold text-cyan-600">
-              Rp{total.toLocaleString("id-ID")}
-            </p>
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                {t("pricing.pricePerPax", "Price per Pax")} ({totalPax} {totalPax > 1 ? "people" : "person"})
+              </span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                {formatPrice(pricePerPax)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                {t("booking.total", "Total Price")}:
+              </p>
+              <p className="text-2xl font-bold text-cyan-600">
+                {formatPrice(total)}
+              </p>
+            </div>
+            {pricePerPax <= 0 && (
+              <p className="text-xs text-red-500 mt-2">
+                {t("booking.errors.noPrice", "Price could not be calculated for this number of participants.")}
+              </p>
+            )}
           </div>
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || pricePerPax <= 0}
             className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:opacity-50"
           >
             {isSubmitting
