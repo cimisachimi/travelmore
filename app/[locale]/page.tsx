@@ -16,7 +16,7 @@ export default function Home() {
     <>
       <HeroSlider />
       <PersonalizedTripPlanner />
-      <PopularPackages />
+      {/* <PopularPackages /> */}
       <PopularPackagesSlider />
       <ActivitySlider />
       {/* <HowItWorks /> */}
