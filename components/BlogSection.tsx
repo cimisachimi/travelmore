@@ -33,11 +33,12 @@ export default function BlogSection() {
               {/* Gambar */}
               <div className="relative h-60 w-full overflow-hidden">
                 <Image
-                  src={blog.image}
-                  alt={blog.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+  src={blog.images[0]} // ✅ use first image
+  alt={blog.title}
+  fill
+  className="object-cover transition-transform duration-500 group-hover:scale-105"
+/>
+
               </div>
 
               {/* Konten */}
@@ -46,7 +47,10 @@ export default function BlogSection() {
                 <h3 className="text-xl font-semibold mt-2 text-foreground group-hover:text-primary transition-colors">
                   {blog.title}
                 </h3>
-                <p className="text-foreground/80 mt-3 flex-1">{blog.excerpt}</p>
+                <p className="text-foreground/80 mt-3 flex-1">
+  {blog.description.slice(0, 120)}...
+</p>
+
                 <span className="mt-4 text-sm font-medium text-foreground">
                   {blog.author}
                 </span>

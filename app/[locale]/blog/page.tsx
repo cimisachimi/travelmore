@@ -1,21 +1,23 @@
-// app/[locale]/blog/page.tsx
+// components/BlogSection.tsx
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { blogs } from "@/data/blog";
 import { useTranslations } from "next-intl";
 
-export default function BlogListPage() {
-  const t = useTranslations("blog");
-  const tBlog = useTranslations("blog"); // Tambahkan ini untuk mengambil data spesifik blog
+export default function BlogSection() {
+  const t = useTranslations("blogSection");
 
   return (
-    <section className="py-20 bg-background text-foreground transition-colors duration-300">
+    <section className="bg-card py-20">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold">{t("title")}</h2>
-          <p className="text-foreground/70 mt-3 max-w-2xl mx-auto">
+          <h2 className="text-4xl font-bold text-foreground">
+            {t("title")}
+          </h2>
+          <p className="text-foreground/80 mt-3 max-w-2xl mx-auto">
             {t("subtitle")}
           </p>
         </div>
@@ -26,33 +28,57 @@ export default function BlogListPage() {
             <Link
               key={blog.id}
               href={`/blog/${blog.id}`}
-              className="bg-card rounded-3xl shadow-md hover:shadow-2xl transition-transform transform hover:-translate-y-1 flex flex-col overflow-hidden group"
+              className="bg-background rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col overflow-hidden group border border-border"
             >
-              {/* Image */}
+              {/* Gambar */}
               <div className="relative h-60 w-full overflow-hidden">
                 <Image
-                  src={blog.image}
-                  alt={tBlog(`${blog.id}.title`)} // Gunakan judul yang sudah diterjemahkan
+                  src={blog.images[0]} // ✅ first image
+                  alt={blog.title}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
 
-              {/* Content */}
+              {/* Konten */}
               <div className="p-6 flex flex-col flex-1">
-                <span className="text-sm text-foreground/50">{blog.date}</span>
+                <span className="text-sm text-foreground/60">{blog.date}</span>
                 <h3 className="text-xl font-semibold mt-2 text-foreground group-hover:text-primary transition-colors">
-                  {tBlog(`${blog.id}.title`)} {/* Ganti ini */}
+                  {blog.title}
                 </h3>
-                <p className="text-foreground/70 mt-3 flex-1">
-                  {tBlog(`${blog.id}.excerpt`)} {/* Ganti ini juga untuk konsistensi */}
+                <p className="text-foreground/80 mt-3 flex-1">
+                  {blog.description.slice(0, 120)}...
+                  {/* ✅ use description as short preview */}
                 </p>
-                <span className="mt-4 text-sm font-medium text-foreground/80">
-                  {t("by")} {blog.author}
+                <span className="mt-4 text-sm font-medium text-foreground">
+                  {blog.author}
                 </span>
               </div>
             </Link>
           ))}
+        </div>
+
+        {/* Show More Button */}
+        <div className="mt-12 flex justify-center">
+          <Link
+            href="/blog"
+            className="inline-flex items-center px-8 py-3 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary hover:text-black transition-colors"
+          >
+            {t("button")}
+            <svg
+              className="ml-2 w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              />
+            </svg>
+          </Link>
         </div>
       </div>
     </section>
