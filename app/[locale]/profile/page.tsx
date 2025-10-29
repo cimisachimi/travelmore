@@ -330,20 +330,22 @@ const HistoryTab = () => {
 
       // 2. Use window.snap.pay to open the Midtrans popup
       window.snap.pay(snap_token, {
-        onSuccess: (_result) => {
+        // --- FIX: Remove unused _result parameter ---
+        onSuccess: () => {
           toast.success("Payment successful!");
           fetchData();
           setIsPaying(false);
         },
-        onPending: (_result) => {
+        // --- FIX: Remove unused _result parameter ---
+        onPending: () => {
           toast.info("Waiting for your payment.");
           setIsPaying(false);
         },
-        onError: (_result) => {
+        // --- FIX: Remove unused _result parameter ---
+        onError: () => {
           toast.error("Payment failed. Please try again.");
           setIsPaying(false);
         },
-
         onClose: () => {
           toast.info("Payment popup closed.");
           setIsPaying(false); // ✅ Moved here

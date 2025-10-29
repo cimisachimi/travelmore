@@ -229,6 +229,7 @@
       "button": "Mulai Merencanakan"
     }
   },
+  
   "activities": {
     "title": "Aktivitas Harian",
     "subtitle": "Pesan aktivitas terpisah atau tur harian, dari kelas memasak hingga jeep gunung berapi.",
@@ -241,13 +242,58 @@
       "upTo": "Hingga",
       "categories": "Kategori"
     },
-    "empty": {
-      "message": "Tidak ada aktivitas yang cocok dengan filter Anda."
-    },
     "buttons": {
-      "details": "Lihat Detail →"
+      "details": "Lihat Detail",
+      "back": "Kembali ke Semua Aktivitas"
+    },
+    "empty": {
+      "message": "Tidak ada aktivitas yang sesuai dengan kriteria Anda.",
+      "loading": "Memuat aktivitas...",
+      "fetchError": "Gagal memuat aktivitas. Silakan coba lagi nanti."
+    },
+    "status": {
+      "notFound": "Aktivitas tidak ditemukan.",
+      "fetchError": "Gagal memuat data aktivitas. Silakan coba lagi.",
+      "loading": "Memuat aktivitas..."
+    },
+    "gallery": {
+      "noImage": "Tidak ada gambar untuk aktivitas ini."
+    },
+    "trip": {
+      "about": "Tentang Aktivitas Ini",
+      "price": "Harga",
+      "person": "orang",
+      "people": "orang",
+      "participants": "Peserta / Kuantitas"
+    },
+    "booking": {
+      "checkAvailability": "Pesan Sekarang",
+      "loginToBook": "Login untuk Memesan",
+      "needHelp": "Butuh bantuan?",
+      "sendMessage": "Kirim Pesan",
+      "title": "Pesan Aktivitas Anda",
+      "startDate": "Pilih Tanggal",
+      "total": "Total Harga",
+      "submitting": "Memesan...",
+      "confirm": "Pesan Sekarang",
+      "success": {
+        "message": "Pemesanan berhasil! Mengalihkan..."
+      },
+      "errors": {
+        "notLoggedIn": "Anda harus login untuk memesan.",
+        "noDate": "Silakan pilih tanggal.",
+        "noParticipants": "Anda harus memiliki setidaknya satu peserta.",
+        "noPrice": "Harga tidak dapat dihitung untuk aktivitas ini.",
+        "general": "Pemesanan gagal. Silakan coba lagi.",
+        "priceOrPax": "Harga atau jumlah peserta tidak valid."
+      }
+    },
+    "pricing": {
+      "pricePerPax": "Harga per Peserta"
     }
-  },
+  
+
+},
   "activityDetail": {
     "notFound": "Aktivitas tidak ditemukan.",
     "location": "Lokasi",

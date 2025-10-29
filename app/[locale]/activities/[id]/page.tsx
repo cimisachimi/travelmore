@@ -1,117 +1,249 @@
-// app/[locale]/activities/[id]/page.tsx
+// File: activities/[id]/page.tsx
+
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
 import { useTranslations } from "next-intl";
-import { activities } from "@/data/activities";
-import type { Activity } from "@/data/activities";
+import { useAuth } from "@/contexts/AuthContext";
+import api from "@/lib/api";
 
-// --- Impor Swiper untuk Slider ---
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-// --- Komponen Slider untuk Mobile (Diambil dari PackageDetail) ---
-const MobileImageSlider = ({
-  images,
-  title,
-}: {
+// [NEW] Import the new ActivityBookingModal
+import ActivityBookingModal from "./ActivityBookingModal";
+
+// --- Tipe Data (Interfaces) ---
+export interface AuthUser {
+  id: number;
+  name: string;
+  email: string;
+}
+
+// [NEW] Interface for Activity (based on Activity.php model)
+export interface Activity {
+  id: number;
+  name: string;
+  duration: string | null;
+  category: string | null;
+  description: string | null;
+  location: string | null;
+  price: number; // Corrected: Based on your model
+  // This matches the accessor
+  images_url: { id: number; url: string; type: string }[];
+  thumbnail_url: string | null;
+}
+
+export type TFunction = (key: string, defaultMessage?: string) => string;
+
+// --- MobileImageSlider Component (Unchanged) ---
+interface MobileImageSliderProps {
   images: string[];
   title: string;
-}) => (
+}
+const MobileImageSlider: React.FC<MobileImageSliderProps> = ({ images, title }) => (
   <Swiper
     modules={[Navigation, Pagination]}
+    spaceBetween={0}
+    slidesPerView={1}
     navigation
     pagination={{ clickable: true }}
-    loop={true}
-    className="w-full h-96"
+    className="h-72 w-full"
   >
-    {images.map((src, i) => (
-      <SwiperSlide key={i}>
-        <div className="relative w-full h-full">
+    {images.map((src, index) => (
+      <SwiperSlide key={index}>
+        <div className="relative h-full w-full">
           <Image
             src={src}
-            alt={`${title}-${i}`}
+            alt={`${title} - image ${index + 1}`}
             fill
             className="object-cover"
-            priority={i === 0}
+            sizes="100vw"
           />
         </div>
       </SwiperSlide>
     ))}
   </Swiper>
 );
+// --- End MobileImageSlider ---
 
-
-
-const CheckIcon = () => ( <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /> </svg> );
-const XIcon = () => ( <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> </svg> );
-const ClockIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}> <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 Sio 11-18 0 9 9 0 0118 0z" /> </svg> );
-const LocationIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}> <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /> <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /> </svg> );
-
-
-// --- Komponen Utama Halaman ---
+// --- Komponen Utama ---
 export default function ActivityDetailPage() {
   const { theme } = useTheme();
+  const t = useTranslations("activities"); // You can create a new 'activities' translation file if needed
   const params = useParams();
-  const t = useTranslations("activityDetail");
-  const tPackages = useTranslations("packages");
-  const [activeTab, setActiveTab] = useState("Overview");
+  const { user } = useAuth();
+  const id = params?.id as string;
 
-  const activity = activities.find(a => a.id.toString() === params.id);
+  // [UPDATED] State for Activity
+  const [activity, setActivity] = useState<Activity | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  if (!activity) {
-    return <div className="min-h-screen flex items-center justify-center text-gray-500">{t("notFound")}</div>;
+  const errorNotFound = t("status.notFound");
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchActivity = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // [UPDATED] Fetch from the correct API endpoint
+        const response = await api.get(`/activities/${id}`);
+        setActivity(response.data as Activity);
+      } catch (err: unknown) {
+        console.error("Failed to fetch activity:", err);
+        if (typeof err === "object" && err !== null && "response" in err) {
+          const response = (err as { response?: { status?: number } }).response;
+          if (response?.status === 404) {
+            setError(errorNotFound);
+          } else {
+            setError(t("status.fetchError", { defaultMessage: "Failed to load activity data." }));
+          }
+        } else {
+          setError(t("status.fetchError", { defaultMessage: "Failed to load activity data." }));
+        }
+      }
+      finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivity();
+  }, [id, errorNotFound, t]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        {t("status.loading")}
+      </div>
+    );
   }
-  
-  
-  const images = [activity.image, activity.image, activity.image, activity.image];
 
-  const tripInfo = [
-    { label: t('location'), value: activity.location, icon: <LocationIcon /> },
-    { label: t('duration'), value: activity.duration, icon: <ClockIcon /> }
-  ];
-  
-  const tabs = ["Overview", "FAQs", "Map"];
-  const price = theme === 'regular' ? activity.regularPrice : activity.exclusivePrice;
+  if (error || !activity) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500 p-4 text-center">
+        {error || t("status.notFound")}
+      </div>
+    );
+  }
 
-  // Class styling dinamis berdasarkan tema
+  // [UPDATED] Get images from the array of objects
+  const images = activity.images_url ? activity.images_url.map(img => img.url) : [];
+  const title = activity.name.split(": ")[1] || activity.name;
+
+  // [REMOVED] Tabs are not needed for the simpler activity view
+  // const tabs = ["Overview", "Itinerary", "Pricing", "Cost", "FAQs", "Map"];
+
   const mainBgClass = theme === "regular" ? "bg-gray-50" : "bg-black";
   const cardBgClass = theme === "regular" ? "bg-white" : "bg-gray-800";
   const textClass = theme === "regular" ? "text-gray-900" : "text-white";
-  const textMutedClass = theme === "regular" ? "text-gray-600" : "text-gray-300";
-  const borderClass = theme === "regular" ? "border-gray-200" : "border-gray-700";
-  
-  const formatCurrency = (amount: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(amount);
+  const textMutedClass =
+    theme === "regular" ? "text-gray-600" : "text-gray-300";
+  const borderClass =
+    theme === "regular" ? "border-gray-200" : "border-gray-700";
 
-  // --- Fungsi Render Galeri ---
-  const renderGallery = () => {
+  const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const renderGallery = (): ReactNode => {
+    // ... (This function remains unchanged as it just needs an array of strings) ...
     const count = images.length;
-    if (count === 0) return ( <div className={`w-full h-[400px] ${theme === "regular" ? "bg-gray-200" : "bg-gray-900"} rounded-lg flex items-center justify-center text-gray-500`}> {t("gallery.noImage")} </div> );
+    if (count === 0)
+      return (
+        <div
+          className={`w-full h-72 md:h-[400px] ${theme === "regular" ? "bg-gray-200" : "bg-gray-900"
+            } rounded-lg flex items-center justify-center text-gray-500`}
+        >
+          {t("gallery.noImage")}
+        </div>
+      );
 
     return (
       <>
-        {/* Tampilan Mobile: Slider */}
         <div className="md:hidden">
-          <MobileImageSlider images={images} title={activity.title} />
+          <MobileImageSlider images={images} title={title} />
         </div>
-
-        {/* Tampilan Desktop: Grid Mosaic */}
-        <div className="hidden md:grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-2 h-96 md:h-[600px]">
-            <div className="relative md:col-span-2 md:row-span-2">
-                <Image src={images[0]} alt={activity.title} fill className="object-cover" priority />
+        <div className="hidden md:block">
+          {count === 1 && (
+            <div className="relative h-96 md:h-[600px]">
+              <Image
+                src={images[0]}
+                alt={title}
+                fill
+                className="object-cover rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none"
+                priority
+                sizes="(max-width: 767px) 100vw, 50vw"
+              />
             </div>
-            {images.slice(1, 4).map((src, i) => (
-                <div key={i} className="relative">
-                    <Image src={src} alt={`${activity.title}-${i + 1}`} fill className="object-cover" />
+          )}
+          {count === 2 && (
+            <div className="grid grid-cols-2 gap-2 h-72 md:h-[500px]">
+              {images.map((src, i) => (
+                <div key={i} className={`relative w-full h-full ${i === 0 ? 'rounded-tl-2xl' : 'rounded-tr-2xl'}`}>
+                  <Image
+                    src={src}
+                    alt={`${title}-${i}`}
+                    fill
+                    className="object-cover"
+                    sizes="50vw"
+                  />
                 </div>
-            ))}
+              ))}
+            </div>
+          )}
+          {count > 2 && (
+            <div className="grid grid-cols-4 grid-rows-2 gap-2 h-96 md:h-[600px]">
+              <div className="relative col-span-2 row-span-2 rounded-tl-2xl overflow-hidden">
+                <Image
+                  src={images[0]}
+                  alt={title}
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="(max-width: 767px) 100vw, 50vw"
+                />
+              </div>
+              {images.slice(1, 3).map((src, i) => (
+                <div key={i} className={`relative ${i === 0 ? 'rounded-tr-2xl' : ''} overflow-hidden`}>
+                  <Image
+                    src={src}
+                    alt={`${title}-${i + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="25vw"
+                  />
+                </div>
+              ))}
+              {images.length > 3 && (
+                <div className="relative overflow-hidden">
+                  <Image
+                    src={images[3]}
+                    alt={`${title}-3`}
+                    fill
+                    className="object-cover"
+                    sizes="25vw"
+                  />
+                </div>
+              )}
+              {images.length <= 3 && <div className="bg-muted"></div>}
+            </div>
+          )}
         </div>
       </>
     );
@@ -121,133 +253,134 @@ export default function ActivityDetailPage() {
   return (
     <div className={mainBgClass}>
       <div className="max-w-7xl mx-auto p-4 md:p-8">
-        
-        {/* --- Breadcrumbs --- */}
-        <nav className="text-sm text-foreground/60 mb-4" aria-label="Breadcrumb">
-          <ol className="list-none p-0 inline-flex">
-            <li className="flex items-center"> <Link href={`/${params.locale}`} className="hover:underline">Home</Link> </li>
-            <li className="flex items-center"> <span className="mx-2">/</span> <Link href={`/${params.locale}/activities`} className="hover:underline capitalize">Activities</Link> </li>
-            <li className="flex items-center"> <span className="mx-2">/</span> <span className="font-medium text-foreground">{activity.title}</span> </li>
-          </ol>
-        </nav>
-
-        <div className={`${cardBgClass} rounded-2xl shadow-2xl overflow-hidden`}>
+        <div
+          className={`${cardBgClass} rounded-2xl shadow-2xl overflow-hidden`}
+        >
           {renderGallery()}
 
           <div className={`p-6 md:p-10 border-b ${borderClass}`}>
             <div className="flex flex-wrap items-center gap-4 mb-4">
-              <div className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular" ? "bg-teal-100 text-teal-800" : "bg-teal-900 text-teal-200"}`}>
-                {activity.category}
-              </div>
+              {/* [UPDATED] Show duration string directly */}
+              {activity.duration && (
+                <div
+                  className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-blue-900 text-blue-200"
+                    }`}
+                >
+                  {activity.duration}
+                </div>
+              )}
+              {activity.category && (
+                <div
+                  className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular"
+                    ? "bg-gray-100 text-gray-800"
+                    : "bg-gray-700 text-gray-200"
+                    }`}
+                >
+                  {activity.category}
+                </div>
+              )}
+              {activity.location && (
+                <div
+                  className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular"
+                    ? "bg-emerald-100 text-emerald-800"
+                    : "bg-emerald-900 text-emerald-200"
+                    }`}
+                >
+                  {activity.location}
+                </div>
+              )}
             </div>
-            <h1 className={`text-3xl md:text-5xl font-extrabold ${textClass}`}>{activity.title}</h1>
+            <h1
+              className={`text-3xl md:text-5xl font-extrabold ${textClass}`}
+            >
+              {title}
+            </h1>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 md:p-10">
-            {/* --- Kolom Kiri: Konten Utama --- */}
+            {/* [UPDATED] Simplified Main Content */}
             <div className="lg:col-span-2">
-              <div className="w-full">
-                
-                {/* Navigasi Tab */}
-                <div className={`w-full border-b ${borderClass} overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}>
-                  <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-                    {tabs.map((tab) => (
-                      <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`${ activeTab === tab ? "border-primary text-primary" : `border-transparent ${textMutedClass} hover:border-gray-300 hover:text-gray-700` } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-                      >
-                        {tPackages(`tabs.${tab.toLowerCase()}`)}
-                      </button>
-                    ))}
-                  </nav>
-                </div>
-
-                {/* Konten Tab */}
-                <div className="py-8">
-                  {activeTab === "Overview" && (
-                    <div className="space-y-6">
-                        <p className={`text-lg leading-relaxed ${textMutedClass}`}>{activity.description}</p>
-                        <h3 className={`text-xl font-bold ${textClass}`}>{t("highlights")}</h3>
-                        <ul className="space-y-2">
-                            {activity.highlights.map(item => ( <li key={item} className="flex items-start gap-3"> <CheckIcon /> <span className={textMutedClass}>{item}</span> </li> ))}
-                        </ul>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                            <div>
-                                <h4 className={`text-lg font-bold mb-4 ${textClass}`}>{t("includes")}</h4>
-                                <ul className="space-y-2">
-                                    {activity.includes.map((item) => ( <li key={item} className="flex items-start gap-3"> <CheckIcon /> <span className={textMutedClass}>{item}</span> </li> ))}
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className={`text-lg font-bold mb-4 ${textClass}`}>{t("excludes")}</h4>
-                                <ul className="space-y-2">
-                                    {activity.excludes.map((item) => ( <li key={item} className="flex items-start gap-3"> <XIcon /> <span className={textMutedClass}>{item}</span> </li> ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                  )}
-
-                  {activeTab === "FAQs" && (
-                     <div className="space-y-6">
-                        {activity.faqs.map((faq, index) => (
-                          <div key={index} className={`pb-4 border-b ${borderClass} last:border-b-0`}>
-                            <h4 className={`font-bold text-lg ${textClass} mb-1`}>{faq.q}</h4>
-                            <p className={textMutedClass}>{faq.a}</p>
-                          </div>
-                        ))}
-                      </div>
-                  )}
-
-                  {activeTab === "Map" && (
-                    <iframe src={activity.mapLink} width="100%" height="450" style={{ border: 0 }} allowFullScreen={false} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="rounded-lg"></iframe>
-                  )}
-                </div>
-              </div>
-
-              {/* Info Penting */}
-              <div className={`mt-10 pt-10 border-t ${borderClass}`}>
-                <h2 className={`text-2xl font-bold mb-6 ${textClass}`}>{tPackages("trip.info")}</h2>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-8">
-                  {tripInfo.map((item) => (
-                    <div key={item.label} className="flex items-start space-x-4">
-                      <div className="text-2xl mt-1 text-primary">{item.icon}</div>
-                      <div>
-                        <p className={`text-sm ${textMutedClass}`}>{item.label}</p>
-                        <p className={`font-bold ${textClass}`}>{item.value}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="lg:col-span-1">
-              <div className={`border ${borderClass} rounded-xl shadow-lg p-6 sticky top-28`}>
-                <div className="text-center mb-5">
-                    <p className={`text-sm ${textMutedClass}`}>{t("startingFrom")}</p>
-                    <p className="text-3xl font-bold text-primary">{formatCurrency(price)}</p>
-                    
-                    <p className={`text-sm ${textMutedClass}`}>/ {tPackages("trip.adult")}</p>
-                </div>
-                <Link
-                  href={`/${params.locale}/booking?activity=${encodeURIComponent(activity.title)}`}
-                  className="w-full block text-center bg-primary text-black font-bold py-3 px-4 rounded-lg transition transform hover:scale-105 hover:brightness-90"
+              <div className="py-8 min-h-[300px]">
+                <h3
+                  className={`text-2xl font-bold mb-4 ${textClass}`}
                 >
-                  {t("bookNow")}
-                </Link>
-                <p className="text-center text-xs text-gray-500 mt-4">
-                  {t("bookingNote")}
+                  {t("trip.about")}
+                </h3>
+                <p
+                  className={`text-lg leading-relaxed ${textMutedClass} whitespace-pre-wrap`}
+                >
+                  {activity.description || "No description available."}
                 </p>
               </div>
             </div>
-            
+
+            {/* --- Sidebar Booking --- */}
+            <div className="lg:col-span-1">
+              <div
+                className={`border ${borderClass} rounded-xl shadow-lg p-6 sticky top-8`}
+              >
+                {/* [UPDATED] Price Display */}
+                <div className="mb-5">
+                  <p className={`text-sm ${textMutedClass}`}>
+                    {t("trip.price")}
+                  </p>
+                  <p className={`text-3xl font-bold ${textClass}`}>
+                    {/* [UPDATED] Use activity.price */}
+                    {formatPrice(activity.price)}
+                  </p>
+                  <p className={`text-sm ${textMutedClass}`}>
+                    / {t("trip.person")}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!user}
+                >
+                  {user ? t("booking.checkAvailability") : t("booking.loginToBook", { defaultMessage: "Login to Book" })}
+                </button>
+
+                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+                  {t("booking.needHelp")}{" "}
+                  <a
+                    href="#"
+                    className="text-cyan-600 font-semibold hover:underline"
+                  >
+                    {t("booking.sendMessage")}
+                  </a>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
+        {/* Back Button */}
+        <div className="text-center mt-12">
+          <Link
+            href="/activities" // [UPDATED] Link back to activities list
+            className={`inline-block py-3 px-8 rounded-lg font-bold shadow-lg transition-transform transform hover:scale-105 ${theme === "regular"
+              ? "bg-white text-blue-600 hover:bg-gray-50"
+              : "bg-gray-800 text-white hover:bg-gray-700"
+              }`}
+          >
+            {t("buttons.back")}
+          </Link>
+        </div>
       </div>
+
+      {/* [UPDATED] Render the new ActivityBookingModal */}
+      {activity && (
+        <ActivityBookingModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          activity={activity}
+          user={user as AuthUser | null}
+          t={t as TFunction}
+        />
+      )}
     </div>
   );
 }
-

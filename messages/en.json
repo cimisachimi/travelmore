@@ -223,25 +223,67 @@
       "button": "Start Planning"
     }
   },
+ 
   "activities": {
-    "title": "Daily Activities",
-    "subtitle": "Book separate activities or day tours, from cooking classes to volcano jeeps.",
-    "popularActivities": "Popular Activities",
-    "popularActivitiesDesc": "Explore the most popular activities and adventures in Yogyakarta.",
-    "showMore": "Show More",
+    "title": "Our Activities",
+    "subtitle": "Discover experiences and adventures curated just for you. Find your next journey with us.",
     "filters": {
       "title": "Filters",
       "price": "Price Range",
       "upTo": "Up to",
       "categories": "Categories"
     },
-    "empty": {
-      "message": "No activities match your filters."
-    },
     "buttons": {
-      "details": "View Details →"
+      "details": "View Details",
+      "back": "Back to All Activities"
+    },
+    "empty": {
+      "message": "No activities found matching your criteria.",
+      "loading": "Loading activities...",
+      "fetchError": "Could not load activities. Please try again later."
+    },
+    "status": {
+      "notFound": "Activity not found.",
+      "fetchError": "Failed to load activity data. Please try again.",
+      "loading": "Loading activity..."
+    },
+    "gallery": {
+      "noImage": "No images available for this activity."
+    },
+    "trip": {
+      "about": "About this Activity",
+      "price": "Price",
+      "person": "person",
+      "people": "people",
+      "participants": "Participants / Quantity"
+    },
+    "booking": {
+      "checkAvailability": "Book Now",
+      "loginToBook": "Login to Book",
+      "needHelp": "Need help?",
+      "sendMessage": "Send Message",
+      "title": "Book Your Activity",
+      "startDate": "Select Date",
+      "total": "Total Price",
+      "submitting": "Booking...",
+      "confirm": "Book Now",
+      "success": {
+        "message": "Booking created! Redirecting..."
+      },
+      "errors": {
+        "notLoggedIn": "You must be logged in to book.",
+        "noDate": "Please select a date.",
+        "noParticipants": "You must have at least one participant.",
+        "noPrice": "Price could not be calculated for this activity.",
+        "general": "Booking failed. Please try again.",
+        "priceOrPax": "Price or participant count is invalid."
+      }
+    },
+    "pricing": {
+      "pricePerPax": "Price per Pax"
     }
   },
+
   "activityDetail": {
     "notFound": "Activity not found.",
     "location": "Location",
