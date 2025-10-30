@@ -28,6 +28,12 @@ interface ApiBookingSuccessResponse {
   id: number; // The new Order ID
 }
 
+// [NEW] Error state type
+type FormErrors = {
+  startDate?: string;
+  quantity?: string;
+};
+
 const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   isOpen,
   onClose,
@@ -38,71 +44,100 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   const router = useRouter();
 
   const [startDate, setStartDate] = useState<string>("");
-  // [UPDATED] Use 'quantity' instead of 'adults'/'children'
   const [quantity, setQuantity] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [errors, setErrors] = useState<FormErrors>({}); // ✅ NEW: State for errors
 
   const today = new Date().toISOString().split("T")[0];
 
-  // [UPDATED] Memoized logic for Activity price
+  // Memoized price calculation (Unchanged)
   const { pricePerPax, totalPax } = useMemo(() => {
-    // [UPDATED] Use activity.price as the price per person
     const pricePerPax = activity.price || 0;
-    const totalPax = quantity; // Use quantity
+    const totalPax = quantity;
     return { pricePerPax, totalPax };
   }, [quantity, activity.price]);
 
-  // Total price calculation
   const total = useMemo(() => {
     return pricePerPax * totalPax;
   }, [pricePerPax, totalPax]);
 
   const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
+  };
+
+  // ✅ NEW: Validation function
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!startDate) {
+      newErrors.startDate = t(
+        "booking.errors.noDate",
+        "Please select a date."
+      );
+    }
+    if (!quantity || quantity < 1) {
+      newErrors.quantity = t(
+        "booking.errors.noParticipants",
+        "Must have at least 1 participant."
+      );
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // Returns true if no errors
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // ✅ UPDATED: Run validation first
+    if (!validateForm()) {
+      return; // Stop submission if validation fails
+    }
+
     if (!user) {
-      toast.error(t("booking.errors.notLoggedIn", "You must be logged in to book."));
+      toast.error(
+        t("booking.errors.notLoggedIn", "You must be logged in to book.")
+      );
       return;
     }
-    if (!startDate) {
-      toast.error(t("booking.errors.noDate", "Please select a date."));
-      return;
-    }
-    if (totalPax <= 0) {
-       toast.error(t("booking.errors.noParticipants", "You must have at least one participant."));
-       return;
-    }
-    if (pricePerPax <= 0) {
-      toast.error(t("booking.errors.noPrice", "Price could not be calculated for this activity."));
+    
+    if (total <= 0 || pricePerPax <= 0) {
+      toast.error(
+        t(
+          "booking.errors.noPrice",
+          "Price could not be calculated for this activity."
+        )
+      );
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // [UPDATED] API endpoint and payload
-      // This now matches your backend BookingController@storeActivityBooking
-      const response = await api.post<ApiBookingSuccessResponse>(`/activities/${activity.id}/book`, {
-        booking_date: startDate,
-        quantity: quantity,
-      });
+      const response = await api.post<ApiBookingSuccessResponse>(
+        `/activities/${activity.id}/book`,
+        {
+          booking_date: startDate,
+          quantity: quantity,
+        }
+      );
 
       if (response.status === 201) {
-        toast.success(t("booking.success.message", "Booking created! Redirecting..."));
+        toast.success(
+          t("booking.success.message", "Booking created! Redirecting...")
+        );
         const orderId = response.data?.id;
         if (orderId) {
-          router.push(`/profile/orders/${orderId}`);
+          // Redirect to the specific order if ID is returned
+          router.push(`/profile?order_id=${orderId}`); // You can customize this URL
         } else {
-          router.push('/profile/orders');
+          // Fallback redirect to profile
+          router.push("/profile");
         }
         onClose();
       }
@@ -110,7 +145,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
       const error = err as AxiosError<ApiErrorResponse>;
       toast.error(
         error.response?.data?.message ||
-        t("booking.errors.general", "Booking failed. Please try again.")
+          t("booking.errors.general", "Booking failed. Please try again.")
       );
     } finally {
       setIsSubmitting(false);
@@ -119,27 +154,64 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
 
   if (!isOpen) return null;
 
+  // ✅ NEW: CSS classes for inputs
+  const baseInputClass =
+    "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600";
+  const errorInputClass =
+    "border-red-500 focus:border-red-500 focus:ring-red-500";
+  const buttonClass =
+    "w-full bg-primary text-black font-bold py-3 px-4 rounded-lg transition duration-300 hover:brightness-90 disabled:opacity-50 disabled:cursor-not-allowed";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md m-4 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn">
+      {/* ✅ UPDATED: UI Modal container */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-lg m-4 relative">
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           aria-label="Close modal"
         >
           <X size={24} />
         </button>
 
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-          {t("booking.title", "Book Your Activity")}
-        </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-5">
-          {activity.name}
-        </p>
+        {/* ✅ UPDATED: UI Modal Header */}
+        <div className="sm:flex sm:items-start mb-6">
+          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 sm:mx-0 sm:h-10 sm:w-10">
+            <svg
+              className="h-6 w-6 text-primary"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
+              />
+            </svg>
+          </div>
+          <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+            <h2
+              className="text-2xl font-bold text-gray-900 dark:text-white"
+              id="modal-title"
+            >
+              {t("booking.title", "Book Your Activity")}
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+              {activity.name}
+            </p>
+          </div>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* ✅ UPDATED: Form with error handling */}
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="start-date"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               {t("booking.startDate", "Select Date")}
             </label>
             <input
@@ -147,15 +219,26 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               type="date"
               min={today}
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                // Clear error on change
+                if (errors.startDate) setErrors((p) => ({ ...p, startDate: undefined }));
+              }}
               required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:bg-gray-700 dark:border-gray-600"
+              className={`${baseInputClass} ${
+                errors.startDate ? errorInputClass : ""
+              }`}
             />
+            {errors.startDate && (
+              <p className="text-red-600 text-sm mt-1">{errors.startDate}</p>
+            )}
           </div>
 
-          {/* [UPDATED] Single quantity input */}
           <div>
-            <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="quantity"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               {t("trip.participants", "Participants / Quantity")}
             </label>
             <input
@@ -163,42 +246,47 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               type="number"
               min={1}
               value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
+              onChange={(e) => {
+                setQuantity(Number(e.target.value));
+                 // Clear error on change
+                if (errors.quantity) setErrors((p) => ({ ...p, quantity: undefined }));
+              }}
               required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:bg-gray-700 dark:border-gray-600"
+              className={`${baseInputClass} ${
+                errors.quantity ? errorInputClass : ""
+              }`}
             />
+            {errors.quantity && (
+              <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>
+            )}
           </div>
 
-          {/* Price calculation display */}
-          <div className="pt-4 border-t dark:border-gray-700">
-            <div className="flex justify-between items-center mb-1">
+          {/* ✅ UPDATED: UI for Price summary */}
+          <div className="pt-4 space-y-2 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+            <div className="flex justify-between items-center">
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                {t("pricing.pricePerPax", "Price per Pax")} ({totalPax} {totalPax > 1 ? t("trip.people", "people") : t("trip.person", "person")})
+                {t("pricing.pricePerPax", "Price per Pax")} (
+                {totalPax}{" "}
+                {totalPax > 1
+                  ? t("trip.people", "people")
+                  : t("trip.person", "person")}
+                )
               </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {formatPrice(pricePerPax)}
               </span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center border-t border-gray-200 dark:border-gray-600 pt-2">
               <p className="text-lg font-semibold text-gray-900 dark:text-white">
                 {t("booking.total", "Total Price")}:
               </p>
-              <p className="text-2xl font-bold text-cyan-600">
+              <p className="text-2xl font-bold text-primary">
                 {formatPrice(total)}
               </p>
             </div>
-            {(pricePerPax <= 0 || totalPax <= 0) && (
-              <p className="text-xs text-red-500 mt-2">
-                {t("booking.errors.priceOrPax", "Price or participant count is invalid.")}
-              </p>
-            )}
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting || pricePerPax <= 0 || totalPax <= 0}
-            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:opacity-50"
-          >
+          <button type="submit" disabled={isSubmitting} className={buttonClass}>
             {isSubmitting
               ? t("booking.submitting", "Booking...")
               : t("booking.confirm", "Book Now")}

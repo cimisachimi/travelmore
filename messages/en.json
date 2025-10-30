@@ -230,6 +230,10 @@
     }
   },
   "activities": {
+    "showMore" : "Show More available activities ",
+    "popularActivities" : "Popular Activities",
+    "popularActivitiesDesc" : "popularActivitiesDesc",
+    
     "title": "Our Activities",
     "subtitle": "Discover experiences and adventures curated just for you. Find your next journey with us.",
     "popularActivities": "Popular Activities",

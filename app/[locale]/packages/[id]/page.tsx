@@ -3,12 +3,11 @@
 import React, { useState, useEffect, ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation"; // Corrected import
+import { useParams } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
-
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
@@ -47,8 +46,8 @@ const MobileImageSlider: React.FC<MobileImageSliderProps> = ({ images, title }) 
 );
 // --- End MobileImageSlider ---
 
-import PackageBookingModal from "./PackageBookingModal"; // Assuming this is correctly placed
-import { CheckIcon } from "lucide-react";
+import PackageBookingModal from "./PackageBookingModal";
+import { CheckIcon, UsersIcon, TagIcon, CalendarIcon } from "lucide-react";
 
 // --- Tipe Data (Interfaces) ---
 export interface AuthUser {
@@ -57,7 +56,6 @@ export interface AuthUser {
   email: string;
 }
 
-// [UPDATED] Interface for new price tiers
 export interface PackagePriceTier {
   min_pax: number;
   max_pax: number;
@@ -78,8 +76,6 @@ export interface HolidayPackage {
   faqs: { question: string; answer: string }[];
   tripInfo: { label: string; value: string; icon: string }[];
   mapUrl: string;
-
-  // [NEW] Updated pricing fields
   price_tiers: PackagePriceTier[];
   starting_from_price: number | null;
 }
@@ -123,14 +119,13 @@ export default function PackageDetailPage() {
         } else {
           setError(t("status.fetchError", { defaultMessage: "Failed to load package data." }));
         }
-      }
-      finally {
+      } finally {
         setLoading(false);
       }
     };
 
     fetchPackage();
-  }, [id, errorNotFound, t]); // Add t to dependency array
+  }, [id, errorNotFound, t]);
 
   if (loading) {
     return (
@@ -148,35 +143,52 @@ export default function PackageDetailPage() {
     );
   }
 
-  // Ensure pkg.cost is an object with included/excluded arrays
+  // Data processing
   const costData = (typeof pkg.cost === 'object' && pkg.cost !== null)
     ? { included: Array.isArray(pkg.cost.included) ? pkg.cost.included : [], excluded: Array.isArray(pkg.cost.excluded) ? pkg.cost.excluded : [] }
     : { included: [], excluded: [] };
 
-  // [REMOVED] Old price logic
-
-  // [NEW] Use new fields directly
-  const startingPrice = pkg.starting_from_price ?? 0;
   const priceTiers = Array.isArray(pkg.price_tiers) ? pkg.price_tiers : [];
-  const mapUrl = pkg.mapUrl ?? '';
 
+
+  // Determine the starting price (realistic, not misleading)
+  let startingPrice = 0;
+
+  if (pkg.starting_from_price && pkg.starting_from_price > 0) {
+    startingPrice = pkg.starting_from_price;
+  } else if (priceTiers.length > 0) {
+    const sortedTiers = [...priceTiers].sort((a, b) => a.min_pax - b.min_pax);
+
+    // Prefer small-group tier (2–4 pax)
+    const smallGroupTier = sortedTiers.find(
+      (tier) => tier.min_pax <= 4 && (tier.max_pax || 4) >= 2
+    );
+
+    if (smallGroupTier) {
+      startingPrice = smallGroupTier.price;
+    } else {
+      // Fallback: use median tier for balance
+      const medianIndex = Math.floor(sortedTiers.length / 2);
+      startingPrice = sortedTiers[medianIndex].price;
+    }
+  }
+
+  const hasMultipleTiers = priceTiers.length > 1;
+
+  const mapUrl = pkg.mapUrl ?? '';
   const images = pkg.images_url || [];
-  // Ensure itinerary is an array
   const itineraryData = Array.isArray(pkg.itinerary) ? pkg.itinerary : [];
   const tripInfo = Array.isArray(pkg.tripInfo) ? pkg.tripInfo : [];
   const faqsData = Array.isArray(pkg.faqs) ? pkg.faqs : [];
   const title = pkg.name.split(": ")[1] || pkg.name;
 
-  // [UPDATED] Added "Pricing" tab
   const tabs = ["Overview", "Itinerary", "Pricing", "Cost", "FAQs", "Map"];
 
   const mainBgClass = theme === "regular" ? "bg-gray-50" : "bg-black";
   const cardBgClass = theme === "regular" ? "bg-white" : "bg-gray-800";
   const textClass = theme === "regular" ? "text-gray-900" : "text-white";
-  const textMutedClass =
-    theme === "regular" ? "text-gray-600" : "text-gray-300";
-  const borderClass =
-    theme === "regular" ? "border-gray-200" : "border-gray-700";
+  const textMutedClass = theme === "regular" ? "text-gray-600" : "text-gray-300";
+  const borderClass = theme === "regular" ? "border-gray-200" : "border-gray-700";
 
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -187,13 +199,16 @@ export default function PackageDetailPage() {
     }).format(amount);
   };
 
-  // [NEW] Helper to format pax range
   const formatPaxRange = (min: number, max: number): string => {
     if (min === max) return `${min} pax`;
     if (!max || max === 0) return `${min}+ pax`;
     return `${min}–${max} pax`;
   };
 
+  // Find the best price (lowest price per person)
+  const bestPriceTier = priceTiers.reduce((lowest, current) => {
+    return current.price < lowest.price ? current : lowest;
+  }, priceTiers[0] || { price: startingPrice, min_pax: 1, max_pax: 0 });
 
   const renderGallery = (): ReactNode => {
     const count = images.length;
@@ -212,7 +227,6 @@ export default function PackageDetailPage() {
         <div className="md:hidden">
           <MobileImageSlider images={images} title={title} />
         </div>
-        {/* Desktop Gallery Grid */}
         <div className="hidden md:block">
           {count === 1 && (
             <div className="relative h-96 md:h-[600px]">
@@ -220,7 +234,7 @@ export default function PackageDetailPage() {
                 src={images[0]}
                 alt={title}
                 fill
-                className="object-cover rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none" // Adjust rounding
+                className="object-cover rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none"
                 priority
                 sizes="(max-width: 767px) 100vw, 50vw"
               />
@@ -253,7 +267,7 @@ export default function PackageDetailPage() {
                   sizes="(max-width: 767px) 100vw, 50vw"
                 />
               </div>
-              {images.slice(1, 3).map((src, i) => ( // Show images 2 and 3
+              {images.slice(1, 3).map((src, i) => (
                 <div key={i} className={`relative ${i === 0 ? 'rounded-tr-2xl' : ''} overflow-hidden`}>
                   <Image
                     src={src}
@@ -264,21 +278,17 @@ export default function PackageDetailPage() {
                   />
                 </div>
               ))}
-              {/* Optional: Add overlay for more images button */}
               {images.length > 3 && (
                 <div className="relative overflow-hidden">
                   <Image
-                    src={images[3]} // Show 4th image
+                    src={images[3]}
                     alt={`${title}-3`}
                     fill
                     className="object-cover"
                     sizes="25vw"
                   />
-                  {/* Add an overlay button if needed */}
-                  {/* <button className="absolute inset-0 bg-black/50 text-white flex items-center justify-center font-bold">+{images.length - 3} More</button> */}
                 </div>
               )}
-              {/* Fill remaining grid cell if less than 4 images */}
               {images.length <= 3 && <div className="bg-muted"></div>}
             </div>
           )}
@@ -287,49 +297,38 @@ export default function PackageDetailPage() {
     );
   };
 
-
   return (
     <div className={mainBgClass}>
       <div className="max-w-7xl mx-auto p-4 md:p-8">
-        <div
-          className={`${cardBgClass} rounded-2xl shadow-2xl overflow-hidden`}
-        >
+        <div className={`${cardBgClass} rounded-2xl shadow-2xl overflow-hidden`}>
           {renderGallery()}
 
           <div className={`p-6 md:p-10 border-b ${borderClass}`}>
             <div className="flex flex-wrap items-center gap-4 mb-4">
-              <div
-                className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular"
-                  ? "bg-blue-100 text-blue-800"
-                  : "bg-blue-900 text-blue-200"
-                  }`}
-              >
+              <div className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-blue-900 text-blue-200"
+                }`}>
                 {pkg.duration} {t("trip.days")}
               </div>
-              {pkg.category && ( // Only show if category exists
-                <div
-                  className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular"
-                    ? "bg-gray-100 text-gray-800"
-                    : "bg-gray-700 text-gray-200"
-                    }`}
-                >
+              {pkg.category && (
+                <div className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular"
+                  ? "bg-gray-100 text-gray-800"
+                  : "bg-gray-700 text-gray-200"
+                  }`}>
                   {pkg.category}
                 </div>
               )}
-              {pkg.location && ( // Only show if location exists
-                <div
-                  className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular"
-                    ? "bg-emerald-100 text-emerald-800"
-                    : "bg-emerald-900 text-emerald-200"
-                    }`}
-                >
+              {pkg.location && (
+                <div className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular"
+                  ? "bg-emerald-100 text-emerald-800"
+                  : "bg-emerald-900 text-emerald-200"
+                  }`}>
                   {pkg.location}
                 </div>
               )}
             </div>
-            <h1
-              className={`text-3xl md:text-5xl font-extrabold ${textClass}`}
-            >
+            <h1 className={`text-3xl md:text-5xl font-extrabold ${textClass}`}>
               {title}
             </h1>
           </div>
@@ -337,13 +336,8 @@ export default function PackageDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 md:p-10">
             <div className="lg:col-span-2">
               <div className="w-full">
-                <div
-                  className={`w-full border-b ${borderClass} overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}
-                >
-                  <nav
-                    className="-mb-px flex space-x-6"
-                    aria-label="Tabs"
-                  >
+                <div className={`w-full border-b ${borderClass} overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}>
+                  <nav className="-mb-px flex space-x-6" aria-label="Tabs">
                     {tabs.map((tab) => (
                       <button
                         key={tab}
@@ -359,17 +353,13 @@ export default function PackageDetailPage() {
                   </nav>
                 </div>
 
-                <div className="py-8 min-h-[300px]"> {/* Added min-height */}
+                <div className="py-8 min-h-[300px]">
                   {activeTab === "Overview" && (
                     <div>
-                      <h3
-                        className={`text-2xl font-bold mb-4 ${textClass}`}
-                      >
+                      <h3 className={`text-2xl font-bold mb-4 ${textClass}`}>
                         {t("trip.about")}
                       </h3>
-                      <p
-                        className={`text-lg leading-relaxed ${textMutedClass}`}
-                      >
+                      <p className={`text-lg leading-relaxed ${textMutedClass}`}>
                         {pkg.description || "No description available."}
                       </p>
                     </div>
@@ -383,15 +373,12 @@ export default function PackageDetailPage() {
                               <div className="flex items-center justify-center w-10 h-10 bg-blue-500 text-white rounded-full font-bold">
                                 {item.day}
                               </div>
-                              {/* Don't draw line after last item */}
                               {index < itineraryData.length - 1 && (
                                 <div className={`w-px flex-grow ${borderClass} mt-2`}></div>
                               )}
                             </div>
-                            <div className="pt-1"> {/* Align text slightly lower */}
-                              <h4
-                                className={`text-lg font-bold ${textClass}`}
-                              >
+                            <div className="pt-1">
+                              <h4 className={`text-lg font-bold ${textClass}`}>
                                 {item.title}
                               </h4>
                               <p className={`${textMutedClass}`}>
@@ -405,33 +392,77 @@ export default function PackageDetailPage() {
                       )}
                     </div>
                   )}
-                  {/* [NEW] Pricing Tab */}
                   {activeTab === "Pricing" && (
-                    <div>
+                    <div className="space-y-6">
                       <h3 className={`text-2xl font-bold mb-4 ${textClass}`}>
                         {t("tabs.pricing")}
                       </h3>
+
+                      {/* Best Price Highlight */}
+                      {hasMultipleTiers && (
+                        <div className={`p-4 rounded-lg border-2 border-green-500 ${theme === "regular" ? "bg-green-50" : "bg-green-900/20"}`}>
+                          <div className="flex items-center gap-3">
+                            <TagIcon className="w-5 h-5 text-green-600" />
+                            <div>
+                              <p className={`text-sm font-semibold ${theme === "regular" ? "text-green-800" : "text-green-300"}`}>
+                                Best Value
+                              </p>
+                              <p className={`text-lg font-bold ${theme === "regular" ? "text-green-900" : "text-green-200"}`}>
+                                {formatPrice(bestPriceTier.price)} per person
+                              </p>
+                              <p className={`text-sm ${theme === "regular" ? "text-green-700" : "text-green-300"}`}>
+                                For {formatPaxRange(bestPriceTier.min_pax, bestPriceTier.max_pax)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Pricing Table */}
                       {priceTiers.length > 0 ? (
                         <div className={`border ${borderClass} rounded-lg overflow-hidden`}>
-                          <table className="w-full divide-y ${borderClass}">
+                          <table className="w-full">
                             <thead className={theme === "regular" ? "bg-gray-50" : "bg-gray-700"}>
                               <tr>
-                                <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${textMutedClass} uppercase tracking-wider`}>
-                                  {t("pricing.pax", { defaultMessage: "Participants" })}
+                                <th scope="col" className={`px-6 py-4 text-left text-sm font-semibold ${textClass} uppercase tracking-wider`}>
+                                  Group Size
                                 </th>
-                                <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${textMutedClass} uppercase tracking-wider`}>
-                                  {t("pricing.pricePerPax", { defaultMessage: "Price per Pax" })}
+                                <th scope="col" className={`px-6 py-4 text-left text-sm font-semibold ${textClass} uppercase tracking-wider`}>
+                                  Price per Person
+                                </th>
+                                <th scope="col" className={`px-6 py-4 text-left text-sm font-semibold ${textClass} uppercase tracking-wider`}>
+                                  Total for Group
                                 </th>
                               </tr>
                             </thead>
                             <tbody className={`divide-y ${borderClass} ${cardBgClass}`}>
-                              {priceTiers.map((tier) => (
-                                <tr key={tier.min_pax}>
-                                  <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${textClass}`}>
-                                    {formatPaxRange(tier.min_pax, tier.max_pax)}
+                              {priceTiers.map((tier, index) => (
+                                <tr
+                                  key={tier.min_pax}
+                                  className={`${tier.min_pax === bestPriceTier.min_pax && tier.max_pax === bestPriceTier.max_pax
+                                    ? theme === "regular" ? "bg-green-50" : "bg-green-900/10"
+                                    : 'hover:' + (theme === "regular" ? "bg-gray-50" : "bg-gray-750")
+                                    } transition-colors`}
+                                >
+                                  <td className={`px-6 py-4 whitespace-nowrap`}>
+                                    <div className="flex items-center gap-2">
+                                      <UsersIcon className="w-4 h-4 text-blue-500" />
+                                      <span className={`text-sm font-medium ${textClass}`}>
+                                        {formatPaxRange(tier.min_pax, tier.max_pax)}
+                                      </span>
+                                      {tier.min_pax === bestPriceTier.min_pax && tier.max_pax === bestPriceTier.max_pax && (
+                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                          Best Value
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${textClass}`}>
+                                    {formatPrice(tier.price)}
                                   </td>
                                   <td className={`px-6 py-4 whitespace-nowrap text-sm ${textMutedClass}`}>
-                                    {formatPrice(tier.price)}
+                                    {formatPrice(tier.price * (tier.max_pax || tier.min_pax))}
+                                    <span className="text-xs ml-1">for {tier.max_pax || tier.min_pax} people</span>
                                   </td>
                                 </tr>
                               ))}
@@ -439,8 +470,19 @@ export default function PackageDetailPage() {
                           </table>
                         </div>
                       ) : (
-                        <p className={textMutedClass}>{t("status.noPricing", { defaultMessage: "No pricing details available." })}</p>
+                        <div className={`p-6 text-center rounded-lg border ${borderClass}`}>
+                          <TagIcon className="w-12 h-12 mx-auto text-gray-400 mb-3" />
+                          <p className={textMutedClass}>{t("status.noPricing", { defaultMessage: "No pricing details available." })}</p>
+                        </div>
                       )}
+
+                      {/* Additional Pricing Info */}
+                      <div className={`p-4 rounded-lg ${theme === "regular" ? "bg-blue-50" : "bg-blue-900/20"}`}>
+                        <p className={`text-sm ${theme === "regular" ? "text-blue-800" : "text-blue-300"}`}>
+                          💡 <strong>Pro Tip:</strong> Larger groups enjoy better rates per person.
+                          Consider traveling with friends or family to maximize savings!
+                        </p>
+                      </div>
                     </div>
                   )}
                   {activeTab === "Cost" && (
@@ -449,7 +491,7 @@ export default function PackageDetailPage() {
                         {t("cost.facilitiesIncluded")}
                       </h3>
                       {costData.included && costData.included.length > 0 ? (
-                        <ul className="space-y-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3"> {/* Grid layout */}
+                        <ul className="space-y-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                           {costData.included.map((item, index) => (
                             <li key={index} className="flex items-center gap-3">
                               <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
@@ -461,7 +503,6 @@ export default function PackageDetailPage() {
                         <p className={textMutedClass}>{t("cost.noIncludedItems")}</p>
                       )}
 
-                      {/* [NEW] Excluded Items */}
                       <h3 className={`text-2xl font-bold mt-10 mb-6 ${textClass}`}>
                         {t("cost.facilitiesExcluded")}
                       </h3>
@@ -469,7 +510,7 @@ export default function PackageDetailPage() {
                         <ul className="space-y-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                           {costData.excluded.map((item, index) => (
                             <li key={index} className="flex items-center gap-3">
-                              <XIcon className="w-5 h-5 text-red-500 flex-shrink-0" /> {/* Assuming you add XIcon import */}
+                              <XIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
                               <span className={textMutedClass}>{item}</span>
                             </li>
                           ))}
@@ -483,10 +524,8 @@ export default function PackageDetailPage() {
                     <div className="space-y-6">
                       {faqsData.length > 0 ? (
                         faqsData.map((faq, index) => (
-                          <div key={faq.question + index}>
-                            <h4
-                              className={`font-bold text-lg ${textClass}`}
-                            >
+                          <div key={faq.question + index} className={`p-4 rounded-lg ${borderClass} border`}>
+                            <h4 className={`font-bold text-lg ${textClass} mb-2`}>
                               {faq.question}
                             </h4>
                             <p className={textMutedClass}>{faq.answer}</p>
@@ -515,21 +554,16 @@ export default function PackageDetailPage() {
                   )}
                 </div>
               </div>
-              {/* Trip Info Section */}
+
               {tripInfo.length > 0 && (
                 <div className={`mt-10 pt-10 border-t ${borderClass}`}>
-                  <h2
-                    className={`text-2xl font-bold mb-6 ${textClass}`}
-                  >
+                  <h2 className={`text-2xl font-bold mb-6 ${textClass}`}>
                     {t("trip.info")}
                   </h2>
                   <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
                     {tripInfo.map((item) => (
-                      <div
-                        key={item.label}
-                        className="flex items-start space-x-4"
-                      >
-                        <div className="text-2xl mt-1 flex-shrink-0 w-6 text-center">{item.icon || 'i'}</div> {/* Default icon */}
+                      <div key={item.label} className="flex items-start space-x-4">
+                        <div className="text-2xl mt-1 flex-shrink-0 w-6 text-center">{item.icon || 'i'}</div>
                         <div>
                           <p className={`text-sm ${textMutedClass}`}>
                             {item.label}
@@ -545,36 +579,101 @@ export default function PackageDetailPage() {
               )}
             </div>
 
-            {/* --- Sidebar Booking --- */}
+            {/* --- Enhanced Sidebar Booking --- */}
             <div className="lg:col-span-1">
-              <div
-                className={`border ${borderClass} rounded-xl shadow-lg p-6 sticky top-8`}
-              >
-                {/* [UPDATED] Price Display */}
-                <div className="mb-5">
-                  <p className={`text-sm ${textMutedClass}`}>
-                    {t("trip.from")}
-                  </p>
-                  <p className={`text-3xl font-bold ${textClass}`}>
+              <div className={`border ${borderClass} rounded-xl shadow-lg p-6 sticky top-8`}>
+                {/* Enhanced Price Display */}
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TagIcon className="w-5 h-5 text-blue-500" />
+                    <p className={`text-sm font-semibold ${textMutedClass}`}>
+                      Starting from
+                    </p>
+                  </div>
+                  <p className={`text-3xl font-bold ${textClass} mb-1`}>
                     {formatPrice(startingPrice)}
                   </p>
                   <p className={`text-sm ${textMutedClass}`}>
-                    / {t("trip.person")}
+                    per person (for small groups of 2 person)
                   </p>
+                  <p className={`text-xs italic ${textMutedClass} mb-3`}>
+                    *Price varies depending on group size and travel date
+                  </p>
+
+                  {/* Group Savings Notice */}
+                  {hasMultipleTiers && (
+                    <div className={`p-3 rounded-lg ${theme === "regular" ? "bg-green-50" : "bg-green-900/20"} mb-4`}>
+                      <div className="flex items-start gap-2">
+                        <UsersIcon className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className={`text-xs font-semibold ${theme === "regular" ? "text-green-800" : "text-green-300"}`}>
+                            Group Discounts Available
+                          </p>
+                          <p className={`text-xs ${theme === "regular" ? "text-green-700" : "text-green-400"}`}>
+                            Save up to {formatPrice(startingPrice - bestPriceTier.price)} per person
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Quick Pricing Preview */}
+                  {priceTiers.length > 0 && (
+                    <div className={`border-t ${borderClass} pt-4 mt-4`}>
+                      <p className={`text-sm font-semibold ${textClass} mb-2`}>
+                        Quick Price Guide:
+                      </p>
+                      <div className="space-y-2">
+                        {priceTiers.slice(0, 3).map((tier) => (
+                          <div key={tier.min_pax} className="flex justify-between items-center text-sm">
+                            <span className={textMutedClass}>
+                              {formatPaxRange(tier.min_pax, tier.max_pax)}
+                            </span>
+                            <span className={`font-semibold ${textClass}`}>
+                              {formatPrice(tier.price)}
+                            </span>
+                          </div>
+                        ))}
+                        {priceTiers.length > 3 && (
+                          <p className={`text-xs text-center ${textMutedClass} mt-2`}>
+                            +{priceTiers.length - 3} more group sizes available
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={!user} // Disable if user not logged in
+                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-4 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+                  disabled={!user}
                 >
-                  {user ? t("booking.checkAvailability") : t("booking.loginToBook", { defaultMessage: "Login to Book" })}
+                  {user ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <CalendarIcon className="w-5 h-5" />
+                      {t("booking.checkAvailability")}
+                    </div>
+                  ) : (
+                    t("booking.loginToBook", { defaultMessage: "Login to Book" })
+                  )}
                 </button>
+
+                <div className={`mt-4 p-3 rounded-lg ${theme === "regular" ? "bg-gray-50" : "bg-gray-700/50"}`}>
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckIcon className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className={textMutedClass}>Best price guarantee</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm mt-1">
+                    <CheckIcon className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className={textMutedClass}>Free cancellation</span>
+                  </div>
+                </div>
 
                 <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
                   {t("booking.needHelp")}{" "}
                   <a
-                    href="#" // Replace with actual contact link/modal trigger
+                    href="#"
                     className="text-cyan-600 font-semibold hover:underline"
                   >
                     {t("booking.sendMessage")}
@@ -585,7 +684,6 @@ export default function PackageDetailPage() {
           </div>
         </div>
 
-        {/* Back Button */}
         <div className="text-center mt-12">
           <Link
             href="/packages"
@@ -599,21 +697,20 @@ export default function PackageDetailPage() {
         </div>
       </div>
 
-      {/* Ensure pkg is not null before rendering modal */}
       {pkg && (
         <PackageBookingModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           pkg={pkg}
           user={user as AuthUser | null}
-          t={t as TFunction} // Pass the translation function
+          t={t as TFunction}
         />
       )}
     </div>
   );
 }
 
-// [NEW] Helper icon (add to lucide imports if you prefer)
+// XIcon component remains the same
 const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
