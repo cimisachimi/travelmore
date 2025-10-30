@@ -72,7 +72,7 @@ const ApiActivityCard = ({ activity }: { activity: Activity }) => {
           }}
         />
       </div>
-      <div className="p-6 flex flex-col flex-grow">
+      <div className="p-6 flex flex-col grow">
         {activity.category && (
           <p className="text-sm font-semibold text-primary mb-2">
             {activity.category}
@@ -85,7 +85,7 @@ const ApiActivityCard = ({ activity }: { activity: Activity }) => {
           {activity.name}
         </h2>
         <p
-          className={`mb-4 flex-grow ${textMutedClass} text-sm overflow-hidden text-ellipsis`}
+          className={`mb-4 grow ${textMutedClass} text-sm overflow-hidden text-ellipsis`}
           style={{
             display: "-webkit-box",
             WebkitLineClamp: 3,

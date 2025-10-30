@@ -230,9 +230,7 @@
     }
   },
   "activities": {
-    "showMore" : "Show More available activities ",
-    "popularActivities" : "Popular Activities",
-    "popularActivitiesDesc" : "popularActivitiesDesc",
+
     
     "title": "Our Activities",
     "subtitle": "Discover experiences and adventures curated just for you. Find your next journey with us.",
@@ -529,6 +527,9 @@
       "total": "Total Price",
       "submitting": "Booking...",
       "confirm": "Book Now",
+      "discountCode": "Discount Code",
+      "subtotal": "sub total ",
+      "discountInfo": "discount info",
       "success": {
         "message": "Booking created! Redirecting..."
       },

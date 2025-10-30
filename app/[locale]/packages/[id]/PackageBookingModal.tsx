@@ -6,9 +6,9 @@ import React, { useState, FormEvent, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { X, CalendarDays, Users } from "lucide-react"; // Import relevant icons
+import { X, CalendarDays, Users, TicketPercent } from "lucide-react"; // ✨ UPDATED: Added TicketPercent icon
 import { AxiosError } from "axios";
-import { useTheme } from "@/components/ThemeProvider"; // ✨ Import useTheme
+import { useTheme } from "@/components/ThemeProvider";
 
 // Import types from the main page
 import { HolidayPackage, TFunction, AuthUser } from "./page";
@@ -24,18 +24,19 @@ interface PackageBookingModalProps {
 // API response/error types
 interface ApiErrorResponse {
   message?: string;
-  errors?: Record<string, string[]>; // Optional validation errors from the API
+  errors?: Record<string, string[]>;
 }
 interface ApiBookingSuccessResponse {
   id: number; // The new Order ID
 }
 
-// Error state type
+// ✨ UPDATED: Error state type
 type FormErrors = {
   startDate?: string;
   adults?: string;
-  children?: string; // Add children validation if needed
-  general?: string; // For price calculation errors
+  children?: string;
+  general?: string;
+  discountCode?: string; // ✅ ADDED: For discount code errors
 };
 
 const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
@@ -46,16 +47,17 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
   t,
 }) => {
   const router = useRouter();
-  const { theme } = useTheme(); // ✨ Get the current theme
+  const { theme } = useTheme();
   const [startDate, setStartDate] = useState<string>("");
   const [adults, setAdults] = useState<number>(1);
   const [children, setChildren] = useState<number>(0);
+  const [discountCode, setDiscountCode] = useState<string>(""); // ✅ ADDED: State for discount code
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [errors, setErrors] = useState<FormErrors>({}); // ✅ NEW: State for errors
+  const [errors, setErrors] = useState<FormErrors>({});
 
   const today = new Date().toISOString().split("T")[0];
 
-  // Memoized price calculation logic (Unchanged)
+  // Memoized price calculation logic (This is now the Subtotal)
   const { pricePerPax, totalPax } = useMemo(() => {
     const totalPax = adults + children;
     let foundPrice = 0;
@@ -68,7 +70,8 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
       if (tier) {
         foundPrice = tier.price;
       } else {
-        foundPrice = pkg.price_tiers[pkg.price_tiers.length - 1].price;
+        // Fallback: If no tier matches (e.g., pax < lowest min_pax), find lowest price
+        foundPrice = pkg.price_tiers.reduce((min, t) => t.price < min ? t.price : min, pkg.price_tiers[0].price);
       }
     }
     if (foundPrice === 0) {
@@ -77,7 +80,8 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
     return { pricePerPax: foundPrice, totalPax };
   }, [adults, children, pkg.price_tiers, pkg.starting_from_price]);
 
-  const total = useMemo(() => {
+  // This is now the subtotal
+  const subtotal = useMemo(() => {
     return pricePerPax * totalPax;
   }, [pricePerPax, totalPax]);
 
@@ -90,7 +94,6 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
     }).format(amount);
   };
 
-  // ✅ NEW: Validation function
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
@@ -101,20 +104,18 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
       );
     }
     if (adults < 1) {
-      // Assuming at least one adult is required
       newErrors.adults = t(
         "booking.errors.minAdults",
         "At least one adult is required."
       );
     }
-     if (children < 0) { // Basic validation for children
+     if (children < 0) {
          newErrors.children = t(
              "booking.errors.invalidChildren",
              "Number of children cannot be negative."
          );
      }
-    if (total <= 0 || pricePerPax <= 0) {
-        // Add a general error if price calculation fails, maybe due to invalid pax numbers
+    if (subtotal <= 0 || pricePerPax <= 0) {
          newErrors.general = t(
              "booking.errors.noPrice",
              "Price could not be calculated for this number of participants."
@@ -122,17 +123,15 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
      }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // Returns true if no errors
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // ✅ UPDATED: Run validation first
     if (!validateForm()) {
-        // If price calculation failed, show it as a toast as well
         if(errors.general) toast.error(errors.general);
-        return; // Stop submission if validation fails
+        return;
     }
 
     if (!user) {
@@ -145,13 +144,14 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      // API call (Unchanged endpoint/payload)
+      // ✨ UPDATED: API call payload includes discount_code
       const response = await api.post<ApiBookingSuccessResponse>(
         `/packages/${pkg.id}/book`,
         {
           start_date: startDate,
           adults: adults,
           children: children,
+          discount_code: discountCode || null, // ✅ ADDED: Pass the discount code
         }
       );
 
@@ -160,16 +160,27 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
           t("booking.success.message", "Booking created! Redirecting...")
         );
         const orderId = response.data?.id;
-        router.push(orderId ? `/profile?order_id=${orderId}` : "/profile"); // Use query param for order ID
+        router.push(orderId ? `/profile?order_id=${orderId}` : "/profile");
         onClose();
       }
     } catch (err: unknown) {
       const error = err as AxiosError<ApiErrorResponse>;
-      // Display specific validation errors from backend if available
+      
+      // ✨ UPDATED: Better error handling to show specific field errors
       if (error.response?.status === 422 && error.response.data.errors) {
           const validationErrors = error.response.data.errors;
-          const errorMessages = Object.values(validationErrors).flat().join(' ');
-          toast.error(errorMessages || t("booking.errors.general", "Booking failed. Please try again."));
+          const newApiErrors: FormErrors = {};
+
+          if (validationErrors.start_date) newApiErrors.startDate = validationErrors.start_date[0];
+          if (validationErrors.adults) newApiErrors.adults = validationErrors.adults[0];
+          if (validationErrors.discount_code) newApiErrors.discountCode = validationErrors.discount_code[0]; // ✅ ADDED
+          if (validationErrors.general) newApiErrors.general = validationErrors.general[0];
+          
+          setErrors(newApiErrors); // This displays errors under the correct fields
+          toast.error(
+            error.response.data.message || // Use the main message from the response
+            t("booking.errors.validation", "Please check the errors on the form.")
+          );
       } else {
           toast.error(
               error.response?.data?.message ||
@@ -183,7 +194,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
 
   if (!isOpen) return null;
 
-  // ✨ Define theme-based classes (similar to ActivityBookingModal)
+  // Theme-based classes
   const modalBgClass = theme === "regular" ? "bg-white" : "bg-card";
   const textColor = theme === "regular" ? "text-gray-900" : "text-foreground";
   const mutedTextColor =
@@ -200,7 +211,6 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn p-4">
-      {/* ✨ UPDATED: Modal container with theme class */}
       <div
         className={`${modalBgClass} rounded-xl shadow-xl p-6 sm:p-8 w-full max-w-lg relative transform transition-all duration-300`}
       >
@@ -212,12 +222,11 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
           <X size={24} />
         </button>
 
-        {/* ✨ UPDATED: Header with theme classes */}
         <div className="sm:flex sm:items-start mb-6">
           <div
-            className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${iconBgClass} sm:mx-0 sm:h-10 sm:w-10`}
+            className={`mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${iconBgClass} sm:mx-0 sm:h-10 sm:w-10`}
           >
-            <CalendarDays className="h-6 w-6 text-primary" /> {/* Calendar Icon */}
+            <CalendarDays className="h-6 w-6 text-primary" />
           </div>
           <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
             <h2
@@ -230,7 +239,6 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
           </div>
         </div>
 
-        {/* ✨ UPDATED: Form with theme classes and error display */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label
@@ -269,7 +277,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
               <input
                 id="adults"
                 type="number"
-                min={1} // Assuming at least 1 adult
+                min={1}
                 value={adults}
                 onChange={(e) => {
                     setAdults(Number(e.target.value));
@@ -311,7 +319,34 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
             </div>
           </div>
 
-          {/* ✨ UPDATED: Price summary with theme classes */}
+          {/* ✅ ADDED: Discount Code Input */}
+          <div>
+            <label
+              htmlFor="discount-code"
+              className={`block text-sm font-medium ${mutedTextColor}`}
+            >
+              <TicketPercent size={14} className="inline mr-1 mb-0.5" /> {t("booking.discountCode", "Discount Code (Optional)")}
+            </label>
+            <input
+              id="discount-code"
+              type="text"
+              value={discountCode}
+              onChange={(e) => {
+                setDiscountCode(e.target.value.toUpperCase());
+                // Clear error when user types
+                if (errors.discountCode) setErrors((p) => ({ ...p, discountCode: undefined }));
+              }}
+              placeholder="e.g., SALE10"
+              className={`mt-1 block w-full rounded-md shadow-sm ${inputBgClass} ${
+                errors.discountCode ? errorBorderClass : inputBorderClass
+              } ${focusRingClass} ${textColor} placeholder:${mutedTextColor}`}
+            />
+            {errors.discountCode && (
+              <p className="text-red-600 text-sm mt-1">{errors.discountCode}</p>
+            )}
+          </div>
+
+          {/* ✨ UPDATED: Price summary (now shows Subtotal) */}
           <div
             className={`pt-4 space-y-2 ${summaryBgClass} p-4 rounded-lg border ${inputBorderClass}`}
           >
@@ -331,20 +366,24 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
               className={`flex justify-between items-center border-t ${inputBorderClass} pt-2`}
             >
               <p className={`text-lg font-semibold ${textColor}`}>
-                {t("booking.total", "Total Price")}:
+                {/* ✨ UPDATED: Label changed from "Total Price" */}
+                {t("booking.subtotal", "Subtotal")}:
               </p>
               <p className="text-2xl font-bold text-primary">
-                {formatPrice(total)}
+                {formatPrice(subtotal)}
               </p>
             </div>
-             {errors.general && ( // Show general price error here
+             {errors.general && (
                 <p className="text-red-600 text-sm mt-1 text-center">{errors.general}</p>
             )}
+            <p className={`text-xs ${mutedTextColor} text-center pt-1`}>
+              {t("booking.discountInfo", "Discounts will be applied at checkout.")}
+            </p>
           </div>
 
           <button
             type="submit"
-            disabled={isSubmitting || !!errors.general} // Disable if price calculation failed
+            disabled={isSubmitting || !!errors.general}
             className={buttonClass}
           >
             {isSubmitting

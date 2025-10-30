@@ -369,12 +369,12 @@ export default function PackageDetailPage() {
                       {itineraryData.length > 0 ? (
                         itineraryData.map((item, index) => (
                           <div key={index} className="flex gap-4">
-                            <div className="flex flex-col items-center flex-shrink-0">
+                            <div className="flex flex-col items-center shrink-0">
                               <div className="flex items-center justify-center w-10 h-10 bg-blue-500 text-white rounded-full font-bold">
                                 {item.day}
                               </div>
                               {index < itineraryData.length - 1 && (
-                                <div className={`w-px flex-grow ${borderClass} mt-2`}></div>
+                                <div className={`w-px grow ${borderClass} mt-2`}></div>
                               )}
                             </div>
                             <div className="pt-1">
@@ -494,7 +494,7 @@ export default function PackageDetailPage() {
                         <ul className="space-y-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                           {costData.included.map((item, index) => (
                             <li key={index} className="flex items-center gap-3">
-                              <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                              <CheckIcon className="w-5 h-5 text-green-500 shrink-0" />
                               <span className={textMutedClass}>{item}</span>
                             </li>
                           ))}
@@ -510,7 +510,7 @@ export default function PackageDetailPage() {
                         <ul className="space-y-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                           {costData.excluded.map((item, index) => (
                             <li key={index} className="flex items-center gap-3">
-                              <XIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
+                              <XIcon className="w-5 h-5 text-red-500 shrink-0" />
                               <span className={textMutedClass}>{item}</span>
                             </li>
                           ))}
@@ -563,7 +563,7 @@ export default function PackageDetailPage() {
                   <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
                     {tripInfo.map((item) => (
                       <div key={item.label} className="flex items-start space-x-4">
-                        <div className="text-2xl mt-1 flex-shrink-0 w-6 text-center">{item.icon || 'i'}</div>
+                        <div className="text-2xl mt-1 shrink-0 w-6 text-center">{item.icon || 'i'}</div>
                         <div>
                           <p className={`text-sm ${textMutedClass}`}>
                             {item.label}
@@ -604,7 +604,7 @@ export default function PackageDetailPage() {
                   {hasMultipleTiers && (
                     <div className={`p-3 rounded-lg ${theme === "regular" ? "bg-green-50" : "bg-green-900/20"} mb-4`}>
                       <div className="flex items-start gap-2">
-                        <UsersIcon className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <UsersIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
                         <div>
                           <p className={`text-xs font-semibold ${theme === "regular" ? "text-green-800" : "text-green-300"}`}>
                             Group Discounts Available
@@ -646,7 +646,7 @@ export default function PackageDetailPage() {
 
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-4 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+                  className="w-full bg-linear-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-4 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
                   disabled={!user}
                 >
                   {user ? (
@@ -661,11 +661,11 @@ export default function PackageDetailPage() {
 
                 <div className={`mt-4 p-3 rounded-lg ${theme === "regular" ? "bg-gray-50" : "bg-gray-700/50"}`}>
                   <div className="flex items-center gap-2 text-sm">
-                    <CheckIcon className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <CheckIcon className="w-4 h-4 text-green-500 shrink-0" />
                     <span className={textMutedClass}>Best price guarantee</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm mt-1">
-                    <CheckIcon className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <CheckIcon className="w-4 h-4 text-green-500 shrink-0" />
                     <span className={textMutedClass}>Free cancellation</span>
                   </div>
                 </div>
