@@ -509,7 +509,8 @@
       "from": "From",
       "person": "Person",
       "adult": "Adult",
-      "child": "Child"
+      "child": "Child",
+      "people":"People"
     },
     "cost": {
       "facilitiesIncluded": "What's Included",
