@@ -1,14 +1,12 @@
-// app/[locale]/blog/[id]/page.tsx
-"use client"; // Komponen ini perlu state, jadi harus client component
+"use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation"; // Gunakan dari next/navigation untuk client component
+import { useParams } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
 import { useTranslations } from "next-intl";
-import { blogs } from "@/data/blog"; // Impor data blog yang baru
-import type { Blog } from "@/data/blog"; // Impor tipe Blog
+import api from "@/lib/api"; // Assuming you have an api helper
 
 // --- Impor Swiper ---
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -17,10 +15,17 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-// --- Impor Ikon (sesuaikan path jika perlu) ---
-const CheckIcon = () => ( <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /> </svg> );
-const XIcon = () => ( <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> </svg> );
-// Tambahkan ikon lain jika diperlukan untuk TripInfo
+// --- Tipe data baru dari API ---
+interface Blog {
+  id: number;
+  slug: string;
+  title: string;
+  content: string;
+  excerpt: string;
+  published_at: string;
+  author: string;
+  images: string[]; // Ini adalah array string URL
+}
 
 // --- Komponen MobileImageSlider ---
 const MobileImageSlider = ({ images, title }: { images: string[]; title: string; }) => (
@@ -37,31 +42,36 @@ const MobileImageSlider = ({ images, title }: { images: string[]; title: string;
 
 export default function BlogDetail() {
   const { theme } = useTheme();
-  const params = useParams(); // Hook untuk Client Component
-  const t = useTranslations("blogDetail"); // Terjemahan spesifik untuk halaman detail
-  const tPackages = useTranslations("packages"); // Ambil terjemahan tab dari packages
-  const [activeTab, setActiveTab] = useState("Overview"); // State untuk tab aktif
+  const params = useParams();
+  const t = useTranslations("blogDetail");
+  const tPackages = useTranslations("packages"); // For "no image" text
 
-  const id = params?.id as string; // Dapatkan id dari params
-  const blogData = blogs.find((b) => b.id === id);
+  const [blogData, setBlogData] = useState<Blog | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  if (!blogData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
-        {t("notFound")}
-      </div>
-    );
-  }
+  // Dapatkan slug dari params (file [id] akan menangkap slug)
+  const slug = params?.id as string;
 
-  // Ambil data dari blogData
-  const { title, images = [], category, duration, description, itinerary = [], faqs = [], mapUrl, tripInfo = [], date, author } = blogData;
+  useEffect(() => {
+    if (!slug) return;
 
-  // Definisikan tab yang akan ditampilkan
-  const tabs = ["Overview"];
-  if (itinerary.length > 0) tabs.push("Itinerary");
-  // if (blogData.cost) tabs.push("Cost"); // Jika Anda menambahkan struktur 'cost'
-  if (faqs.length > 0) tabs.push("FAQs");
-  if (mapUrl) tabs.push("Map");
+    const fetchBlog = async () => {
+      try {
+        setLoading(true);
+        setError(false);
+        const response = await api.get(`/public/posts/${slug}`);
+        setBlogData(response.data);
+      } catch (err) {
+        console.error("Failed to fetch blog post:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlog();
+  }, [slug]);
 
   // Styling dinamis
   const mainBgClass = theme === "regular" ? "bg-gray-50" : "bg-black";
@@ -71,7 +81,7 @@ export default function BlogDetail() {
   const borderClass = theme === "regular" ? "border-gray-200" : "border-gray-700";
 
   // --- Fungsi Render Galeri ---
-  const renderGallery = () => {
+  const renderGallery = (images: string[], title: string) => {
     const count = images.length;
     if (count === 0) return ( <div className={`w-full h-[400px] ${theme === "regular" ? "bg-gray-200" : "bg-gray-900"} rounded-lg flex items-center justify-center text-gray-500`}> {tPackages("gallery.noImage")} </div> );
 
@@ -89,6 +99,29 @@ export default function BlogDetail() {
     );
   };
 
+  // --- Render States ---
+  if (loading) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${mainBgClass} ${textMutedClass}`}>
+        Loading post...
+      </div>
+    );
+  }
+
+  if (error || !blogData) {
+    return (
+      <div className={`min-h-screen flex flex-col items-center justify-center ${mainBgClass} ${textMutedClass}`}>
+        <h1 className="text-2xl font-bold">{t("notFound")}</h1>
+        <Link href="/blog" className="text-primary font-medium hover:underline mt-4">
+             ← {t("back")}
+        </Link>
+      </div>
+    );
+  }
+
+  // Data sudah ada
+  const { title, images = [], content, published_at, author } = blogData;
+
   return (
     <div className={mainBgClass}>
       <div className="max-w-7xl mx-auto p-4 md:p-8">
@@ -96,121 +129,34 @@ export default function BlogDetail() {
              ← {t("back")}
         </Link>
         <div className={`${cardBgClass} rounded-2xl shadow-2xl overflow-hidden`}>
-          {renderGallery()}
+          {renderGallery(images, title)}
 
           <div className={`p-6 md:p-10 border-b ${borderClass}`}>
-            <div className="flex flex-wrap items-center gap-4 mb-4">
-              {/* Kategori & Durasi (jika ada) */}
-              <div className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular" ? "bg-gray-100 text-gray-800" : "bg-gray-700 text-gray-200"}`}>
-                {category}
-              </div>
-              {duration && (
-                <div className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular" ? "bg-blue-100 text-blue-800" : "bg-blue-900 text-blue-200"}`}>
-                  Baca: {duration} mnt
-                </div>
-              )}
-            </div>
+            {/* Judul dan Info Penulis */}
             <h1 className={`text-3xl md:text-5xl font-extrabold ${textClass}`}>{title}</h1>
-            {/* Info Penulis & Tanggal */}
             <p className={`mt-3 text-sm ${textMutedClass}`}>
-              {t("by")} {author} • {date}
+              {t("by")} {author} • {new Date(published_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 md:p-10">
             {/* Kolom Konten Utama */}
             <div className="lg:col-span-2">
-              <div className="w-full">
-                {/* Navigasi Tab */}
-                <div className={`w-full border-b ${borderClass} overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}>
-                  <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-                    {tabs.map((tab) => (
-                      <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`${activeTab === tab ? "border-primary text-primary" : `border-transparent ${textMutedClass} hover:border-gray-300 hover:text-gray-700`} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-                      >
-                        {/* Menggunakan terjemahan tab dari 'packages' */}
-                        {tPackages(`tabs.${tab.toLowerCase()}`)}
-                      </button>
-                    ))}
-                  </nav>
-                </div>
-
-                {/* Konten Tab */}
-                <div className="py-8 prose max-w-none"> {/* Tambahkan class 'prose' */}
-                  {activeTab === "Overview" && (
-                    <div className={textMutedClass} dangerouslySetInnerHTML={{ __html: description.replace(/\n/g, '<br/>') }} />
-                  )}
-                  {activeTab === "Itinerary" && (
-                    <div className="space-y-8">
-                      {itinerary.map((item) => (
-                        <div key={item.day} className="flex gap-4 not-prose"> {/* 'not-prose' untuk styling manual */}
-                          <div className="flex flex-col items-center">
-                            <div className="flex items-center justify-center w-10 h-10 bg-primary text-black rounded-full font-bold">
-                              {item.day}
-                            </div>
-                            {item.day !== itinerary.length && <div className={`w-px h-full ${borderClass} mt-2`}></div>}
-                          </div>
-                          <div>
-                            <h4 className={`text-lg font-bold ${textClass} mt-1`}>{item.title}</h4>
-                            <p className={`${textMutedClass}`}>{item.description}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {/* Contoh jika ada Cost
-                   {activeTab === "Cost" && (
-                     // ... render cost included/excluded ...
-                   )}
-                   */}
-                  {activeTab === "FAQs" && (
-                    <div className="space-y-6">
-                      {faqs.map((faq) => (
-                        <div key={faq.question}>
-                          <h4 className={`font-bold text-lg ${textClass}`}>{faq.question}</h4>
-                          <p className={textMutedClass}>{faq.answer}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {activeTab === "Map" && mapUrl && (
-                     <iframe src={mapUrl} width="100%" height="450" style={{ border: 0 }} allowFullScreen={false} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="rounded-lg not-prose"></iframe>
-                  )}
-                </div>
-              </div>
-
-               {/* Trip Info (jika ada) */}
-               {tripInfo.length > 0 && (
-                <div className={`mt-10 pt-10 border-t ${borderClass}`}>
-                    <h2 className={`text-2xl font-bold mb-6 ${textClass}`}>{tPackages("trip.info")}</h2>
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
-                    {tripInfo.map((item) => (
-                        <div key={item.label} className="flex items-start space-x-4">
-                        <div className="text-2xl mt-1">{item.icon}</div> {/* Asumsi icon adalah emoji */}
-                        <div>
-                            <p className={`text-sm ${textMutedClass}`}>{item.label}</p>
-                            <p className={`font-bold ${textClass}`}>{item.value}</p>
-                        </div>
-                        </div>
-                    ))}
-                    </div>
-                </div>
-               )}
-
+              {/* Konten Blog */}
+              {/* prose: class dari tailwind-typography untuk styling HTML */}
+              <div 
+                className={`prose dark:prose-invert max-w-none ${textMutedClass}`} 
+                dangerouslySetInnerHTML={{ __html: content }} 
+              />
             </div>
 
-            {/* Kolom Sidebar (Opsional untuk Blog - bisa dikosongkan atau diisi info terkait) */}
+            {/* Kolom Sidebar Info Penulis */}
             <div className="lg:col-span-1">
-              {/* Anda bisa menambahkan info penulis, link terkait, atau biarkan kosong */}
                <div className={`border ${borderClass} rounded-xl shadow-lg p-6 sticky top-28`}>
                   <h3 className={`text-lg font-bold mb-4 ${textClass}`}>Tentang Penulis</h3>
                   <p className={textMutedClass}>
-                    Artikel ini ditulis oleh <strong>{author}</strong> pada {date}.
-                    {/* Tambahkan bio singkat jika ada */}
+                    Artikel ini ditulis oleh <strong>{author}</strong> pada {new Date(published_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}.
                   </p>
-                  {/* Tambahkan link media sosial atau artikel terkait di sini */}
                </div>
             </div>
           </div>

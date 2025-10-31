@@ -10,6 +10,7 @@ import BlogSection from "../../components/BlogSection";
 import HowItWorks from "@/components/HowItWork";
 import OtherServices from "@/components/OtherServices"; 
 import PopularPackagesSlider from "@/components/PopularPackagesSlider";
+import DiscountBanner from "@/components/DiscountBanner";
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
       <HeroSlider />
       <PersonalizedTripPlanner />
       {/* <PopularPackages /> */}
+      <DiscountBanner />
       <PopularPackagesSlider />
       <ActivitySlider />
       {/* <HowItWorks /> */}

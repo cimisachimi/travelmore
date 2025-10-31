@@ -88,8 +88,8 @@ export default function PackagesPage() {
 
   // Memoize translation strings
   const fetchErrorString = useMemo(() => t("status.fetchError"), [t]);
-  const loadingString = useMemo(() => t('status.loading'), [t]);
-  const noCategoriesString = useMemo(() => t('status.noCategories'), [t]);
+  const loadingString = useMemo(() => t("status.loading"), [t]);
+  const noCategoriesString = useMemo(() => t("status.noCategories"), [t]);
   const noResultsString = useMemo(() => t("noResults"), [t]);
 
   useEffect(() => {
@@ -98,7 +98,7 @@ export default function PackagesPage() {
       setLoading(true);
       setError(null);
       try {
-        const response = await api.get<ApiResponse>('/public/packages');
+        const response = await api.get<ApiResponse>("/public/packages");
         if (isMounted) {
           const packagesData = response.data.data || [];
           setApiPackages(packagesData);
@@ -106,7 +106,9 @@ export default function PackagesPage() {
           if (packagesData.length > 0) {
             // [UPDATED] Use starting_from_price for filtering
             const allPrices = packagesData.map((p) => p.starting_from_price);
-            const numericPrices = allPrices.filter((p): p is number => typeof p === 'number' && !isNaN(p));
+            const numericPrices = allPrices.filter(
+              (p): p is number => typeof p === "number" && !isNaN(p)
+            );
 
             if (numericPrices.length > 0) {
               const calculatedMax = Math.max(...numericPrices);
@@ -140,7 +142,7 @@ export default function PackagesPage() {
 
     return () => {
       isMounted = false; // Cleanup function to set flag on unmount
-    }
+    };
   }, [fetchErrorString]); // Only refetch if translation changes (rare)
 
   // Calculate price bounds for the slider's min/max attributes
@@ -148,14 +150,20 @@ export default function PackagesPage() {
     if (apiPackages.length === 0) return { min: 0, max: priceSliderMax }; // Use slider max
     // [UPDATED] Use starting_from_price
     const allPrices = apiPackages.map((p) => p.starting_from_price);
-    const numericPrices = allPrices.filter((p): p is number => typeof p === 'number' && !isNaN(p));
+    const numericPrices = allPrices.filter(
+      (p): p is number => typeof p === "number" && !isNaN(p)
+    );
     if (numericPrices.length === 0) return { min: 0, max: priceSliderMax };
     // Set min to 0 or the actual min, max uses the pre-calculated slider max
     return { min: Math.min(0, ...numericPrices), max: priceSliderMax };
   }, [apiPackages, priceSliderMax]);
 
   const allCategories = useMemo(
-    () => [...new Set(apiPackages.map((pkg) => pkg.category).filter((c): c is string => !!c))], // Ensure categories are strings
+    () => [
+      ...new Set(
+        apiPackages.map((pkg) => pkg.category).filter((c): c is string => !!c)
+      ),
+    ], // Ensure categories are strings
     [apiPackages]
   );
 
@@ -188,22 +196,37 @@ export default function PackagesPage() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0, // Ensure no decimals for IDR
     }).format(numericAmount);
-  }
+  };
 
   // Memoize CSS classes
-  const mainBgClass = useMemo(() => theme === "regular" ? "bg-gray-50" : "bg-black", [theme]);
-  const cardBgClass = useMemo(() => theme === "regular" ? "bg-white" : "bg-gray-800", [theme]);
-  const textClass = useMemo(() => theme === "regular" ? "text-gray-900" : "text-white", [theme]);
-  const textMutedClass = useMemo(() => theme === "regular" ? "text-gray-600" : "text-gray-300", [theme]);
-  const headerBgClass = useMemo(() => theme === "regular" ? "bg-white" : "bg-gray-900", [theme]);
-  const borderClass = useMemo(() => theme === "regular" ? "border-gray-200" : "border-gray-700", [theme]);
-
+  const mainBgClass = useMemo(
+    () => (theme === "regular" ? "bg-gray-50" : "bg-black"),
+    [theme]
+  );
+  const cardBgClass = useMemo(
+    () => (theme === "regular" ? "bg-white" : "bg-gray-800"),
+    [theme]
+  );
+  const textClass = useMemo(
+    () => (theme === "regular" ? "text-gray-900" : "text-white"),
+    [theme]
+  );
+  const textMutedClass = useMemo(
+    () => (theme === "regular" ? "text-gray-600" : "text-gray-300"),
+    [theme]
+  );
+  const headerBgClass = useMemo(
+    () => (theme === "regular" ? "bg-white" : "bg-gray-900"),
+    [theme]
+  );
+  const borderClass = useMemo(
+    () => (theme === "regular" ? "border-gray-200" : "border-gray-700"),
+    [theme]
+  );
 
   return (
     <div className={mainBgClass}>
-      <header
-        className={`py-12 ${headerBgClass} border-b ${borderClass}`}
-      >
+      <header className={`py-12 ${headerBgClass} border-b ${borderClass}`}>
         <div className="container mx-auto px-4 lg:px-8 text-center">
           <h1 className={`text-4xl md:text-5xl font-extrabold ${textClass}`}>
             {t("title")}
@@ -220,8 +243,14 @@ export default function PackagesPage() {
           <aside
             // Use aria-controls and aria-expanded for accessibility
             id="filter-sidebar"
-            aria-hidden={!isFilterOpen && typeof window !== 'undefined' && window.innerWidth < 768}
-            className={`w-full md:w-1/4 transition-all duration-300 ease-in-out ${isFilterOpen ? "block max-h-screen" : "hidden md:block max-h-0 md:max-h-full overflow-hidden"}`}
+            aria-hidden={
+              !isFilterOpen && typeof window !== "undefined" && window.innerWidth < 768
+            }
+            className={`w-full md:w-1/4 transition-all duration-300 ease-in-out ${
+              isFilterOpen
+                ? "block max-h-screen"
+                : "hidden md:block max-h-0 md:max-h-full overflow-hidden"
+            }`}
           >
             <div
               className={`${cardBgClass} p-6 rounded-lg shadow-md sticky top-24`} // Keep sticky for desktop
@@ -252,7 +281,9 @@ export default function PackagesPage() {
                   aria-valuenow={maxPrice}
                   aria-label={t("priceRange")}
                 />
-                <div className={`mt-2 text-sm ${textMutedClass}`}> {/* Smaller text */}
+                <div className={`mt-2 text-sm ${textMutedClass}`}>
+                  {" "}
+                  {/* Smaller text */}
                   {t("upTo")}: <strong>{formatCurrency(maxPrice)}</strong>
                 </div>
               </div>
@@ -262,12 +293,17 @@ export default function PackagesPage() {
                 <h4 className={`font-semibold mb-2 ${textClass}`}>
                   {t("categories")}
                 </h4>
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-2"> {/* Added scroll */}
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                  {" "}
+                  {/* Added scroll */}
                   {loading ? (
                     <p className={textMutedClass}>{loadingString}</p>
                   ) : allCategories.length > 0 ? (
                     allCategories.map((category) => (
-                      <label key={category} className="flex items-center cursor-pointer">
+                      <label
+                        key={category}
+                        className="flex items-center cursor-pointer"
+                      >
                         <input
                           type="checkbox"
                           name={category}
@@ -275,11 +311,16 @@ export default function PackagesPage() {
                           onChange={handleCategoryChange}
                           className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-600 dark:bg-gray-700 dark:checked:bg-blue-600 dark:focus:ring-offset-gray-800"
                         />
-                        <span className={`ml-3 text-sm ${textMutedClass}`}>{category}</span> {/* Smaller text */}
+                        <span className={`ml-3 text-sm ${textMutedClass}`}>
+                          {category}
+                        </span>{" "}
+                        {/* Smaller text */}
                       </label>
                     ))
                   ) : (
-                    <p className={`text-sm ${textMutedClass}`}>{noCategoriesString}</p>
+                    <p className={`text-sm ${textMutedClass}`}>
+                      {noCategoriesString}
+                    </p>
                   )}
                 </div>
               </div>
@@ -287,7 +328,9 @@ export default function PackagesPage() {
           </aside>
 
           {/* --- Main Content Area --- */}
-          <main className="w-full md:flex-1"> {/* Use flex-1 to take remaining space */}
+          <main className="w-full md:flex-1">
+            {" "}
+            {/* Use flex-1 to take remaining space */}
             {/* Mobile Filter Toggle */}
             <div className="md:hidden mb-4">
               <button
@@ -300,7 +343,6 @@ export default function PackagesPage() {
                 {isFilterOpen ? t("closeFilters") : t("showFilters")}
               </button>
             </div>
-
             {/* Loading State */}
             {loading && (
               <div className="text-center py-16">
@@ -308,85 +350,140 @@ export default function PackagesPage() {
                 {/* Optional: Add a spinner */}
               </div>
             )}
-
             {/* Error State */}
             {error && !loading && (
               <div className="text-center py-16 p-4 bg-red-100 dark:bg-red-900/50 border border-red-300 dark:border-red-700 rounded-lg">
-                <p className="text-red-700 dark:text-red-200 font-semibold">{t('status.fetchError', { defaultMessage: "Error Loading Packages" })}</p>
-                <p className="text-red-600 dark:text-red-300 text-sm mt-1">{error}</p>
+                <p className="text-red-700 dark:text-red-200 font-semibold">
+                  {t("status.fetchError", {
+                    defaultMessage: "Error Loading Packages",
+                  })}
+                </p>
+                <p className="text-red-600 dark:text-red-300 text-sm mt-1">
+                  {error}
+                </p>
               </div>
             )}
-
             {/* Content Display */}
             {!loading && !error && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {filteredPackages.length > 0 ? (
-                  filteredPackages.map((pkg) => (
-                    <Link key={pkg.id} href={`/packages/${pkg.id}`} className="block group h-full"> {/* Make Link block and group */}
-                      <div
-                        className={`${cardBgClass} rounded-lg shadow-lg overflow-hidden flex flex-col h-full transition duration-300 ease-in-out group-hover:shadow-2xl group-hover:-translate-y-1`}
+                  filteredPackages.map((pkg) => {
+                    // --- Enhanced Starting Price Logic ---
+                    const priceTiers = pkg.price_tiers || [];
+                    let startingPrice = 0;
+
+                    if (pkg.starting_from_price && pkg.starting_from_price > 0) {
+                      startingPrice = pkg.starting_from_price;
+                    } else if (priceTiers.length > 0) {
+                      // Sort tiers by group size
+                      const sortedTiers = [...priceTiers].sort(
+                        (a, b) => a.min_pax - b.min_pax
+                      );
+
+                      // Prefer 2–4 pax range (realistic for small groups)
+                      const smallGroupTier = sortedTiers.find(
+                        (tier) =>
+                          tier.min_pax <= 4 && (tier.max_pax || 4) >= 2
+                      );
+
+                      if (smallGroupTier) {
+                        startingPrice = smallGroupTier.price;
+                      } else {
+                        // Fallback: use median tier
+                        const medianIndex = Math.floor(sortedTiers.length / 2);
+                        startingPrice =
+                          sortedTiers[medianIndex]?.price || 0; // Add fallback for empty array
+                      }
+                    }
+
+                    return (
+                      <Link
+                        key={pkg.id}
+                        href={`/packages/${pkg.id}`}
+                        className="block group h-full"
                       >
-                        <div className="relative h-56 w-full overflow-hidden">
-                          {/* Add Next.js Image Optimization */}
-                          <Image
-                            // Ensure thumbnail_url is used, fallback added
-                            src={pkg.thumbnail_url || "/placeholder.jpg"}
-                            alt={pkg.name || 'Holiday Package'} // Fallback alt text
-                            fill // Use fill for responsive sizing
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                            sizes="(max-width: 1023px) 100vw, 50vw" // Define sizes for optimization
-                            priority={filteredPackages.indexOf(pkg) < 4} // Prioritize loading first few images
-                            onError={(e) => {
-                              // Optional: Handle image load error specifically
-                              (e.target as HTMLImageElement).srcset = '/placeholder.jpg'; // Set fallback on error
-                              (e.target as HTMLImageElement).src = '/placeholder.jpg';
-                            }}
-                          />
-                          <div className="absolute top-4 right-4 bg-black bg-opacity-60 text-white py-1 px-3 rounded-full text-sm font-bold backdrop-blur-sm">
-                            {pkg.duration} {t("days")}
-                          </div>
-                        </div>
-                        <div className="p-6 flex flex-col flex-grow">
-                          {/* Display Category if it exists */}
-                          {pkg.category && (
-                            <p className={`text-xs font-semibold text-blue-500 uppercase tracking-wider mb-1`}> {/* Style adjustments */}
-                              {pkg.category}
-                            </p>
-                          )}
-                          <h2 className={`text-xl font-bold mb-2 ${textClass} line-clamp-2`}> {/* Limit title lines */}
-                            {/* Basic title cleanup (remove prefix if present) */}
-                            {pkg.name?.split(": ")[1] || pkg.name || 'Unnamed Package'}
-                          </h2>
-                          {/* Optional: Add Location */}
-                          {pkg.location && (
-                            <p className={`text-sm ${textMutedClass} mb-3`}>{pkg.location}</p>
-                          )}
-                          <div
-                            className={`flex justify-between items-center mt-auto pt-4 border-t ${borderClass}`}
-                          >
-                            {/* [UPDATED] Show starting price */}
-                            <div>
-                              <span className={`text-xs ${textMutedClass}`}>{t("from")}</span>
-                              <p
-                                className={`text-lg font-bold text-blue-600 dark:text-blue-400`}
-                              >
-                                {formatCurrency(pkg.starting_from_price)}
-                              </p>
+                        <div
+                          className={`${cardBgClass} rounded-lg shadow-lg overflow-hidden flex flex-col h-full transition duration-300 ease-in-out group-hover:shadow-2xl group-hover:-translate-y-1`}
+                        >
+                          <div className="relative h-56 w-full overflow-hidden">
+                            <Image
+                              src={pkg.thumbnail_url || "/placeholder.jpg"}
+                              alt={pkg.name || "Holiday Package"}
+                              fill
+                              className="object-cover transition-transform duration-500 group-hover:scale-105"
+                              sizes="(max-width: 1023px) 100vw, 50vw"
+                              priority={filteredPackages.indexOf(pkg) < 4}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).srcset =
+                                  "/placeholder.jpg";
+                                (e.target as HTMLImageElement).src =
+                                  "/placeholder.jpg";
+                              }}
+                            />
+                            <div className="absolute top-4 right-4 bg-black bg-opacity-60 text-white py-1 px-3 rounded-full text-sm font-bold backdrop-blur-sm">
+                              {pkg.duration} {t("days")}
                             </div>
-                            <span
-                              className={`text-sm font-semibold ${textClass} group-hover:text-blue-500 transition-colors duration-300`} // Smoother transition
+                          </div>
+
+                          <div className="p-6 flex flex-col flex-grow">
+                            {/* Category */}
+                            {pkg.category && (
+                              <p className="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-1">
+                                {pkg.category}
+                              </p>
+                            )}
+
+                            {/* Title */}
+                            <h2
+                              className={`text-xl font-bold mb-2 ${textClass} line-clamp-2`}
                             >
-                              {t("viewDetails")} →
-                            </span>
+                              {pkg.name?.split(": ")[1] ||
+                                pkg.name ||
+                                "Unnamed Package"}
+                            </h2>
+
+                            {/* Location */}
+                            {pkg.location && (
+                              <p className={`text-sm ${textMutedClass} mb-3`}>
+                                {pkg.location}
+                              </p>
+                            )}
+
+                            {/* Price Section */}
+                            <div
+                              className={`flex justify-between items-center mt-auto pt-4 border-t ${borderClass}`}
+                            >
+                              <div>
+                                <span className={`text-xs ${textMutedClass}`}>
+                                  {t("from")}
+                                </span>
+                                <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                  {formatCurrency(startingPrice)}
+                                </p>
+                                <p
+                                  className={`text-xs italic ${textMutedClass}`}
+                                >
+                                  *Price varies by group size and travel date
+                                </p>
+                              </div>
+
+                              <span
+                                className={`text-sm font-semibold ${textClass} group-hover:text-blue-500 transition-colors duration-300`}
+                              >
+                                {t("viewDetails")} →
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </Link>
-                  ))
+                      </Link>
+                    );
+                  })
                 ) : (
                   // No Results Message
                   <div className="lg:col-span-2 text-center py-16">
-                    <p className="text-gray-500 dark:text-gray-400 text-xl">{noResultsString}</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-xl">
+                      {noResultsString}
+                    </p>
                   </div>
                 )}
               </div>

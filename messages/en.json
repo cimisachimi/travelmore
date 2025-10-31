@@ -5,7 +5,7 @@
     "packages": "Packages",
     "carRental": "Car Rental",
     "activities": "Activities",
-    "ourServices": "Our Services", 
+    "ourServices": "Our Services",
     "blog": "Blog",
     "more": "More Menu",
     "gallery": "Gallery",
@@ -15,20 +15,26 @@
     "toggleMenu": "Toggle Menu"
   },
   "PersonalizedTripPlanner": {
-    "regularTitle": "Plan Your Dream Trip in Yogyakarta",
-    "exclusiveTitle": "Design Your Exclusive Journey",
-    "regularDesc": "Forget rigid tour packages. We design every travel detail tailored to you — your style, your budget, your experience.",
-    "exclusiveDesc": "From VIP access to premium culinary experiences, we craft every detail to deliver an unforgettable luxury trip in Yogyakarta.",
-    "customizeBasedOn": "We customize based on:",
-    "interests": "Interests & Hobbies",
-    "budget": "Travel Budget",
-    "groupSize": "Number of Travelers",
-    "tripStyle": "Travel Style",
-    "extraServicesTitle": "Additional Services:",
-    "extraServicesDesc": "We also offer <strong>City Tours</strong> for maximum flexibility during your stay in Jogja.",
-    "regularButton": "Start Consultation",
-    "exclusiveButton": "Start Exclusive Consultation",
+    "regularTitle": "Stop Guessing. Start Planning Your Perfect Jogja Trip.",
+    "exclusiveTitle": "Design Your Bespoke Yogyakarta Journey",
+    "regularDesc": "Tired of one-size-fits-all tours? Our Trip Planner is a personal consultation service. You tell us your style, budget, and interests, and our local experts will build a 100% custom itinerary just for you.",
+    "exclusiveDesc": "This is your personal travel concierge. Go beyond standard packages. From VIP access to private culinary experiences, use our planner to define every detail, and we will craft an exclusive itinerary that matches your unique definition of luxury.",
+    "customizeBasedOn": "We build your plan based on:",
+    "interests": "Your Interests & Hobbies",
+    "budget": "Your Travel Budget",
+    "groupSize": "Your Group Size",
+    "tripStyle": "Your Unique Travel Style",
+    "extraServicesTitle": "Need More Flexibility?",
+    "extraServicesDesc": "We also offer <strong>Tour Packages & Daily Activities</strong> for complete freedom during your stay in Jogja.",
+    "regularButton": "Start Your Custom Plan",
+    "exclusiveButton": "Begin Exclusive Consultation",
     "heroAlt": "Personalized Travel Planning in Yogyakarta"
+  },
+  "DiscountBanner": {
+    "badge": "LIMITED TIME OFFER",
+    "title": "Get 20% Off Your Next Adventure",
+    "description": "Book any package or activity before the end of this month and use code JOGJA20 to get an exclusive discount on your booking.",
+    "ctaButton": "View All Packages"
   },
   "WhyChooseUs": {
     "title": "Why Choose Us?",
@@ -70,7 +76,7 @@
         "title": "Stress-Free Journeys Full of Unforgettable Moments"
       }
     ],
-    "cta": "Start Consultation"
+    "cta": "Start Your Custom Plan"
   },
   "PopularPackages": {
     "title": "Explore Our Popular Packages",
@@ -223,8 +229,9 @@
       "button": "Start Planning"
     }
   },
- 
   "activities": {
+
+    
     "title": "Our Activities",
     "subtitle": "Discover experiences and adventures curated just for you. Find your next journey with us.",
     "popularActivities": "Popular Activities",
@@ -286,7 +293,6 @@
       "pricePerPax": "Price per Pax"
     }
   },
-
   "activityDetail": {
     "notFound": "Activity not found.",
     "location": "Location",
@@ -503,7 +509,8 @@
       "from": "From",
       "person": "Person",
       "adult": "Adult",
-      "child": "Child"
+      "child": "Child",
+      "people":"People"
     },
     "cost": {
       "facilitiesIncluded": "What's Included",
@@ -521,6 +528,9 @@
       "total": "Total Price",
       "submitting": "Booking...",
       "confirm": "Book Now",
+      "discountCode": "Discount Code",
+      "subtotal": "sub total ",
+      "discountInfo": "discount info",
       "success": {
         "message": "Booking created! Redirecting..."
       },
