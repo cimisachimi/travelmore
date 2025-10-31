@@ -227,6 +227,9 @@
   "activities": {
     "title": "Our Activities",
     "subtitle": "Discover experiences and adventures curated just for you. Find your next journey with us.",
+    "popularActivities": "Popular Activities",
+    "popularActivitiesDesc": "Explore the most popular activities and adventures in Yogyakarta.",
+    "showMore": "Show More",
     "filters": {
       "title": "Filters",
       "price": "Price Range",
