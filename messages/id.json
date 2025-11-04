@@ -816,20 +816,35 @@
         }
       },
       "foodPreferences": {
-        "f1": "Halal",
-        "f2": "Vegan",
-        "f3": "Pedas",
-        "f4": "Lokal",
-        "f5": "Barat"
+        "f1": {
+        "label": "Halal",
+        "description": "Makanan yang disiapkan sesuai dengan syariat Islam."
+        },
+        "f2": {
+          "label": "Vegan",
+          "description": "Tanpa produk hewani (daging, susu, telur, madu, dll)."
+        },
+        "f3": {
+          "label": "Pedas",
+          "description": "Menyukai makanan dengan cita rasa cabai yang kuat."
+        },
+        "f4": {
+          "label": "Lokal",
+          "description": "Prioritas utama adalah mencoba masakan khas daerah setempat."
+        },
+        "f5": {
+          "label": "Barat",
+          "description": "Lebih menyukai masakan Western (burger, pasta, steak, dll)."
+        }
       },
       "travelerRoutines": {
         "r1": {
           "value": "Wisatawan Kasual",
-          "label": "Wisatawan Kasual (<3x setahun)"
+          "label": "Kasual (1-2 kali per tahun)"
         },
         "r2": {
           "value": "Wisatawan Sering",
-          "label": "Wisatawan Sering (>3x setahun)"
+          "label": "Rutin (3+ kali per tahun)"
         }
       }
     }

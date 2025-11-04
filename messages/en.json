@@ -821,20 +821,35 @@
         }
       },
       "foodPreferences": {
-        "f1": "Halal",
-        "f2": "Vegan",
-        "f3": "Spicy",
-        "f4": "Local",
-        "f5": "Western"
+        "f1": {
+        "label": "Halal",
+        "description": "“Food prepared in accordance with Islamic law."
+        },
+        "f2": {
+          "label": "Vegan",
+          "description": "No animal products (meat, milk, eggs, honey, etc.)."
+        },
+        "f3": {
+          "label": "Spicy",
+          "description": "Enjoys food with a strong chili flavor."
+        },
+        "f4": {
+          "label": "Local",
+          "description": "The main priority is to try local cuisine."
+        },
+        "f5": {
+          "label": "Western",
+          "description": "Prefers Western cuisine (burgers, pasta, steak, etc.)."
+        }
       },
       "travelerRoutines": {
         "r1": {
           "value": "Casual Traveler",
-          "label": "Casual Traveler (<3x a year)"
+          "label": "Casual (1-2 times per year)"
         },
         "r2": {
           "value": "Frequent Traveler",
-          "label": "Frequent Traveler (>3x a year)"
+          "label": "Regular (3+ times per year)"
         }
       }
     }

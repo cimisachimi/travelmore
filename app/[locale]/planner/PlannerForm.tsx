@@ -728,10 +728,14 @@ export default function PlannerForm() {
       ) as { value: string; label: string }[],
     [t]
   );
-  const foodPreferences = useMemo(
-    () => Object.values(t.raw("options.foodPreferences")) as string[],
-    [t]
-  );
+  const foodPreferences = useMemo(() => {
+  const prefsObject = t.raw("options.foodPreferences") as Record<string, { label: string; description: string }>;
+  return Object.values(prefsObject).map(pref => ({
+    value: pref.label, // Nilai yang disimpan saat dicentang
+    label: pref.label,
+    description: pref.description
+    }));
+  }, [t]);
   const travelerRoutines = useMemo(
     () =>
       Object.values(
@@ -1374,16 +1378,12 @@ export default function PlannerForm() {
                           />{" "}
                           <div>
                             {" "}
-                            <FormInput
-                              as="checkbox-group"
-                              label={`🍔 ${t("step9_foodPreference")}`}
-                              name="foodPreference"
-                              options={foodPreferences.map((f) => ({
-                                label: f,
-                                value: f,
-                              }))}
-                              value={formData.foodPreference}
-                              onCheckboxChange={handleCheckboxChange}
+                            <FormInput as="checkbox-group" 
+                            label={`🍔 ${t("step9_foodPreference")}`} 
+                            name="foodPreference" 
+                            options={foodPreferences} 
+                            value={formData.foodPreference} 
+                            onCheckboxChange={handleCheckboxChange} 
                             />{" "}
                             <div className="mt-4">
                               <FormInput
