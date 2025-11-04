@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import GoogleLoginButton from "@/components/ui/GoogleLoginButton";
+import FacebookLoginButton from "@/components/ui/FacebookLoginButton"; // ✅ 1. Import Facebook button
 
 export default function LoginPage() {
   const { login, user } = useAuth();
@@ -72,7 +73,12 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <GoogleLoginButton />
+        {/* ✅ 2. Add both social login buttons */}
+        <div className="space-y-3">
+          <GoogleLoginButton />
+          <FacebookLoginButton />
+        </div>
+
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -135,12 +141,11 @@ export default function LoginPage() {
         </form>
 
         <p className="text-sm text-center text-foreground/70">
-  Don&apos;t have an account?{" "}
-  <Link href="/register" className="font-semibold text-primary hover:underline">
-    Register here
-  </Link>
-</p>
-
+          Don&apos;t have an account?{" "}
+          <Link href="/register" className="font-semibold text-primary hover:underline">
+            Register here
+          </Link>
+        </p>
       </div>
     </div>
   );

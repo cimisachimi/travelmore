@@ -1,8 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback, // 1. Import useCallback
+} from "react";
 import api from "@/lib/api";
-import { toast } from "sonner"; // Import toast for feedback
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface User {
   id: number;
@@ -18,7 +25,9 @@ interface AuthContextProps {
   register: (data: any) => Promise<void>;
   logout: () => Promise<void>;
   fetchUser: () => Promise<void>;
-  loginWithGoogle: () => Promise<void>; // ✅ 1. Add Google login to context
+  loginWithGoogle: () => Promise<void>;
+  loginWithFacebook: () => Promise<void>;
+  handleSocialCallback: (token: string, name: string) => void;
 }
 
 const AuthContext = createContext<AuthContextProps>({
@@ -28,14 +37,18 @@ const AuthContext = createContext<AuthContextProps>({
   register: async () => {},
   logout: async () => {},
   fetchUser: async () => {},
-  loginWithGoogle: async () => {}, // ✅ 2. Add default empty function
+  loginWithGoogle: async () => {},
+  loginWithFacebook: async () => {},
+  handleSocialCallback: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-  const fetchUser = async () => {
+  // 2. Wrap fetchUser in useCallback
+  const fetchUser = useCallback(async () => {
     if (!localStorage.getItem("authToken")) {
       setLoading(false);
       return;
@@ -50,7 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // No dependencies, so it's stable
 
   const login = async (email: string, password: string) => {
     const response = await api.post("/login", { email, password });
@@ -72,41 +85,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await api.post("/logout");
     } catch (error) {
-      console.error("Logout failed", error); // Log error but proceed
+      console.error("Logout failed", error);
     } finally {
       localStorage.removeItem("authToken");
       setUser(null);
-      // Redirect to home or login page after logout
       window.location.href = "/login";
     }
   };
 
-  // ✅ 3. Add Google login handler
-  const loginWithGoogle = async (): Promise<void> => {
-    // This is a placeholder.
-    // In a real app, you would redirect to your backend's Google auth URL:
-    // e.g., window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google/redirect`;
-
-    // For now, we'll show a toast and simulate a delay.
-    toast.info(
-      "Google Login is not implemented yet. This is where you would redirect to the backend."
-    );
-    console.log("Redirecting to Google... (simulated)");
-
-    // You would not have a 'throw' here in production.
-    // This is just to show the error handling in the button.
-    return new Promise<void>((resolve, reject) => {
-      setTimeout(() => {
-        reject(
-          new Error("Simulation: Backend for Google Auth not configured.")
-        );
-      }, 1000);
-    });
+  const redirectToProvider = async (provider: "google" | "facebook") => {
+    try {
+      toast.info(`Redirecting to ${provider}...`);
+      const response = await api.get(`/auth/${provider}/redirect`);
+      const { redirect_url } = response.data;
+      
+      if (redirect_url) {
+        window.location.href = redirect_url;
+      }
+    } catch (error) {
+      console.error("Social login redirect failed", error);
+      toast.error("Login failed. Please try again.");
+    }
   };
 
+  const loginWithGoogle = async () => {
+    await redirectToProvider("google");
+  };
+
+  const loginWithFacebook = async () => {
+    await redirectToProvider("facebook");
+  };
+  
+  // 3. Wrap handleSocialCallback in useCallback
+  const handleSocialCallback = useCallback(
+    (token: string, name: string) => {
+      localStorage.setItem("authToken", token);
+      setUser({ name, id: 0, email: "", role: "client" }); // This is the line that caused the loop
+      toast.success(`Welcome, ${name}!`);
+      fetchUser(); // Now 'fetchUser' is a stable dependency
+      router.push("/profile"); // 'router' is stable
+    },
+    [fetchUser, router] // Add its dependencies
+  );
+
   useEffect(() => {
-    fetchUser();
-  }, []);
+    // 4. Clean up this effect to only fetch the user if NOT on the callback page.
+    // The AuthCallback component is responsible for handling the callback.
+    const isCallbackPage = window.location.pathname.includes("/auth/callback");
+
+    if (!isCallbackPage) {
+      fetchUser();
+    }
+  }, [fetchUser]); // Depend on the stable fetchUser
 
   return (
     <AuthContext.Provider
@@ -117,7 +147,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         register,
         logout,
         fetchUser,
-        loginWithGoogle, // ✅ 4. Expose the new function
+        loginWithGoogle,
+        loginWithFacebook,
+        handleSocialCallback, // Pass the new stable function
       }}
     >
       {children}
