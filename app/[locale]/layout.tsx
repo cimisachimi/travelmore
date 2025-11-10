@@ -5,16 +5,17 @@ import { Poppins, Montserrat, Lora } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
-// Remove the direct import of Breadcrumbs:
-// import Breadcrumbs from "@/components/Breadcrumps";
-// Import the new wrapper component:
 import ClientBreadcrumbsWrapper from "@/components/ui/ClientBreadcrumbsWrapper";
+
+// ✅ 1. Import 'NextIntlClientProvider' (NOT 'useMessages')
 import { hasLocale, NextIntlClientProvider } from "next-intl";
+
+// ✅ 2. Import 'getMessages' to load messages on the server
+import { getMessages } from 'next-intl/server'; 
+
 import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { AuthProvider } from "@/contexts/AuthContext";
-// Import Provider
-
 // Font configurations remain the same...
 const fontPoppins = Poppins({
   subsets: ["latin"],
@@ -36,39 +37,42 @@ const fontSerif = Lora({
   variable: "--font-serif",
   display: "swap",
 });
-
 export const metadata = {
   title: "TravelMore",
 };
 
 export default async function RootLayout({
-  children, params
+  children,
+  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
+  params: Promise<{ locale: string }>; // ✅ Mark params as Promise
 }) {
-  const { locale } = await params;
+  const { locale } = await params; // ✅ Await destructure
 
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
+
+  const messages = await getMessages();
+
   return (
     <html
-      lang={locale} // Use the actual locale variable
+      lang={locale}
       className={`${fontPoppins.variable} ${fontMontserrat.variable} ${fontSerif.variable}`}
+      suppressHydrationWarning
     >
-      <body className="bg-background text-foreground font-sans"> {/* Use bg-background */}
-        <AuthProvider>
-          <NextIntlClientProvider>
+      <body className="bg-background text-foreground font-sans">
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AuthProvider>
             <ThemeProvider>
               <Navbar />
-              {/* Replace the original Breadcrumbs component with the wrapper */}
               <ClientBreadcrumbsWrapper />
               <main>{children}</main>
               <Footer />
             </ThemeProvider>
-          </NextIntlClientProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
