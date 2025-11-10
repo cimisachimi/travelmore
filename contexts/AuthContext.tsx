@@ -1,3 +1,4 @@
+// contexts/AuthContext.tsx
 "use client";
 
 import React, {
@@ -10,8 +11,9 @@ import React, {
 } from "react";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { useRouter, usePathname } from "next/navigation";
-import { isAxiosError } from "axios"; // ✅ 1. ADDED IMPORT
+// ✅ FIX: Import from your i18n/navigation file
+import { useRouter, usePathname } from "@/i18n/navigation";
+import { isAxiosError } from "axios"; 
 
 // --- TYPE INTERFACES ---
 interface User {
@@ -22,7 +24,6 @@ interface User {
   email_verified_at: string | null;
 }
 
-// ✅ 2. CREATED NEW INTERFACE
 interface RegisterData {
   name: string;
   email: string;
@@ -34,12 +35,12 @@ interface AuthContextProps {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>; // ✅ 3. USED RegisterData
+  register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   fetchUser: () => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loginWithFacebook: () => Promise<void>;
-  handleSocialCallback: (token: string, name: string) => void;
+  handleSocialCallback: (token: string, name: string) => Promise<void>; // ✅ FIX: Make Promise<void>
   resendVerification: () => Promise<void>;
   updateEmail: (newEmail: string) => Promise<void>;
 }
@@ -48,12 +49,12 @@ const AuthContext = createContext<AuthContextProps>({
   user: null,
   loading: true,
   login: async () => {},
-  register: async () => {}, // Changed to match new type
+  register: async () => {}, 
   logout: async () => {},
   fetchUser: async () => {},
   loginWithGoogle: async () => {},
   loginWithFacebook: async () => {},
-  handleSocialCallback: () => {},
+  handleSocialCallback: async () => {}, // ✅ FIX: Match new async type
   resendVerification: async () => {},
   updateEmail: async () => {},
 });
@@ -89,12 +90,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(loggedInUser);
   };
 
-  const register = async (data: RegisterData) => { // ✅ 4. USED RegisterData
+  const register = async (data: RegisterData) => { 
     const response = await api.post("/register", data);
     const { token, user: registeredUser } = response.data;
     localStorage.setItem("authToken", token);
     setUser(registeredUser);
-    // Guard effect will redirect to /verify-email
   };
 
   const logout = async () => {
@@ -105,7 +105,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       localStorage.removeItem("authToken");
       setUser(null);
-      window.location.href = "/login";
+      // ✅ FIX: Use router.push for locale-aware redirect
+      router.push("/login");
     }
   };
 
@@ -128,16 +129,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const loginWithGoogle = async () => await redirectToProvider("google");
   const loginWithFacebook = async () => await redirectToProvider("facebook");
 
+  // ✅ --- FIX: This function is now async and awaits fetchUser ---
   const handleSocialCallback = useCallback(
-    (token: string, name: string) => {
+    async (token: string, name: string) => {
       localStorage.setItem("authToken", token);
-      setUser({ name, id: 0, email: "", role: "client", email_verified_at: null });
       toast.success(`Welcome, ${name}!`);
-      fetchUser();
+      
+      // Wait for the real user data to be fetched
+      await fetchUser(); 
+      
+      // Now redirect. The auth guards will have the correct user data.
       router.push("/profile");
     },
     [fetchUser, router]
   );
+  // --- END OF FIX ---
+
 
   // --- NEW EMAIL VERIFICATION FUNCTIONS ---
 
@@ -156,10 +163,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await api.put("/email/update", { email: newEmail });
       setUser(response.data);
       toast.success("Email updated! Please check your new inbox.");
-    } catch (error: unknown) { // ✅ 5. CHANGED to unknown
+    } catch (error: unknown) { 
       
-      // Handle validation errors (e.g., email already taken)
-      // ✅ 6. ADDED type guard
       if (isAxiosError(error) && error.response?.status === 422 && error.response.data.errors) {
         const message = error.response.data.errors.email[0];
         toast.error(message);
@@ -181,6 +186,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const publicPaths = ["/login", "/register", "/verify-email"];
+    // Check against the start of the path, ignoring locale
     const isPublicPage = publicPaths.some((path) => pathname.startsWith(path));
 
     if (loading) return;
