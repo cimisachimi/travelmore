@@ -72,7 +72,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
       // Pre-fill data dari user
       setFullName(user?.name || "");
       setEmail(user?.email || "");
-      // @ts-ignore - Asumsi user mungkin memiliki properti 'phone'
+      // @ts-expect-errora sdfsafsdaa
       setPhone(user?.phone || ""); 
 
       // Reset field lainnya

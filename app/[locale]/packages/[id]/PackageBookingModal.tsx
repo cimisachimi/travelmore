@@ -82,7 +82,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
       // Pre-fill data dari user
       setFullName(user?.name || "");
       setEmail(user?.email || "");
-      // @ts-ignore - Asumsi user mungkin memiliki properti 'phone'
+      // @ts-expect-error sadfsadfsdfd
       setPhone(user?.phone || "");
 
       // Reset field lainnya
