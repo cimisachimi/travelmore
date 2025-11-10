@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { isAxiosError } from "axios";
 import { useRouter } from "next/navigation";
@@ -36,9 +36,13 @@ export default function RegisterPage() {
         password,
         password_confirmation: passwordConfirmation,
       });
-      // On successful register, AuthContext updates user.
-      // We can then redirect.
-      router.push("/profile");
+
+      // ✅ --- FIX ---
+      // On successful register, the AuthContext has logged the user in.
+      // Now, redirect them to the verification prompt page.
+      router.push("/verify-email");
+      // ✅ --- END OF FIX ---
+
     } catch (err: unknown) {
       if (isAxiosError(err)) {
         if (err.response?.status === 422 && err.response.data.errors) {
@@ -60,14 +64,16 @@ export default function RegisterPage() {
     }
   };
 
-  // If user is already logged in, redirect to profile
+  // If user is already logged in, redirect
   if (user && !loading) {
+    // This check will now be handled by the AuthContext guard,
+    // which will send them to /profile OR /verify-email.
     router.push("/profile");
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <p className="text-foreground">Welcome, {user.name}!</p>
         <p className="text-sm text-center text-foreground/70">
-          Redirecting you to your profile...
+          Redirecting you...
         </p>
       </div>
     );
