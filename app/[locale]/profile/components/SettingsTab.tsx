@@ -113,7 +113,7 @@ export default function SettingsTab() {
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               className="w-full mt-1 border rounded-lg px-4 py-2 bg-background disabled:opacity-70"
-              placeholder="e.g., 08123456789"
+              placeholder="e.g., +628123456789" // ✅ Changed placeholder for E.164 format
             />
           </div>
           <div>
