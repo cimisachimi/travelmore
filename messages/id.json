@@ -493,10 +493,10 @@
   },
   "packages": {
     "tabs": {
-      "overview": "Ikhtisar",
+      "overview": "Gambaran Umum",
       "itinerary": "Rencana Perjalanan",
       "cost": "Biaya",
-      "faqs": "FAQ",
+      "faqs": "FAQs",
       "map": "Peta",
       "pricing": "Harga"
     },
@@ -504,51 +504,86 @@
       "about": "Tentang Perjalanan Ini",
       "days": "Hari",
       "info": "Info Perjalanan",
-      "from": "Dari",
+      "from": "Mulai dari",
       "person": "Orang",
       "adult": "Dewasa",
       "child": "Anak",
-      "people": "Orang"
+      "people": "Orang",
+      "participants": "Peserta / Kuantitas"
     },
     "cost": {
-      "facilitiesIncluded": "Termasuk",
-      "facilitiesExcluded": "Tidak Termasuk",
-      "noIncludedItems": "Tidak ada item yang termasuk.",
-      "noExcludedItems": "Tidak ada item yang tidak termasuk."
+      "facilitiesIncluded": "Fasilitas Termasuk",
+      "facilitiesExcluded": "Fasilitas Tidak Termasuk",
+      "noIncludedItems": "Tidak ada daftar fasilitas termasuk.",
+      "noExcludedItems": "Tidak ada daftar fasilitas tidak termasuk."
     },
     "booking": {
       "checkAvailability": "CEK KETERSEDIAAN",
-      "needHelp": "Butuh bantuan pemesanan?",
+      "needHelp": "Butuh bantuan memesan?",
       "sendMessage": "Kirim Pesan",
-      "loginToBook": "Silakan Masuk terlebih dahulu untuk memesan",
-      "title": "Pesan Perjalanan Anda",
-      "startDate": "Pilih Tanggal Mulai",
+      "loginToBook": "Silakan Login terlebih dahulu untuk memesan",
+      "title": "Pesan Aktivitas Anda",
+      "startDate": "Pilih Tanggal",
+      "selectOption": "-- Pilih Opsi --",
+      "nationality": {
+        "title": "Kebangsaan Peserta",
+        "local": "Domestik (Lokal)",
+        "foreign": "Mancanegara (Asing)"
+      },
+      "fullName": "Nama Lengkap",
+      "email": "Email",
+      "phone": "Nomor Telepon (WA)",
+      "pickupLocation": "Lokasi Penjemputan",
+      "pickup": {
+        "airport": "Bandara (Airport)",
+        "station": "Stasiun (Train Station)",
+        "hotel": "Hotel"
+      },
+      "flightNumber": {
+        "title": "Nomor Penerbangan",
+        "placeholder": "cth: GA 205"
+      },
+      "specialRequest": {
+        "title": "Permintaan Khusus",
+        "placeholder": "cth: alergi, kebutuhan diet, jemput terlambat..."
+      },
+      "optional": "Opsional",
       "total": "Total Harga",
       "submitting": "Memesan...",
       "confirm": "Pesan Sekarang",
+      "discountCode": "Kode Diskon",
+      "subtotal": "Subtotal",
+      "discountInfo": "Info Diskon",
       "success": {
-        "message": "Pemesanan berhasil dibuat! Mengalihkan..."
+        "message": "Pemesanan berhasil! Mengalihkan..."
       },
       "errors": {
-        "notLoggedIn": "Anda harus masuk untuk memesan.",
-        "noDate": "Silakan pilih tanggal mulai.",
-        "noPrice": "Harga tidak dapat dihitung untuk jumlah peserta ini.",
+        "notLoggedIn": "Anda harus login untuk memesan.",
+        "noDate": "Silakan pilih tanggal.",
+        "noParticipants": "Harus ada minimal 1 peserta.",
+        "noNationality": "Silakan pilih kebangsaan.",
+        "noName": "Silakan masukkan nama lengkap Anda.",
+        "noEmail": "Silakan masukkan email Anda.",
+        "invalidEmail": "Silakan masukkan email yang valid.",
+        "noPhone": "Silakan masukkan nomor telepon Anda.",
+        "noPickup": "Silakan pilih lokasi penjemputan.",
+        "noPrice": "Harga tidak dapat dihitung untuk aktivitas ini.",
         "general": "Pemesanan gagal. Silakan coba lagi."
       }
     },
     "pricing": {
       "pax": "Peserta",
-      "pricePerPax": "Harga per Orang"
+      "pricePerPax": "Harga per Peserta"
     },
     "status": {
       "loading": "Memuat detail paket...",
-      "noCategories": "Tidak ada kategori ditemukan.",
+      "noCategories": "Tidak ada kategori yang ditemukan.",
       "fetchError": "Gagal memuat data paket. Silakan coba lagi.",
       "notFound": "Paket tidak ditemukan.",
       "noItinerary": "Tidak ada detail rencana perjalanan.",
       "noFaqs": "Tidak ada pertanyaan yang sering diajukan.",
       "noMap": "Lokasi peta tidak tersedia.",
-      "noPricing": "Tidak ada detail harga."
+      "noPricing": "Tidak ada detail harga yang tersedia."
     },
     "gallery": {
       "noImage": "Tidak ada gambar yang tersedia untuk paket ini."

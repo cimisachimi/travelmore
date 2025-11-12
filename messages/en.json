@@ -510,7 +510,8 @@
       "person": "Person",
       "adult": "Adult",
       "child": "Child",
-      "people":"People"
+      "people": "People",
+      "participants": "Participants / Quantity"
     },
     "cost": {
       "facilitiesIncluded": "What's Included",
@@ -523,21 +524,52 @@
       "needHelp": "Need help with booking?",
       "sendMessage": "Send Us a Message",
       "loginToBook": "Please Login first to book",
-      "title": "Book Your Trip",
-      "startDate": "Select Start Date",
+      "title": "Book Your Activity",
+      "startDate": "Select Date",
+      "selectOption": "-- Select Option --",
+      "nationality": {
+        "title": "Participant Nationality",
+        "local": "Domestik (Local)",
+        "foreign": "Mancanegara (Foreign)"
+      },
+      "fullName": "Full Name",
+      "email": "Email",
+      "phone": "Phone Number (WA)",
+      "pickupLocation": "Pickup Location",
+      "pickup": {
+        "airport": "Bandara (Airport)",
+        "station": "Stasiun (Train Station)",
+        "hotel": "Hotel"
+      },
+      "flightNumber": {
+        "title": "Flight Number",
+        "placeholder": "e.g., GA 205"
+      },
+      "specialRequest": {
+        "title": "Special Request",
+        "placeholder": "e.g., allergies, dietary needs, late pickup..."
+      },
+      "optional": "Optional",
       "total": "Total Price",
       "submitting": "Booking...",
       "confirm": "Book Now",
       "discountCode": "Discount Code",
-      "subtotal": "sub total ",
-      "discountInfo": "discount info",
+      "subtotal": "Subtotal",
+      "discountInfo": "Discount Info",
       "success": {
         "message": "Booking created! Redirecting..."
       },
       "errors": {
         "notLoggedIn": "You must be logged in to book.",
-        "noDate": "Please select a start date.",
-        "noPrice": "Price could not be calculated for this number of participants.",
+        "noDate": "Please select a date.",
+        "noParticipants": "Must have at least 1 participant.",
+        "noNationality": "Please select nationality.",
+        "noName": "Please enter your full name.",
+        "noEmail": "Please enter your email.",
+        "invalidEmail": "Please enter a valid email.",
+        "noPhone": "Please enter your phone number.",
+        "noPickup": "Please select a pickup location.",
+        "noPrice": "Price could not be calculated for this activity.",
         "general": "Booking failed. Please try again."
       }
     },
