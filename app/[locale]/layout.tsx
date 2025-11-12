@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ClientBreadcrumbsWrapper from "@/components/ui/ClientBreadcrumbsWrapper";
-
+import { Toaster } from "sonner"; // 1. IMPORT THE TOASTER
 // ✅ 1. Import 'NextIntlClientProvider' (NOT 'useMessages')
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 
@@ -70,6 +70,7 @@ export default async function RootLayout({
               <ClientBreadcrumbsWrapper />
               <main>{children}</main>
               <Footer />
+              <Toaster richColors closeButton position="top-right" />
             </ThemeProvider>
           </AuthProvider>
         </NextIntlClientProvider>
