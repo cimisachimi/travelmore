@@ -1,33 +1,105 @@
 "use client";
 
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext"; // Kept your path alias
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useState, FormEvent, useEffect } from "react"; // 1. Import useEffect
+import { useState, FormEvent, useEffect, ReactNode } from "react";
+import axios, { AxiosError } from "axios"; // 1. Import axios for API calls
 
 export default function VerifyEmailPage() {
-  // 2. Get 'loading' from useAuth
+  // --- Your Existing Code (Scenario A) ---
   const { user, loading, resendVerification, updateEmail, logout } = useAuth();
   const router = useRouter();
 
-  // State for loading spinners
-  const [isResending, setIsResending] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [isResending, setIsResending] = useState<boolean>(false);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const [isChangingEmail, setIsChangingEmail] = useState<boolean>(false);
+  const [newEmail, setNewEmail] = useState<string>("");
 
-  // State for the "change email" UI
-  const [isChangingEmail, setIsChangingEmail] = useState(false);
-  const [newEmail, setNewEmail] = useState("");
+  // --- New Code (Scenario B) ---
+  const [isVerifyingFromLink, setIsVerifyingFromLink] = useState<boolean>(false);
+  const [verificationStatus, setVerificationStatus] = useState<string>("Verifying your email...");
+  const [verificationError, setVerificationError] = useState<boolean>(false);
 
+  // 1. --- THIS EFFECT RUNS FIRST ---
+  // It checks *why* the user is on this page.
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has("verify_url")) {
+      // SCENARIO B: User clicked the link in their email.
+      setIsVerifyingFromLink(true);
+    }
+    // If no param, 'isVerifyingFromLink' stays false (SCENARIO A).
+  }, []); // Runs only once on page load
+
+  // 2. --- THIS EFFECT HANDLES SCENARIO B ---
+  // It runs *only if* we found the 'verify_url' param.
+  useEffect(() => {
+    if (isVerifyingFromLink) {
+      const verify = async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const verifyUrl = urlParams.get("verify_url");
+
+        if (!verifyUrl) {
+          setVerificationStatus("Invalid verification link. No URL provided.");
+          setVerificationError(true);
+          return;
+        }
+
+        try {
+          // --- THIS IS THE API CALL THAT UPDATES THE DATABASE ---
+          const response = await axios.get(verifyUrl);
+          // --------------------------------------------------------
+
+          setVerificationStatus(response.data.message || "Verification successful!");
+          setVerificationError(false);
+          toast.success(response.data.message || "Verification successful!");
+
+          // Redirect to login after 3 seconds
+          setTimeout(() => {
+            router.push("/login");
+          }, 3000);
+
+        } catch (err: AxiosError | unknown) {
+          let message = "Verification failed. Please try again.";
+          if (axios.isAxiosError(err)) {
+            message = err.response?.data?.message || message;
+          }
+          setVerificationStatus(message);
+          setVerificationError(true);
+          toast.error(message);
+        }
+      };
+
+      verify();
+    }
+  }, [isVerifyingFromLink, router]); // Runs when 'isVerifyingFromLink' becomes true
+
+  // 3. --- THIS EFFECT HANDLES SCENARIO A ---
+  // Your original guards, now with one extra check.
+  useEffect(() => {
+    // If we're busy verifying a link, DON'T run these guards.
+    if (isVerifyingFromLink || loading) {
+      return;
+    }
+
+    if (!user) {
+      router.push("/login");
+    }
+
+    if (user && user.email_verified_at) {
+      router.push("/profile");
+    }
+  }, [user, loading, router, isVerifyingFromLink]); // Added isVerifyingFromLink
+
+  // --- Your Existing Handlers (Unchanged) ---
   const handleResend = async () => {
     setIsResending(true);
     try {
       await resendVerification();
       toast.success("Verification email sent!");
-    } catch (error) {
-      // Error is already handled in AuthContext
-    } finally {
-      setIsResending(false);
-    }
+    } catch (error) { /* Handled in AuthContext */ }
+    finally { setIsResending(false); }
   };
 
   const handleChangeEmail = async (e: FormEvent) => {
@@ -39,14 +111,10 @@ export default function VerifyEmailPage() {
     setIsUpdating(true);
     try {
       await updateEmail(newEmail);
-      // On success, reset the form
       setIsChangingEmail(false);
       setNewEmail("");
-    } catch (error) {
-      // Error is already handled in AuthContext
-    } finally {
-      setIsUpdating(false);
-    }
+    } catch (error) { /* Handled in AuthContext */ }
+    finally { setIsUpdating(false); }
   };
 
   const handleLogout = () => {
@@ -54,42 +122,8 @@ export default function VerifyEmailPage() {
     router.push("/login");
   };
 
-  // 3. ✅ --- THIS IS THE FIX ---
-  // Move "Page Guards" into a useEffect hook to run *after* render
-  useEffect(() => {
-    // Don't do anything while auth status is being checked
-    if (loading) {
-      return;
-    }
-
-    // Guard 1: If user is logged out, redirect to login
-    if (!user) {
-      router.push("/login");
-    }
-
-    // Guard 2: If user is logged IN and ALREADY VERIFIED, redirect to profile
-    if (user && user.email_verified_at) {
-      router.push("/profile");
-    }
-  }, [user, loading, router]);
-
-  // 4. Show a loading screen while checking auth
-  // This prevents the page from flashing or running guards too early
-  if (loading || !user || (user && user.email_verified_at)) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-  
-  // 5. By this point, we know:
-  //    - loading is false
-  //    - user exists
-  //    - user.email_verified_at is null
-  // So it is safe to render the page.
-
-  return (
+  // --- Helper Wrapper Component ---
+  const PageWrapper = ({ children }: { children: ReactNode }) => (
     <div
       className="relative flex items-center justify-center min-h-screen py-20 px-4"
       style={{
@@ -100,9 +134,46 @@ export default function VerifyEmailPage() {
       }}
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0"></div>
+      {children}
+    </div>
+  );
+
+  // 4. --- RENDER LOGIC ---
+
+  // SCENARIO B: Show verification status
+  if (isVerifyingFromLink) {
+    return (
+      <PageWrapper>
+        <div className="relative z-10 w-full max-w-md p-8 space-y-6 text-center bg-card/95 dark:bg-card/85 backdrop-blur-lg rounded-2xl shadow-xl">
+          <h1 className="text-3xl font-bold text-foreground">
+            Email Verification
+          </h1>
+          <p style={{ color: verificationError ? 'red' : 'green' }}>
+            {verificationStatus}
+          </p>
+          {!verificationError && <p>Redirecting to login...</p>}
+          {verificationError && <p>Please try again or contact support.</p>}
+        </div>
+      </PageWrapper>
+    );
+  }
+
+  // SCENARIO A: Loading screen
+  if (loading || !user || (user && user.email_verified_at)) {
+    return (
+      <PageWrapper>
+        <div className="flex items-center justify-center min-h-screen bg-transparent">
+          <p className="text-white relative z-10">Loading...</p>
+        </div>
+      </PageWrapper>
+    );
+  }
+
+  // SCENARIO A: Show "Resend Email" UI
+  return (
+    <PageWrapper>
       <div className="relative z-10 w-full max-w-md p-8 space-y-6 text-center bg-card/95 dark:bg-card/85 backdrop-blur-lg rounded-2xl shadow-xl">
         
-        {/* --- This UI is for CHANGING email --- */}
         {isChangingEmail ? (
           <>
             <h1 className="text-3xl font-bold text-foreground">
@@ -143,7 +214,6 @@ export default function VerifyEmailPage() {
         
         ) : (
           
-          /* --- This is the DEFAULT UI --- */
           <>
             <h1 className="text-3xl font-bold text-foreground">
               Check Your Email
@@ -179,6 +249,6 @@ export default function VerifyEmailPage() {
           </>
         )}
       </div>
-    </div>
+    </PageWrapper>
   );
 }
