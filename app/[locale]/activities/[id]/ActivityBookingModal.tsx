@@ -2,34 +2,29 @@
 
 "use client";
 
-// [UPDATED] Import useEffect
 import React, { useState, FormEvent, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { X } from "lucide-react";
 import { AxiosError } from "axios";
-
-// [UPDATED] Asumsi tipe AuthUser memiliki 'phone' (opsional)
 import { Activity, TFunction, AuthUser } from "./page";
 
 interface ActivityBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   activity: Activity;
-  user: AuthUser | null; // Asumsi AuthUser memiliki: name, email, phone?
+  user: AuthUser | null;
   t: TFunction;
 }
 
-// [UPDATED] API response/error types (Asumsi dari user)
 interface ApiErrorResponse {
   message?: string;
 }
 interface ApiBookingSuccessResponse {
-  id: number; // The new Order ID
+  id: number;
 }
 
-// [UPDATED] Tipe Error state diperluas
 type FormErrors = {
   startDate?: string;
   quantity?: string;
@@ -49,11 +44,8 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
 }) => {
   const router = useRouter();
 
-  // --- STATE ---
   const [startDate, setStartDate] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
-
-  // [TAMBAHAN] State untuk kolom baru
   const [nationality, setNationality] = useState<string>("");
   const [fullName, setFullName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -63,19 +55,14 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errors, setErrors] = useState<FormErrors>({});
-  
   const today = new Date().toISOString().split("T")[0];
 
-  // [TAMBAAN] useEffect untuk pre-fill data & reset form saat modal dibuka
   useEffect(() => {
     if (isOpen) {
-      // Pre-fill data dari user
       setFullName(user?.name || "");
       setEmail(user?.email || "");
       // @ts-expect-errora sdfsafsdaa
-      setPhone(user?.phone || ""); 
-
-      // Reset field lainnya
+      setPhone(user?.phone || "");
       setStartDate("");
       setQuantity(1);
       setNationality("");
@@ -83,9 +70,8 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
       setSpecialRequest("");
       setErrors({});
     }
-  }, [isOpen, user]); // Jalankan saat modal dibuka atau data user berubah
+  }, [isOpen, user]);
 
-  // --- CALCULATIONS ---
   const { pricePerPax, totalPax } = useMemo(() => {
     const pricePerPax = activity.price || 0;
     const totalPax = quantity;
@@ -105,8 +91,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     }).format(amount);
   };
 
-  // --- VALIDATION ---
-  // [UPDATED] Fungsi validasi diperbarui
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
@@ -122,8 +106,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
         "Must have at least 1 participant."
       );
     }
-
-    // [TAMBAHAN] Validasi untuk kolom baru
     if (!nationality) {
       newErrors.nationality = t(
         "booking.errors.noNationality",
@@ -139,7 +121,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     if (!email) {
       newErrors.email = t("booking.errors.noEmail", "Please enter your email.");
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      // Basic email format check
       newErrors.email = t(
         "booking.errors.invalidEmail",
         "Please enter a valid email."
@@ -159,16 +140,13 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // Returns true if no errors
+    return Object.keys(newErrors).length === 0;
   };
 
-  // --- SUBMISSION ---
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      return; // Stop submission if validation fails
-    }
+    if (!validateForm()) return;
 
     if (!user) {
       toast.error(
@@ -190,19 +168,17 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      // [UPDATED] Payload API diperbarui
       const response = await api.post<ApiBookingSuccessResponse>(
         `/activities/${activity.id}/book`,
         {
           booking_date: startDate,
-          quantity: quantity,
-          // [TAMBAHAN] Data baru untuk dikirim
-          nationality: nationality,
+          quantity,
+          nationality,
           full_name: fullName,
-          email: email,
-          phone: phone,
+          email,
+          phone,
           pickup_location: pickupLocation,
-          special_request: specialRequest || null, // Kirim null jika kosong
+          special_request: specialRequest || null,
         }
       );
 
@@ -231,7 +207,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
 
   if (!isOpen) return null;
 
-  // --- STYLING ---
   const baseInputClass =
     "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600";
   const errorInputClass =
@@ -239,10 +214,8 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   const buttonClass =
     "w-full bg-primary text-black font-bold py-3 px-4 rounded-lg transition duration-300 hover:brightness-90 disabled:opacity-50 disabled:cursor-not-allowed";
 
-  // --- RENDER ---
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn overflow-y-auto py-10">
-      {/* [UPDATED] Tambahkan overflow-y-auto pada wrapper & max-h pada modal */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-lg m-4 relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
@@ -252,12 +225,10 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
           <X size={24} />
         </button>
 
-        {/* Modal Header */}
+        {/* Header */}
         <div className="sm:flex sm:items-start mb-6">
           <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 sm:mx-0 sm:h-10 sm:w-10">
-            <svg /* ... icon ... */ >
-              {/* ... path ... */ }
-            </svg>
+            <svg></svg>
           </div>
           <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
             <h2
@@ -272,9 +243,9 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
           </div>
         </div>
 
-        {/* [UPDATED] Form dengan kolom tambahan */}
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* 1. Select Date */}
+          {/* Date */}
           <div>
             <label
               htmlFor="start-date"
@@ -302,7 +273,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
             )}
           </div>
 
-          {/* 2. Participants */}
+          {/* Participants */}
           <div>
             <label
               htmlFor="quantity"
@@ -330,15 +301,13 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
             )}
           </div>
 
-          {/* --- [TAMBAHAN] Kolom Form Baru Dimulai --- */}
-
-          {/* 3. Kewarganegaraan Peserta (Dropdown) */}
+          {/* Nationality */}
           <div>
             <label
               htmlFor="nationality"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              {t("booking.nationality", "Participant Nationality")}
+              {t("booking.nationality.title", "Participant Nationality")}
             </label>
             <select
               id="nationality"
@@ -368,13 +337,13 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
             )}
           </div>
 
-          {/* 4. Nama Lengkap (Text - Pre-filled) */}
+          {/* Full Name */}
           <div>
             <label
               htmlFor="full-name"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              {t("booking.fullName", "Full Name")}
+              {t("booking.fullName.title", "Full Name")}
             </label>
             <input
               id="full-name"
@@ -395,13 +364,13 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
             )}
           </div>
 
-          {/* 5. Email (Email - Pre-filled) */}
+          {/* Email */}
           <div>
             <label
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              {t("booking.email", "Email")}
+              {t("booking.email.title", "Email")}
             </label>
             <input
               id="email"
@@ -422,13 +391,13 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
             )}
           </div>
 
-          {/* 6. No. Telepon/WA (Text - Pre-filled) */}
+          {/* Phone */}
           <div>
             <label
               htmlFor="phone"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              {t("booking.phone", "Phone Number (WA)")}
+              {t("booking.phone.title", "Phone Number (WA)")}
             </label>
             <input
               id="phone"
@@ -449,13 +418,13 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
             )}
           </div>
 
-          {/* 7. Lokasi Penjemputan (Dropdown) */}
+          {/* Pickup Location */}
           <div>
             <label
               htmlFor="pickupLocation"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              {t("booking.pickupLocation", "Pickup Location")}
+              {t("booking.pickupLocation.title", "Pickup Location")}
             </label>
             <select
               id="pickupLocation"
@@ -490,13 +459,13 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
             )}
           </div>
 
-          {/* 8. Permintaan Khusus (Opsional) (Text Area) */}
+          {/* Special Request */}
           <div>
             <label
               htmlFor="specialRequest"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              {t("booking.specialRequest", "Special Request")}{" "}
+              {t("booking.specialRequest.title", "Special Request")}{" "}
               <span className="text-gray-500 dark:text-gray-400">
                 ({t("booking.optional", "Optional")})
               </span>
@@ -513,8 +482,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               )}
             />
           </div>
-
-          {/* --- [TAMBAHAN] Kolom Form Baru Selesai --- */}
 
           {/* Price Summary */}
           <div className="pt-4 space-y-2 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
@@ -540,7 +507,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
             </div>
           </div>
 
-          {/* Submit Button */}
           <button type="submit" disabled={isSubmitting} className={buttonClass}>
             {isSubmitting
               ? t("booking.submitting", "Booking...")

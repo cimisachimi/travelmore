@@ -2,8 +2,128 @@
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { SimpleBooking } from "../types";
+import { SimpleBooking } from "../types"; // Make sure this type includes 'details' and 'bookable_type'
 import { formatCurrency, formatDate, getStatusChip } from "@/lib/utils";
+import {
+  User,
+  Phone,
+  MapPin,
+  Clock,
+  Users,
+  Package,
+  Plane,
+} from "lucide-react";
+
+// --- NEW: BookingDetails Component ---
+// This component renders the specific details for each booking type.
+// You can move this to its own file if you prefer.
+
+const DetailRow = ({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: React.ReactNode;
+}) => {
+  if (!value) return null;
+  return (
+    <div className="flex items-center gap-3 text-sm">
+      <Icon size={16} className="text-primary" />
+      <span className="text-foreground/80">{label}:</span>
+      <span className="font-semibold">{value}</span>
+    </div>
+  );
+};
+
+function BookingDetails({ booking }: { booking: SimpleBooking }) {
+  const { details, bookable_type } = booking;
+
+  // We check the 'bookable_type' string.
+  // In Laravel, this will be like "App\\Models\\CarRental"
+  // We can just check for the model name.
+  if (bookable_type?.includes("CarRental")) {
+    return (
+      <div className="space-y-2">
+        <DetailRow
+          icon={Phone}
+          label="Phone"
+          value={details?.phone_number}
+        />
+        <DetailRow
+          icon={MapPin}
+          label="Pickup"
+          value={details?.pickup_location}
+        />
+        <DetailRow
+          icon={Clock}
+          label="Pickup Time"
+          value={details?.pickup_time}
+        />
+      </div>
+    );
+  }
+
+  if (bookable_type?.includes("Activity")) {
+    return (
+      <div className="space-y-2">
+        <DetailRow
+          icon={Users}
+          label="Participants"
+          value={details?.num_participants || details?.quantity}
+        />
+        <DetailRow
+          icon={Clock}
+          label="Time"
+          value={details?.activity_time}
+        />
+      </div>
+    );
+  }
+
+  if (bookable_type?.includes("HolidayPackage")) {
+    const travelers = [
+      details?.adults ? `${details.adults} Adults` : "",
+      details?.children ? `${details.children} Children` : "",
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    return (
+      <div className="space-y-2">
+        <DetailRow
+          icon={Users}
+          label="Travelers"
+          value={travelers || details?.num_travelers}
+        />
+        <DetailRow
+          icon={Package}
+          label="Package Tier"
+          value={details?.price_tier}
+        />
+      </div>
+    );
+  }
+
+  if (bookable_type?.includes("TripPlanner")) {
+    return (
+      <div className="space-y-2">
+        <DetailRow icon={User} label="Name" value={details?.full_name} />
+        <DetailRow icon={Plane} label="Trip Type" value={details?.trip_type} />
+      </div>
+    );
+  }
+
+  // Fallback if no details are matched
+  return (
+    <p className="text-sm text-foreground/60 italic">
+      No additional details available for this booking.
+    </p>
+  );
+}
+
+// --- Main BookingsTab Component ---
 
 export default function BookingsTab() {
   const [bookings, setBookings] = useState<SimpleBooking[]>([]);
@@ -28,58 +148,93 @@ export default function BookingsTab() {
     fetchData();
   }, []);
 
+  const handleRequestChange = (bookingId: number) => {
+    console.log("Requesting change for booking:", bookingId);
+    // TODO: Implement your modal logic here
+    alert("Request Change button clicked for booking " + bookingId);
+  };
+
   const renderBookingList = () =>
     !bookings || bookings.length === 0 ? (
       <p>You have no active bookings.</p>
     ) : (
       bookings.map((booking) => {
         const bookable = booking?.bookable;
-        const serviceName =
-          bookable?.name || // For Holiday Packages
-          `${bookable?.brand || ""} ${bookable?.car_model || ""}`.trim() || // For Cars
-          "Service Details Unavailable";
 
+        // ✅ Improved Service Name Logic
+        const serviceName =
+          booking.details?.service_name || // Best: from details snapshot
+          bookable?.name || // For Packages, Activities
+          `${bookable?.brand || ""} ${bookable?.car_model || ""}`.trim() || // For Cars
+          (booking.bookable_type?.includes("TripPlanner")
+            ? "Custom Trip Plan"
+            : "Service Details Unavailable");
+
+        // ✅ Improved Date Display Logic
         const startDate = booking?.start_date;
         const endDate = booking?.end_date;
+        let dateDisplay = "N/A";
+        if (startDate) {
+          dateDisplay = formatDate(startDate);
+          if (endDate && endDate !== startDate) {
+            dateDisplay += ` - ${formatDate(endDate)}`;
+          }
+        }
 
         return (
           <div
             key={booking.id}
             className="bg-card border border-border rounded-lg p-4 transition-shadow hover:shadow-md"
           >
+            {/* --- Header --- */}
             <div className="flex justify-between items-start mb-3">
               <div>
                 <p className="font-bold text-lg">{serviceName}</p>
-                <p className="text-sm text-foreground/60">
-                  {startDate
-                    ? `${formatDate(startDate)} - ${formatDate(endDate)}`
-                    : "N/A"}
-                </p>
+                <p className="text-sm text-foreground/60">{dateDisplay}</p>
               </div>
               <span className={getStatusChip(booking.status)}>
                 {booking.status}
               </span>
             </div>
-            <div className="border-t border-border pt-3 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-foreground/80">Booking Status:</span>
-                <span className="font-semibold capitalize">
-                  {booking.status}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm mt-1">
-                <span className="text-foreground/80">Payment Status:</span>
-                <span className="font-semibold capitalize">
-                  {booking.payment_status.replace("_", " ")}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm mt-1">
-                <span className="text-foreground/80">Total Price:</span>
-                <span className="font-semibold">
-                  {formatCurrency(booking.total_price)}
-                </span>
+
+            {/* --- Body (General & Specific Details) --- */}
+            <div className="border-t border-border pt-3 space-y-4">
+              {/* ✅ NEW: Specific Details Section */}
+              <BookingDetails booking={booking} />
+
+              {/* --- General Details --- */}
+              <div className="space-y-2 pt-4 border-t border-dashed">
+                <div className="flex justify-between text-sm">
+                  <span className="text-foreground/80">Booking Status:</span>
+                  <span className="font-semibold capitalize">
+                    {booking.status}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span className="text-foreground/80">Payment Status:</span>
+                  <span className="font-semibold capitalize">
+                    {booking.payment_status.replace("_", " ")}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span className="text-foreground/80">Total Price:</span>
+                  <span className="font-semibold">
+                    {formatCurrency(booking.total_price)}
+                  </span>
+                </div>
               </div>
             </div>
+            
+            {/* ✅ NEW: Footer with Action Button */}
+            <div className="border-t border-border pt-4 mt-4 flex justify-end">
+              <button
+                onClick={() => handleRequestChange(booking.id)}
+                className="px-4 py-2 bg-secondary text-secondary-foreground text-sm font-medium rounded-md hover:bg-secondary/80"
+              >
+                Request Change
+              </button>
+            </div>
+
           </div>
         );
       })

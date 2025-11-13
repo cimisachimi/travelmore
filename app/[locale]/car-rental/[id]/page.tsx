@@ -62,6 +62,7 @@ export default function CarDetailPage() {
   const [email, setEmail] = useState(user?.email || "");
   const [phone, setPhone] = useState("");
   const [pickupLocation, setPickupLocation] = useState("");
+  const [pickupTime, setPickupTime] = useState(""); // ✅ 1. ADDED THIS STATE
 
   const fetchAvailability = async () => {
     // ... (unchanged)
@@ -118,7 +119,7 @@ export default function CarDetailPage() {
   }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    // ... (unchanged)
+    // ... (unchanged logic)
     e.preventDefault();
     if (!car || !selectedRange?.from || !selectedRange?.to) {
       toast.error("Please select a valid start and end date.");
@@ -128,22 +129,29 @@ export default function CarDetailPage() {
       toast.error("Please log in to book a car.");
       return;
     }
+    // ✅ FIX: Also check for pickupTime
+    if (!phone || !pickupLocation || !pickupTime) {
+      toast.error("Please fill in all booking details.");
+      return;
+    }
+
 
     setIsSubmitting(true);
+    // This calculation is fine for display, but we won't send it.
+    // The backend calculates the final price.
     const numberOfDays =
       differenceInDays(selectedRange.to, selectedRange.from) + 1;
     const totalPrice = numberOfDays * parseFloat(car.price_per_day);
 
     try {
+      // ✅ 3. FIXED THE PAYLOAD to match your backend controller
       const response = await api.post(`/car-rentals/${car.id}/book`, {
         start_date: selectedRange.from.toISOString().split("T")[0],
         end_date: selectedRange.to.toISOString().split("T")[0],
-        total_price: totalPrice,
-        // Include booking details if needed by backend (example)
-        // name: name,
-        // email: email,
-        // phone: phone,
-        // pickup_location: pickupLocation,
+        phone_number: phone,
+        pickup_location: pickupLocation,
+        pickup_time: pickupTime,
+        // We no longer send total_price. The backend calculates it.
       });
 
       if (response.status === 201) {
@@ -153,6 +161,10 @@ export default function CarDetailPage() {
         setBookingSuccess(true);
         fetchAvailability();
         setSelectedRange(undefined);
+        // Clear form fields
+        setPhone("");
+        setPickupLocation("");
+        setPickupTime("");
       }
     } catch (err: unknown) {
       let message = "Booking failed. Please try again.";
@@ -263,7 +275,7 @@ export default function CarDetailPage() {
               {car.description || "No description available."}
             </p>
 
-            {/* --- ✅ ADDED: Car Details Section --- */}
+            {/* --- Car Details Section (unchanged) --- */}
             <div className="mt-8 border-t pt-6">
               <h3 className="text-xl font-bold mb-4">{t('details.title')}</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
@@ -305,7 +317,7 @@ export default function CarDetailPage() {
               </div>
             </div>
 
-            {/* --- ✅ ADDED: Car Features Section --- */}
+            {/* --- Car Features Section (unchanged) --- */}
             {car.features && car.features.length > 0 && (
               <div className="mt-8 border-t pt-6">
                 <h3 className="text-xl font-bold mb-4">{t('details.features')}</h3>
@@ -400,6 +412,16 @@ export default function CarDetailPage() {
                     placeholder={t("form.pickup")}
                     value={pickupLocation}
                     onChange={(e) => setPickupLocation(e.target.value)}
+                    required
+                    className="w-full border rounded-lg px-4 py-2 bg-background"
+                  />
+                  {/* ✅ 2. ADDED THIS INPUT FIELD */}
+                  <input
+                    type="time"
+                    // You will need to add "form.pickupTime" to your translation files
+                    placeholder={t("form.pickupTime", "Pickup Time")}
+                    value={pickupTime}
+                    onChange={(e) => setPickupTime(e.target.value)}
                     required
                     className="w-full border rounded-lg px-4 py-2 bg-background"
                   />

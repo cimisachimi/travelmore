@@ -231,9 +231,9 @@
   },
   "activities": {
     "title": "Aktivitas Kami",
-    "subtitle": "Temukan pengalaman dan petualangan yang dikurasi khusus untuk Anda. Temukan perjalanan Anda berikutnya bersama kami.",
+    "subtitle": "Temukan pengalaman dan petualangan yang dirancang khusus untuk Anda. Temukan perjalanan berikutnya bersama kami.",
     "popularActivities": "Aktivitas Populer",
-    "popularActivitiesDesc": "Jelajahi aktivitas dan petualangan paling populer di Yogyakarta.",
+    "popularActivitiesDesc": "Jelajahi berbagai aktivitas dan petualangan paling populer di Yogyakarta.",
     "showMore": "Tampilkan Lebih Banyak",
     "filters": {
       "title": "Filter",
@@ -246,9 +246,9 @@
       "back": "Kembali ke Semua Aktivitas"
     },
     "empty": {
-      "message": "Tidak ada aktivitas yang ditemukan sesuai kriteria Anda.",
+      "message": "Tidak ada aktivitas yang sesuai dengan kriteria Anda.",
       "loading": "Memuat aktivitas...",
-      "fetchError": "Tidak dapat memuat aktivitas. Silakan coba lagi nanti."
+      "fetchError": "Tidak dapat memuat data aktivitas. Silakan coba lagi nanti."
     },
     "status": {
       "notFound": "Aktivitas tidak ditemukan.",
@@ -256,14 +256,14 @@
       "loading": "Memuat aktivitas..."
     },
     "gallery": {
-      "noImage": "Tidak ada gambar yang tersedia untuk aktivitas ini."
+      "noImage": "Tidak ada gambar tersedia untuk aktivitas ini."
     },
     "trip": {
       "about": "Tentang Aktivitas Ini",
       "price": "Harga",
       "person": "orang",
       "people": "orang",
-      "participants": "Peserta / Kuantitas"
+      "participants": "Peserta / Jumlah"
     },
     "booking": {
       "checkAvailability": "Pesan Sekarang",
@@ -273,18 +273,58 @@
       "title": "Pesan Aktivitas Anda",
       "startDate": "Pilih Tanggal",
       "total": "Total Harga",
-      "submitting": "Memesan...",
+      "submitting": "Memproses Pemesanan...",
       "confirm": "Pesan Sekarang",
+      "optional": "Opsional",
+
+      "nationality": {
+        "title": "Kewarganegaraan Peserta",
+        "local": "Domestik (Lokal)",
+        "foreign": "Mancanegara (Asing)"
+      },
+      "selectOption": "-- Pilih Opsi --",
+
+      "fullName": {
+        "title": "Nama Lengkap"
+      },
+      "email": {
+        "title": "Email"
+      },
+      "phone": {
+        "title": "Nomor Telepon (WA)"
+      },
+      "pickupLocation": {
+        "title": "Lokasi Penjemputan"
+      },
+
+      "pickup": {
+        "title": "Lokasi Penjemputan",
+        "airport": "Bandara",
+        "station": "Stasiun",
+        "hotel": "Hotel"
+      },
+      "specialRequest": {
+        "title": "Permintaan Khusus",
+        "optional": "Opsional",
+        "placeholder": "contoh: alergi, kebutuhan makanan, penjemputan terlambat..."
+      },
+
       "success": {
-        "message": "Pemesanan berhasil dibuat! Mengalihkan..."
+        "message": "Pemesanan berhasil dibuat! Mengarahkan..."
       },
       "errors": {
-        "notLoggedIn": "Anda harus masuk untuk memesan.",
+        "notLoggedIn": "Anda harus masuk terlebih dahulu untuk memesan.",
         "noDate": "Silakan pilih tanggal.",
-        "noParticipants": "Anda harus memiliki setidaknya satu peserta.",
+        "noParticipants": "Jumlah peserta minimal satu orang.",
         "noPrice": "Harga tidak dapat dihitung untuk aktivitas ini.",
         "general": "Pemesanan gagal. Silakan coba lagi.",
-        "priceOrPax": "Harga atau jumlah peserta tidak valid."
+        "priceOrPax": "Harga atau jumlah peserta tidak valid.",
+        "noNationality": "Silakan pilih kewarganegaraan.",
+        "noName": "Silakan masukkan nama lengkap Anda.",
+        "noEmail": "Silakan masukkan alamat email Anda.",
+        "invalidEmail": "Silakan masukkan alamat email yang valid.",
+        "noPhone": "Silakan masukkan nomor telepon Anda.",
+        "noPickup": "Silakan pilih lokasi penjemputan."
       }
     },
     "pricing": {
@@ -469,7 +509,8 @@
       "email": "Alamat Email",
       "phone": "Nomor Telepon",
       "pickup": "Lokasi Penjemputan",
-      "button": "Pesan Sekarang"
+      "button": "Pesan Sekarang",
+      "pickupTime": "Pick Up Time"
     },
     "details": {
       "title": "Detail Mobil",

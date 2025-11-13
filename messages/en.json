@@ -229,9 +229,7 @@
       "button": "Start Planning"
     }
   },
-  "activities": {
-
-    
+    "activities": {
     "title": "Our Activities",
     "subtitle": "Discover experiences and adventures curated just for you. Find your next journey with us.",
     "popularActivities": "Popular Activities",
@@ -277,6 +275,40 @@
       "total": "Total Price",
       "submitting": "Booking...",
       "confirm": "Book Now",
+      "optional": "Optional",
+
+      "nationality": {
+        "title": "Participant Nationality",
+        "local": "Domestik (Local)",
+        "foreign": "Mancanegara (Foreign)"
+      },
+      "selectOption": "-- Select Option --",
+
+      "fullName": {
+        "title": "Full Name"
+      },
+      "email": {
+        "title": "Email"
+      },
+      "phone": {
+        "title": "Phone Number (WA)"
+      },
+      "pickupLocation": {
+        "title": "Pickup Location"
+      },
+  
+      "pickup": {
+        "title": "Pickup Location",
+        "airport": "Bandara (Airport)",
+        "station": "Stasiun (Train Station)",
+        "hotel": "Hotel"
+      },
+      "specialRequest": {
+        "title": "Special Request",
+        "optional": "Optional",
+        "placeholder": "e.g., allergies, dietary needs, late pickup..."
+      },
+
       "success": {
         "message": "Booking created! Redirecting..."
       },
@@ -286,7 +318,13 @@
         "noParticipants": "You must have at least one participant.",
         "noPrice": "Price could not be calculated for this activity.",
         "general": "Booking failed. Please try again.",
-        "priceOrPax": "Price or participant count is invalid."
+        "priceOrPax": "Price or participant count is invalid.",
+        "noNationality": "Please select nationality.",
+        "noName": "Please enter your full name.",
+        "noEmail": "Please enter your email.",
+        "invalidEmail": "Please enter a valid email.",
+        "noPhone": "Please enter your phone number.",
+        "noPickup": "Please select a pickup location."
       }
     },
     "pricing": {
@@ -471,7 +509,8 @@
       "email": "Email Address",
       "phone": "Phone Number",
       "pickup": "Pickup Location",
-      "button": "Book Now"
+      "button": "Book Now",
+      "pickupTime": "Pick Up Time"
     },
     "details": {
       "title": "Car Details",

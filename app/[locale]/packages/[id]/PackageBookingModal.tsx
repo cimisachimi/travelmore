@@ -448,7 +448,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
               htmlFor="nationality"
               className={`block text-sm font-medium ${mutedTextColor}`}
             >
-              {t("booking.nationality", "Participant Nationality")}
+              {t("booking.nationality.title", "Participant Nationality")}
             </label>
             <select
               id="nationality"
@@ -467,10 +467,10 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
                 {t("booking.selectOption", "-- Select Option --")}
               </option>
               <option value="WNI">
-                {t("booking.nationality.wni", "WNI (Indonesian)")}
+                {t("booking.nationality.local", "Domestik (Local)")}
               </option>
               <option value="WNA">
-                {t("booking.nationality.wna", "WNA (Foreign)")}
+                {t("booking.nationality.foreign", "Mancanegara (Foreign)")}
               </option>
             </select>
             {errors.nationality && (
@@ -606,7 +606,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
               htmlFor="flightOrTrainNumber"
               className={`block text-sm font-medium ${mutedTextColor}`}
             >
-              {t("booking.flightNumber", "Flight/Train No.")}{" "}
+              {t("booking.flightNumber.title", "Flight Number")}{" "}
               <span className="text-xs">
                 ({t("booking.optional", "Optional")})
               </span>
@@ -616,10 +616,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
               type="text"
               value={flightOrTrainNumber}
               onChange={(e) => setFlightOrTrainNumber(e.target.value)}
-              placeholder={t(
-                "booking.flightNumber.placeholder",
-                "e.g., GA 203 / Argo Wilis"
-              )}
+              placeholder={t("booking.flightNumber.placeholder", "e.g., GA 205")}
               className={`${baseInputClass} ${inputBorderClass}`}
             />
           </div>
@@ -630,7 +627,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
               htmlFor="specialRequest"
               className={`block text-sm font-medium ${mutedTextColor}`}
             >
-              {t("booking.specialRequest", "Special Request")}{" "}
+              {t("booking.specialRequest.title", "Special Request")}{" "}
               <span className="text-xs">
                 ({t("booking.optional", "Optional")})
               </span>
