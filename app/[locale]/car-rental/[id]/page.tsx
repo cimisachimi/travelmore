@@ -419,7 +419,7 @@ export default function CarDetailPage() {
                   <input
                     type="time"
                     // You will need to add "form.pickupTime" to your translation files
-                    placeholder={t("form.pickupTime", "Pickup Time")}
+                    placeholder={t("form.pickupTime")}
                     value={pickupTime}
                     onChange={(e) => setPickupTime(e.target.value)}
                     required

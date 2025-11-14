@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { SimpleBooking } from "../types"; // Make sure this type includes 'details' and 'bookable_type'
+// import { SimpleBooking } from "../types"; // We are defining it locally
+
 import { formatCurrency, formatDate, getStatusChip } from "@/lib/utils";
 import {
   User,
@@ -14,9 +15,57 @@ import {
   Plane,
 } from "lucide-react";
 
-// --- NEW: BookingDetails Component ---
+// --- ✅ 1. DEFINE THE SHAPE OF 'details' ---
+// This interface includes all possible fields from all your services.
+// All fields are optional (?).
+interface BookingDetailsShape {
+  service_name?: string;
+  original_subtotal?: number;
+  discount_applied?: number;
+  
+  // Car Rental
+  phone_number?: string;
+  pickup_location?: string;
+  pickup_time?: string;
+  total_days?: number;
+
+  // Activity
+  num_participants?: number;
+  quantity?: number;
+  activity_time?: string;
+  price_per_person?: number;
+
+  // Holiday Package
+  adults?: number;
+  children?: number;
+  num_travelers?: number;
+  price_tier?: string;
+  
+  // Trip Planner
+  full_name?: string;
+  trip_type?: string;
+}
+
+// --- ✅ 2. UPDATE SimpleBooking INTERFACE ---
+interface SimpleBooking {
+  id: number;
+  status: string;
+  payment_status: string;
+  total_price: number;
+  start_date?: string | null;
+  end_date?: string | null;
+  bookable_type: string;
+  details: BookingDetailsShape; // <-- Use the new, specific shape
+  bookable?: {
+    name?: string;
+    brand?: string;
+    car_model?: string;
+  } | null;
+}
+
+// --- BookingDetails Component ---
 // This component renders the specific details for each booking type.
-// You can move this to its own file if you prefer.
+// No changes needed here, it now has full type safety.
 
 const DetailRow = ({
   icon: Icon,
