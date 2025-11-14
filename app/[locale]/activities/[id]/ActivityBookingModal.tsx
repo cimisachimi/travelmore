@@ -1,14 +1,13 @@
-// File: activities/[id]/ActivityBookingModal.tsx
-
 "use client";
 
 import React, { useState, FormEvent, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { X } from "lucide-react";
+import { X, CalendarDays, Users } from "lucide-react"; // [UPDATED] Imports
 import { AxiosError } from "axios";
-import { Activity, TFunction, AuthUser } from "./page";
+import { useTheme } from "@/components/ThemeProvider"; // [ADDED] Import
+import { Activity, TFunction, AuthUser } from "./page"; // Assuming types are in a shared file
 
 interface ActivityBookingModalProps {
   isOpen: boolean;
@@ -20,20 +19,35 @@ interface ActivityBookingModalProps {
 
 interface ApiErrorResponse {
   message?: string;
+  errors?: Record<string, string[]>; // [ADDED] For 422 errors
 }
 interface ApiBookingSuccessResponse {
   id: number;
 }
 
+// [UPDATED] Error keys to match backend validation
 type FormErrors = {
-  startDate?: string;
+  booking_date?: string;
   quantity?: string;
-  nationality?: string;
-  fullName?: string;
+  participant_nationality?: string;
+  full_name?: string;
   email?: string;
-  phone?: string;
-  pickupLocation?: string;
+  phone_number?: string;
+  pickup_location?: string;
+  general?: string; // [ADDED] For general errors
 };
+
+// [ADDED] Country Codes
+const countryCodes = [
+  { code: "+62", label: "ID (+62)" },
+  { code: "+65", label: "SG (+65)" },
+  { code: "+60", label: "MY (+60)" },
+  { code: "+61", label: "AU (+61)" },
+  { code: "+1", label: "US (+1)" },
+  { code: "+44", label: "UK (+44)" },
+  { code: "+81", label: "JP (+81)" },
+  { code: "+82", label: "KR (+82)" },
+];
 
 const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   isOpen,
@@ -43,15 +57,20 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   t,
 }) => {
   const router = useRouter();
+  const { theme } = useTheme(); // [ADDED]
 
-  const [startDate, setStartDate] = useState<string>("");
+  // --- STATES ---
+  const [bookingDate, setBookingDate] = useState<string>(""); // [RENAMED]
   const [quantity, setQuantity] = useState<number>(1);
   const [nationality, setNationality] = useState<string>("");
   const [fullName, setFullName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const [phone, setPhone] = useState<string>("");
   const [pickupLocation, setPickupLocation] = useState<string>("");
   const [specialRequest, setSpecialRequest] = useState<string>("");
+
+  // [UPDATED] Phone state
+  const [phoneCode, setPhoneCode] = useState("+62");
+  const [localPhone, setLocalPhone] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -61,9 +80,30 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     if (isOpen) {
       setFullName(user?.name || "");
       setEmail(user?.email || "");
-      // @ts-expect-errora sdfsafsdaa
-      setPhone(user?.phone || "");
-      setStartDate("");
+
+      // [UPDATED] Phone pre-fill logic
+      // @ts-expect-error: Assuming user might have phone_number or phone
+      const fullPhoneNumber = user?.phone_number || user?.phone || "";
+      const matchedCode = countryCodes.find((c) =>
+        fullPhoneNumber.startsWith(c.code)
+      );
+
+      if (matchedCode) {
+        setPhoneCode(matchedCode.code);
+        setLocalPhone(fullPhoneNumber.substring(matchedCode.code.length));
+      } else if (fullPhoneNumber.startsWith("+")) {
+        setPhoneCode("+62"); // Default
+        setLocalPhone(fullPhoneNumber.replace(/^\+?62/, ""));
+      } else if (fullPhoneNumber) {
+        setPhoneCode("+62");
+        setLocalPhone(fullPhoneNumber.replace(/^0/, ""));
+      } else {
+        setPhoneCode("+62");
+        setLocalPhone("");
+      }
+
+      // Reset other fields
+      setBookingDate("");
       setQuantity(1);
       setNationality("");
       setPickupLocation("");
@@ -72,15 +112,11 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     }
   }, [isOpen, user]);
 
-  const { pricePerPax, totalPax } = useMemo(() => {
+  // [RENAMED]
+  const subtotal = useMemo(() => {
     const pricePerPax = activity.price || 0;
-    const totalPax = quantity;
-    return { pricePerPax, totalPax };
+    return pricePerPax * quantity;
   }, [quantity, activity.price]);
-
-  const total = useMemo(() => {
-    return pricePerPax * totalPax;
-  }, [pricePerPax, totalPax]);
 
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -91,11 +127,17 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     }).format(amount);
   };
 
+  // [ADDED] Phone input helper
+  const handleLocalPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const numericValue = e.target.value.replace(/[^0-9]/g, "");
+    setLocalPhone(numericValue);
+  };
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!startDate) {
-      newErrors.startDate = t(
+    if (!bookingDate) {
+      newErrors.booking_date = t(
         "booking.errors.noDate",
         "Please select a date."
       );
@@ -106,14 +148,21 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
         "Must have at least 1 participant."
       );
     }
+    if (subtotal <= 0) {
+      // [ADDED] General error for price
+      newErrors.general = t(
+        "booking.errors.noPrice",
+        "Price could not be calculated."
+      );
+    }
     if (!nationality) {
-      newErrors.nationality = t(
+      newErrors.participant_nationality = t( // [UPDATED] Key
         "booking.errors.noNationality",
         "Please select nationality."
       );
     }
     if (!fullName) {
-      newErrors.fullName = t(
+      newErrors.full_name = t( // [UPDATED] Key
         "booking.errors.noName",
         "Please enter your full name."
       );
@@ -126,16 +175,16 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
         "Please enter a valid email."
       );
     }
-    if (!phone) {
-      newErrors.phone = t(
+    if (!localPhone) { // [UPDATED] Check
+      newErrors.phone_number = t( // [UPDATED] Key
         "booking.errors.noPhone",
         "Please enter your phone number."
       );
     }
     if (!pickupLocation) {
-      newErrors.pickupLocation = t(
+      newErrors.pickup_location = t( // [UPDATED] Key
         "booking.errors.noPickup",
-        "Please select a pickup location."
+        "Please enter a pickup location." // [UPDATED] Message
       );
     }
 
@@ -146,7 +195,10 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      if (errors.general) toast.error(errors.general); // [ADDED]
+      return;
+    }
 
     if (!user) {
       toast.error(
@@ -155,7 +207,8 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
       return;
     }
 
-    if (total <= 0 || pricePerPax <= 0) {
+    // [MOVED] Price check from validateForm to here
+    if (subtotal <= 0) {
       toast.error(
         t(
           "booking.errors.noPrice",
@@ -168,15 +221,16 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     setIsSubmitting(true);
 
     try {
+      // [UPDATED] API Payload
       const response = await api.post<ApiBookingSuccessResponse>(
         `/activities/${activity.id}/book`,
         {
-          booking_date: startDate,
+          booking_date: bookingDate,
           quantity,
-          nationality,
+          participant_nationality: nationality, // [UPDATED] Key
           full_name: fullName,
           email,
-          phone,
+          phone_number: `${phoneCode}${localPhone.replace(/[^0-9]/g, "")}`, // [UPDATED] Value
           pickup_location: pickupLocation,
           special_request: specialRequest || null,
         }
@@ -186,20 +240,46 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
         toast.success(
           t("booking.success.message", "Booking created! Redirecting...")
         );
-        const orderId = response.data?.id;
-        if (orderId) {
-          router.push(`/profile?order_id=${orderId}`);
-        } else {
-          router.push("/profile");
-        }
+        // [UPDATED] Handle response.data.id
+        const orderId = response.data?.id; 
+        router.push(orderId ? `/profile?order_id=${orderId}` : "/profile");
         onClose();
       }
     } catch (err: unknown) {
       const error = err as AxiosError<ApiErrorResponse>;
-      toast.error(
-        error.response?.data?.message ||
-          t("booking.errors.general", "Booking failed. Please try again.")
-      );
+
+      // [UPDATED] Full 422 Error Handling
+      if (error.response?.status === 422 && error.response.data.errors) {
+        const validationErrors = error.response.data.errors;
+        const newApiErrors: FormErrors = {};
+
+        if (validationErrors.booking_date)
+          newApiErrors.booking_date = validationErrors.booking_date[0];
+        if (validationErrors.quantity)
+          newApiErrors.quantity = validationErrors.quantity[0];
+        if (validationErrors.participant_nationality)
+          newApiErrors.participant_nationality =
+            validationErrors.participant_nationality[0];
+        if (validationErrors.full_name)
+          newApiErrors.full_name = validationErrors.full_name[0];
+        if (validationErrors.email)
+          newApiErrors.email = validationErrors.email[0];
+        if (validationErrors.phone_number)
+          newApiErrors.phone_number = validationErrors.phone_number[0];
+        if (validationErrors.pickup_location)
+          newApiErrors.pickup_location = validationErrors.pickup_location[0];
+
+        setErrors(newApiErrors);
+        toast.error(
+          error.response.data.message ||
+            t("booking.errors.validation", "Please check the errors on the form.")
+        );
+      } else {
+        toast.error(
+          error.response?.data?.message ||
+            t("booking.errors.general", "Booking failed. Please try again.")
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -207,19 +287,32 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
 
   if (!isOpen) return null;
 
-  const baseInputClass =
-    "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600";
-  const errorInputClass =
-    "border-red-500 focus:border-red-500 focus:ring-red-500";
+  // [UPDATED] Theme-aware styling
+  const modalBgClass = theme === "regular" ? "bg-white" : "bg-card";
+  const textColor = theme === "regular" ? "text-gray-900" : "text-foreground";
+  const mutedTextColor =
+    theme === "regular" ? "text-gray-600" : "text-foreground/70";
+  const inputBgClass = theme === "regular" ? "bg-gray-50" : "bg-background";
+  const inputBorderClass =
+    theme === "regular" ? "border-gray-300" : "border-border";
+  const focusRingClass = "focus:ring-primary focus:border-primary";
   const buttonClass =
     "w-full bg-primary text-black font-bold py-3 px-4 rounded-lg transition duration-300 hover:brightness-90 disabled:opacity-50 disabled:cursor-not-allowed";
+  const summaryBgClass = theme === "regular" ? "bg-gray-100" : "bg-background";
+  const errorBorderClass =
+    "border-red-500 focus:border-red-500 focus:ring-red-500";
+  const iconBgClass = theme === "regular" ? "bg-primary/10" : "bg-primary/20";
+
+  const baseInputClass = `mt-1 block w-full rounded-md shadow-sm ${inputBgClass} ${focusRingClass} ${textColor} placeholder:${mutedTextColor}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn overflow-y-auto py-10">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-lg m-4 relative max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn p-4 overflow-y-auto py-10">
+      <div
+        className={`${modalBgClass} rounded-xl shadow-xl p-6 sm:p-8 w-full max-w-lg relative transform transition-all duration-300 max-h-[90vh] overflow-y-auto`}
+      >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          className={`absolute top-4 right-4 ${mutedTextColor} hover:${textColor} transition-colors`}
           aria-label="Close modal"
         >
           <X size={24} />
@@ -227,17 +320,19 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
 
         {/* Header */}
         <div className="sm:flex sm:items-start mb-6">
-          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 sm:mx-0 sm:h-10 sm:w-10">
-            <svg></svg>
+          <div
+            className={`mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${iconBgClass} sm:mx-0 sm:h-10 sm:w-10`}
+          >
+            <CalendarDays className="h-6 w-6 text-primary" /> {/* [ADDED] Icon */}
           </div>
           <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
             <h2
-              className="text-2xl font-bold text-gray-900 dark:text-white"
+              className={`text-2xl font-bold ${textColor}`}
               id="modal-title"
             >
               {t("booking.title", "Book Your Activity")}
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+            <p className={`text-sm ${mutedTextColor} mt-1`}>
               {activity.name}
             </p>
           </div>
@@ -245,67 +340,74 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Date */}
-          <div>
-            <label
-              htmlFor="start-date"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              {t("booking.startDate", "Select Date")}
-            </label>
-            <input
-              id="start-date"
-              type="date"
-              min={today}
-              value={startDate}
-              onChange={(e) => {
-                setStartDate(e.target.value);
-                if (errors.startDate)
-                  setErrors((p) => ({ ...p, startDate: undefined }));
-              }}
-              required
-              className={`${baseInputClass} ${
-                errors.startDate ? errorInputClass : ""
-              }`}
-            />
-            {errors.startDate && (
-              <p className="text-red-600 text-sm mt-1">{errors.startDate}</p>
-            )}
-          </div>
-
-          {/* Participants */}
-          <div>
-            <label
-              htmlFor="quantity"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              {t("trip.participants", "Participants / Quantity")}
-            </label>
-            <input
-              id="quantity"
-              type="number"
-              min={1}
-              value={quantity}
-              onChange={(e) => {
-                setQuantity(Number(e.target.value));
-                if (errors.quantity)
-                  setErrors((p) => ({ ...p, quantity: undefined }));
-              }}
-              required
-              className={`${baseInputClass} ${
-                errors.quantity ? errorInputClass : ""
-              }`}
-            />
-            {errors.quantity && (
-              <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>
-            )}
+          {/* Date & Quantity */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="booking-date"
+                className={`block text-sm font-medium ${mutedTextColor}`}
+              >
+                {t("booking.date", "Select Date")}
+              </label>
+              <input
+                id="booking-date"
+                type="date"
+                min={today}
+                value={bookingDate}
+                onChange={(e) => {
+                  setBookingDate(e.target.value);
+                  if (errors.booking_date)
+                    setErrors((p) => ({ ...p, booking_date: undefined }));
+                }}
+                required
+                className={`${baseInputClass} ${
+                  errors.booking_date ? errorBorderClass : inputBorderClass
+                }`}
+              />
+              {errors.booking_date && (
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.booking_date}
+                </p>
+              )}
+            </div>
+            <div>
+              <label
+                htmlFor="quantity"
+                className={`block text-sm font-medium ${mutedTextColor}`}
+              >
+                <Users size={14} className="inline mr-1 mb-0.5" />{" "}
+                {t("booking.quantity", "Quantity")}
+              </label>
+              <input
+                id="quantity"
+                type="number"
+                min={1}
+                value={quantity}
+                onChange={(e) => {
+                  setQuantity(Number(e.target.value));
+                  if (errors.quantity || errors.general)
+                    setErrors((p) => ({
+                      ...p,
+                      quantity: undefined,
+                      general: undefined,
+                    }));
+                }}
+                required
+                className={`${baseInputClass} ${
+                  errors.quantity ? errorBorderClass : inputBorderClass
+                }`}
+              />
+              {errors.quantity && (
+                <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>
+              )}
+            </div>
           </div>
 
           {/* Nationality */}
           <div>
             <label
               htmlFor="nationality"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              className={`block text-sm font-medium ${mutedTextColor}`}
             >
               {t("booking.nationality.title", "Participant Nationality")}
             </label>
@@ -314,26 +416,33 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               value={nationality}
               onChange={(e) => {
                 setNationality(e.target.value);
-                if (errors.nationality)
-                  setErrors((p) => ({ ...p, nationality: undefined }));
+                if (errors.participant_nationality)
+                  setErrors((p) => ({
+                    ...p,
+                    participant_nationality: undefined,
+                  }));
               }}
               required
               className={`${baseInputClass} ${
-                errors.nationality ? errorInputClass : ""
+                errors.participant_nationality
+                  ? errorBorderClass
+                  : inputBorderClass
               }`}
             >
               <option value="">
                 {t("booking.selectOption", "-- Select Option --")}
               </option>
-              <option value="domestik">
+              <option value="WNI"> {/* [UPDATED] Value */}
                 {t("booking.nationality.local", "Domestik (Local)")}
               </option>
-              <option value="manca">
+              <option value="WNA"> {/* [UPDATED] Value */}
                 {t("booking.nationality.foreign", "Mancanegara (Foreign)")}
               </option>
             </select>
-            {errors.nationality && (
-              <p className="text-red-600 text-sm mt-1">{errors.nationality}</p>
+            {errors.participant_nationality && (
+              <p className="text-red-600 text-sm mt-1">
+                {errors.participant_nationality}
+              </p>
             )}
           </div>
 
@@ -341,7 +450,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
           <div>
             <label
               htmlFor="full-name"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              className={`block text-sm font-medium ${mutedTextColor}`}
             >
               {t("booking.fullName.title", "Full Name")}
             </label>
@@ -351,16 +460,16 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               value={fullName}
               onChange={(e) => {
                 setFullName(e.target.value);
-                if (errors.fullName)
-                  setErrors((p) => ({ ...p, fullName: undefined }));
+                if (errors.full_name)
+                  setErrors((p) => ({ ...p, full_name: undefined }));
               }}
               required
               className={`${baseInputClass} ${
-                errors.fullName ? errorInputClass : ""
+                errors.full_name ? errorBorderClass : inputBorderClass
               }`}
             />
-            {errors.fullName && (
-              <p className="text-red-600 text-sm mt-1">{errors.fullName}</p>
+            {errors.full_name && (
+              <p className="text-red-600 text-sm mt-1">{errors.full_name}</p>
             )}
           </div>
 
@@ -368,7 +477,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              className={`block text-sm font-medium ${mutedTextColor}`}
             >
               {t("booking.email.title", "Email")}
             </label>
@@ -383,7 +492,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               }}
               required
               className={`${baseInputClass} ${
-                errors.email ? errorInputClass : ""
+                errors.email ? errorBorderClass : inputBorderClass
               }`}
             />
             {errors.email && (
@@ -391,70 +500,81 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
             )}
           </div>
 
-          {/* Phone */}
+          {/* [UPDATED] Phone Number Input */}
           <div>
             <label
-              htmlFor="phone"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              htmlFor="phoneNumber"
+              className={`block text-sm font-medium ${mutedTextColor}`}
             >
               {t("booking.phone.title", "Phone Number (WA)")}
             </label>
-            <input
-              id="phone"
-              type="tel"
-              value={phone}
-              onChange={(e) => {
-                setPhone(e.target.value);
-                if (errors.phone)
-                  setErrors((p) => ({ ...p, phone: undefined }));
-              }}
-              required
-              className={`${baseInputClass} ${
-                errors.phone ? errorInputClass : ""
-              }`}
-            />
-            {errors.phone && (
-              <p className="text-red-600 text-sm mt-1">{errors.phone}</p>
+            <div className="flex mt-1">
+              <select
+                id="phoneCode"
+                value={phoneCode}
+                onChange={(e) => setPhoneCode(e.target.value)}
+                className={`w-auto border rounded-l-md shadow-sm px-3 py-2 ${inputBgClass} ${focusRingClass} ${textColor} ${
+                  errors.phone_number ? errorBorderClass : inputBorderClass
+                } border-r-0`}
+              >
+                {countryCodes.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+              <input
+                id="phoneNumber"
+                type="tel"
+                value={localPhone}
+                onChange={(e) => {
+                  handleLocalPhoneChange(e);
+                  if (errors.phone_number)
+                    setErrors((p) => ({ ...p, phone_number: undefined }));
+                }}
+                required
+                placeholder="8123456789"
+                className={`${baseInputClass} rounded-l-none rounded-r-md ${
+                  errors.phone_number ? errorBorderClass : inputBorderClass
+                }`}
+              />
+            </div>
+            {errors.phone_number && (
+              <p className="text-red-600 text-sm mt-1">
+                {errors.phone_number}
+              </p>
             )}
           </div>
 
-          {/* Pickup Location */}
+          {/* [UPDATED] Pickup Location (Text Input) */}
           <div>
             <label
               htmlFor="pickupLocation"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              className={`block text-sm font-medium ${mutedTextColor}`}
             >
               {t("booking.pickupLocation.title", "Pickup Location")}
             </label>
-            <select
+            <input
               id="pickupLocation"
+              type="text"
               value={pickupLocation}
               onChange={(e) => {
                 setPickupLocation(e.target.value);
-                if (errors.pickupLocation)
-                  setErrors((p) => ({ ...p, pickupLocation: undefined }));
+                if (errors.pickup_location)
+                  setErrors((p) => ({ ...p, pickup_location: undefined }));
               }}
               required
+              placeholder={t(
+                "booking.pickup.placeholder",
+                "e.g., Hotel, Villa, or Address"
+              )}
               className={`${baseInputClass} ${
-                errors.pickupLocation ? errorInputClass : ""
+                errors.pickup_location ? errorBorderClass : inputBorderClass
               }`}
-            >
-              <option value="">
-                {t("booking.selectOption", "-- Select Option --")}
-              </option>
-              <option value="bandara">
-                {t("booking.pickup.airport", "Bandara (Airport)")}
-              </option>
-              <option value="stasiun">
-                {t("booking.pickup.station", "Stasiun (Train Station)")}
-              </option>
-              <option value="hotel">
-                {t("booking.pickup.hotel", "Hotel")}
-              </option>
-            </select>
-            {errors.pickupLocation && (
+            />
+            {errors.pickup_location && (
               <p className="text-red-600 text-sm mt-1">
-                {errors.pickupLocation}
+                {errors.pickup_location}
               </p>
             )}
           </div>
@@ -463,10 +583,10 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
           <div>
             <label
               htmlFor="specialRequest"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              className={`block text-sm font-medium ${mutedTextColor}`}
             >
               {t("booking.specialRequest.title", "Special Request")}{" "}
-              <span className="text-gray-500 dark:text-gray-400">
+              <span className={`${mutedTextColor} text-xs`}>
                 ({t("booking.optional", "Optional")})
               </span>
             </label>
@@ -475,7 +595,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               rows={3}
               value={specialRequest}
               onChange={(e) => setSpecialRequest(e.target.value)}
-              className={`${baseInputClass}`}
+              className={`${baseInputClass} ${inputBorderClass}`}
               placeholder={t(
                 "booking.specialRequest.placeholder",
                 "e.g., allergies, dietary needs, late pickup..."
@@ -484,27 +604,40 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
           </div>
 
           {/* Price Summary */}
-          <div className="pt-4 space-y-2 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+          <div
+            className={`pt-4 space-y-2 ${summaryBgClass} p-4 rounded-lg border ${inputBorderClass}`}
+          >
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-700 dark:text-gray-300">
-                {t("pricing.pricePerPax", "Price per Pax")} ({totalPax}{" "}
-                {totalPax > 1
-                  ? t("trip.people", "people")
-                  : t("trip.person", "person")}
-                )
+              <span className={`text-sm ${mutedTextColor}`}>
+                {t("pricing.pricePerPax", "Price per Pax")}
               </span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {formatPrice(pricePerPax)}
+              <span className={`text-sm font-medium ${textColor}`}>
+                {formatPrice(activity.price)}
               </span>
             </div>
-            <div className="flex justify-between items-center border-t border-gray-200 dark:border-gray-600 pt-2">
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${mutedTextColor}`}>
+                {t("booking.quantity", "Quantity")}
+              </span>
+              <span className={`text-sm font-medium ${textColor}`}>
+                x {quantity}
+              </span>
+            </div>
+            <div
+              className={`flex justify-between items-center border-t ${inputBorderClass} pt-2`}
+            >
+              <p className={`text-lg font-semibold ${textColor}`}>
                 {t("booking.total", "Total Price")}:
               </p>
               <p className="text-2xl font-bold text-primary">
-                {formatPrice(total)}
+                {formatPrice(subtotal)}
               </p>
             </div>
+            {errors.general && (
+              <p className="text-red-600 text-sm mt-1 text-center">
+                {errors.general}
+              </p>
+            )}
           </div>
 
           <button type="submit" disabled={isSubmitting} className={buttonClass}>

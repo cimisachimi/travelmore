@@ -1,5 +1,3 @@
-// File: app/[locale]/packages/[id]/PackageBookingModal.tsx
-
 "use client";
 
 // [UPDATED] Import useEffect
@@ -11,14 +9,13 @@ import { X, CalendarDays, Users, TicketPercent } from "lucide-react";
 import { AxiosError } from "axios";
 import { useTheme } from "@/components/ThemeProvider";
 
-// [UPDATED] Asumsi tipe AuthUser memiliki 'phone' (opsional)
 import { HolidayPackage, TFunction, AuthUser } from "./page";
 
 interface PackageBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   pkg: HolidayPackage;
-  user: AuthUser | null; // Asumsi AuthUser memiliki: name, email, phone?
+  user: AuthUser | null;
   t: TFunction;
 }
 
@@ -31,20 +28,31 @@ interface ApiBookingSuccessResponse {
   id: number; // The new Order ID
 }
 
-// [UPDATED] Error state type diperluas
+// [UPDATED] Error state type
 type FormErrors = {
   startDate?: string;
   adults?: string;
   children?: string;
   general?: string;
   discountCode?: string;
-  // [ADDED] Error states untuk kolom baru
-  nationality?: string;
-  fullName?: string;
+  participant_nationality?: string;
+  full_name?: string;
   email?: string;
-  phone?: string;
-  pickupLocation?: string;
+  phone_number?: string; // <-- Updated key
+  pickup_location?: string;
 };
+
+// --- [ADDED] Country Codes List ---
+const countryCodes = [
+  { code: "+62", label: "ID (+62)" },
+  { code: "+65", label: "SG (+65)" },
+  { code: "+60", label: "MY (+60)" },
+  { code: "+61", label: "AU (+61)" },
+  { code: "+1", label: "US (+1)" },
+  { code: "+44", label: "UK (+44)" },
+  { code: "+81", label: "JP (+81)" },
+  { code: "+82", label: "KR (+82)" },
+];
 
 const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
   isOpen,
@@ -62,28 +70,51 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
   const [children, setChildren] = useState<number>(0);
   const [discountCode, setDiscountCode] = useState<string>("");
 
-  // [ADDED] State untuk kolom baru
+  // [UPDATED] State untuk kolom baru
   const [nationality, setNationality] = useState<string>("");
   const [fullName, setFullName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const [phone, setPhone] = useState<string>("");
   const [pickupLocation, setPickupLocation] = useState<string>("");
-  const [flightOrTrainNumber, setFlightOrTrainNumber] = useState<string>("");
+  const [flightNumber, setFlightNumber] = useState<string>(""); // Renamed
   const [specialRequest, setSpecialRequest] = useState<string>("");
+
+  // [UPDATED] Phone state
+  const [phoneCode, setPhoneCode] = useState("+62");
+  const [localPhone, setLocalPhone] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
   const today = new Date().toISOString().split("T")[0];
 
-  // [ADDED] useEffect untuk pre-fill data & reset form
+  // [UPDATED] useEffect untuk pre-fill data & reset form
   useEffect(() => {
     if (isOpen) {
       // Pre-fill data dari user
       setFullName(user?.name || "");
       setEmail(user?.email || "");
-      // @ts-expect-error sadfsadfsdfd
-      setPhone(user?.phone || "");
+
+      // --- [UPDATED] Phone pre-fill logic ---
+      // @ts-expect-error: We assume user might have phone_number or phone
+      const fullPhoneNumber = user?.phone_number || user?.phone || "";
+      const matchedCode = countryCodes.find((c) =>
+        fullPhoneNumber.startsWith(c.code)
+      );
+
+      if (matchedCode) {
+        setPhoneCode(matchedCode.code);
+        setLocalPhone(fullPhoneNumber.substring(matchedCode.code.length));
+      } else if (fullPhoneNumber.startsWith("+")) {
+        setPhoneCode("+62"); // Default
+        setLocalPhone(fullPhoneNumber.replace(/^\+?62/, ""));
+      } else if (fullPhoneNumber) {
+        setPhoneCode("+62");
+        setLocalPhone(fullPhoneNumber.replace(/^0/, ""));
+      } else {
+        setPhoneCode("+62");
+        setLocalPhone("");
+      }
+      // --- End phone logic ---
 
       // Reset field lainnya
       setStartDate("");
@@ -92,7 +123,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
       setDiscountCode("");
       setNationality("");
       setPickupLocation("");
-      setFlightOrTrainNumber("");
+      setFlightNumber("");
       setSpecialRequest("");
       setErrors({});
     }
@@ -137,6 +168,12 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
     }).format(amount);
   };
 
+  // --- [ADDED] Helper for phone input ---
+  const handleLocalPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const numericValue = e.target.value.replace(/[^0-9]/g, "");
+    setLocalPhone(numericValue);
+  };
+
   // --- VALIDATION ---
   // [UPDATED] Fungsi validasi diperbarui
   const validateForm = (): boolean => {
@@ -167,15 +204,15 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
       );
     }
 
-    // [ADDED] Validasi untuk kolom baru
+    // [UPDATED] Validasi untuk kolom baru
     if (!nationality) {
-      newErrors.nationality = t(
+      newErrors.participant_nationality = t(
         "booking.errors.noNationality",
         "Please select nationality."
       );
     }
     if (!fullName) {
-      newErrors.fullName = t(
+      newErrors.full_name = t(
         "booking.errors.noName",
         "Please enter your full name."
       );
@@ -188,14 +225,14 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
         "Please enter a valid email."
       );
     }
-    if (!phone) {
-      newErrors.phone = t(
+    if (!localPhone) { // <-- Updated check
+      newErrors.phone_number = t(
         "booking.errors.noPhone",
         "Please enter your phone number."
       );
     }
     if (!pickupLocation) {
-      newErrors.pickupLocation = t(
+      newErrors.pickup_location = t(
         "booking.errors.noPickup",
         "Please select a pickup location."
       );
@@ -233,12 +270,12 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
           children: children,
           discount_code: discountCode || null,
           // [ADDED] Data baru untuk dikirim
-          nationality: nationality,
+          participant_nationality: nationality,
           full_name: fullName,
           email: email,
-          phone: phone,
+          phone_number: `${phoneCode}${localPhone.replace(/[^0-9]/g, "")}`, // <-- Combined phone
           pickup_location: pickupLocation,
-          flight_or_train_number: flightOrTrainNumber || null,
+          flight_number: flightNumber || null,
           special_request: specialRequest || null,
         }
       );
@@ -266,13 +303,19 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
           newApiErrors.discountCode = validationErrors.discount_code[0];
         if (validationErrors.general)
           newApiErrors.general = validationErrors.general[0];
-        
-        // [ADDED] Error handling untuk data baru
-        if (validationErrors.nationality) newApiErrors.nationality = validationErrors.nationality[0];
-        if (validationErrors.full_name) newApiErrors.fullName = validationErrors.full_name[0];
-        if (validationErrors.email) newApiErrors.email = validationErrors.email[0];
-        if (validationErrors.phone) newApiErrors.phone = validationErrors.phone[0];
-        if (validationErrors.pickup_location) newApiErrors.pickupLocation = validationErrors.pickup_location[0];
+
+        // [UPDATED] Error handling untuk data baru
+        if (validationErrors.participant_nationality)
+          newApiErrors.participant_nationality =
+            validationErrors.participant_nationality[0];
+        if (validationErrors.full_name)
+          newApiErrors.full_name = validationErrors.full_name[0];
+        if (validationErrors.email)
+          newApiErrors.email = validationErrors.email[0];
+        if (validationErrors.phone_number) // <-- Updated key
+          newApiErrors.phone_number = validationErrors.phone_number[0];
+        if (validationErrors.pickup_location)
+          newApiErrors.pickup_location = validationErrors.pickup_location[0];
 
         setErrors(newApiErrors);
         toast.error(
@@ -307,7 +350,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
   const errorBorderClass =
     "border-red-500 focus:border-red-500 focus:ring-red-500";
   const iconBgClass = theme === "regular" ? "bg-primary/10" : "bg-primary/20";
-  
+
   // [ADDED] Base class untuk input
   const baseInputClass = `mt-1 block w-full rounded-md shadow-sm ${inputBgClass} ${focusRingClass} ${textColor} placeholder:${mutedTextColor}`;
 
@@ -455,12 +498,17 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
               value={nationality}
               onChange={(e) => {
                 setNationality(e.target.value);
-                if (errors.nationality)
-                  setErrors((p) => ({ ...p, nationality: undefined }));
+                if (errors.participant_nationality)
+                  setErrors((p) => ({
+                    ...p,
+                    participant_nationality: undefined,
+                  }));
               }}
               required
               className={`${baseInputClass} ${
-                errors.nationality ? errorBorderClass : inputBorderClass
+                errors.participant_nationality
+                  ? errorBorderClass
+                  : inputBorderClass
               }`}
             >
               <option value="">
@@ -473,8 +521,10 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
                 {t("booking.nationality.foreign", "Mancanegara (Foreign)")}
               </option>
             </select>
-            {errors.nationality && (
-              <p className="text-red-600 text-sm mt-1">{errors.nationality}</p>
+            {errors.participant_nationality && (
+              <p className="text-red-600 text-sm mt-1">
+                {errors.participant_nationality}
+              </p>
             )}
           </div>
 
@@ -492,16 +542,16 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
               value={fullName}
               onChange={(e) => {
                 setFullName(e.target.value);
-                if (errors.fullName)
-                  setErrors((p) => ({ ...p, fullName: undefined }));
+                if (errors.full_name)
+                  setErrors((p) => ({ ...p, full_name: undefined }));
               }}
               required
               className={`${baseInputClass} ${
-                errors.fullName ? errorBorderClass : inputBorderClass
+                errors.full_name ? errorBorderClass : inputBorderClass
               }`}
             />
-            {errors.fullName && (
-              <p className="text-red-600 text-sm mt-1">{errors.fullName}</p>
+            {errors.full_name && (
+              <p className="text-red-600 text-sm mt-1">{errors.full_name}</p>
             )}
           </div>
 
@@ -532,32 +582,53 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
             )}
           </div>
 
-          {/* 6. No. Telepon/WA (Text - Pre-filled) */}
+          {/* --- 6. [UPDATED] Phone Number Input --- */}
           <div>
             <label
-              htmlFor="phone"
+              htmlFor="phoneNumber"
               className={`block text-sm font-medium ${mutedTextColor}`}
             >
               {t("booking.phone", "Phone Number (WA)")}
             </label>
-            <input
-              id="phone"
-              type="tel"
-              value={phone}
-              onChange={(e) => {
-                setPhone(e.target.value);
-                if (errors.phone)
-                  setErrors((p) => ({ ...p, phone: undefined }));
-              }}
-              required
-              className={`${baseInputClass} ${
-                errors.phone ? errorBorderClass : inputBorderClass
-              }`}
-            />
-            {errors.phone && (
-              <p className="text-red-600 text-sm mt-1">{errors.phone}</p>
+            <div className="flex mt-1">
+              <select
+                id="phoneCode"
+                value={phoneCode}
+                onChange={(e) => setPhoneCode(e.target.value)}
+                className={`w-auto border rounded-l-md shadow-sm px-3 py-2 ${inputBgClass} ${focusRingClass} ${textColor} ${
+                  errors.phone_number ? errorBorderClass : inputBorderClass
+                } border-r-0`}
+              >
+                {countryCodes.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+              <input
+                id="phoneNumber"
+                type="tel"
+                value={localPhone}
+                onChange={(e) => {
+                  handleLocalPhoneChange(e);
+                  if (errors.phone_number)
+                    setErrors((p) => ({ ...p, phone_number: undefined }));
+                }}
+                required
+                placeholder="8123456789"
+                className={`${baseInputClass} rounded-l-none rounded-r-md ${
+                  errors.phone_number ? errorBorderClass : inputBorderClass
+                }`}
+              />
+            </div>
+            {errors.phone_number && (
+              <p className="text-red-600 text-sm mt-1">
+                {errors.phone_number}
+              </p>
             )}
           </div>
+          {/* --- End Updated Phone Input --- */}
+
 
           {/* 7. Lokasi Penjemputan (Dropdown) */}
           <div>
@@ -572,12 +643,12 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
               value={pickupLocation}
               onChange={(e) => {
                 setPickupLocation(e.target.value);
-                if (errors.pickupLocation)
-                  setErrors((p) => ({ ...p, pickupLocation: undefined }));
+                if (errors.pickup_location)
+                  setErrors((p) => ({ ...p, pickup_location: undefined }));
               }}
               required
               className={`${baseInputClass} ${
-                errors.pickupLocation ? errorBorderClass : inputBorderClass
+                errors.pickup_location ? errorBorderClass : inputBorderClass
               }`}
             >
               <option value="">
@@ -593,9 +664,9 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
                 {t("booking.pickup.hotel", "Hotel")}
               </option>
             </select>
-            {errors.pickupLocation && (
+            {errors.pickup_location && (
               <p className="text-red-600 text-sm mt-1">
-                {errors.pickupLocation}
+                {errors.pickup_location}
               </p>
             )}
           </div>
@@ -603,7 +674,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
           {/* 8. No. Penerbangan/Kereta (Opsional) (Text) */}
           <div>
             <label
-              htmlFor="flightOrTrainNumber"
+              htmlFor="flightNumber"
               className={`block text-sm font-medium ${mutedTextColor}`}
             >
               {t("booking.flightNumber.title", "Flight Number")}{" "}
@@ -612,10 +683,10 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
               </span>
             </label>
             <input
-              id="flightOrTrainNumber"
+              id="flightNumber"
               type="text"
-              value={flightOrTrainNumber}
-              onChange={(e) => setFlightOrTrainNumber(e.target.value)}
+              value={flightNumber}
+              onChange={(e) => setFlightNumber(e.target.value)}
               placeholder={t("booking.flightNumber.placeholder", "e.g., GA 205")}
               className={`${baseInputClass} ${inputBorderClass}`}
             />

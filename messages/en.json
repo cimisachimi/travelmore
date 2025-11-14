@@ -276,6 +276,9 @@
       "submitting": "Booking...",
       "confirm": "Book Now",
       "optional": "Optional",
+      "date": "Select Date",
+      "quantity": "Quantity",
+      
 
       "nationality": {
         "title": "Participant Nationality",
@@ -301,7 +304,8 @@
         "title": "Pickup Location",
         "airport": "Bandara (Airport)",
         "station": "Stasiun (Train Station)",
-        "hotel": "Hotel"
+        "hotel": "Hotel",
+        "placeholder": "e.g., Hotel, Villa or Address"
       },
       "specialRequest": {
         "title": "Special Request",
