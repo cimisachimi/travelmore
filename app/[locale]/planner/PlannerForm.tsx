@@ -52,9 +52,6 @@ interface IFormData {
   travelType: string;
 }
 
-// --- [DIHAPUS] Tipe untuk Midtrans Snap tidak lagi diperlukan di sini ---
-// interface Snap { ... }
-
 // --- Komponen Sidebar Baru (Sudah Responsif) ---
 const CheckmarkIcon = () => (
   <svg
@@ -105,7 +102,7 @@ const PlannerSidebar = ({
 
   // Tampilan Desktop (Stepper)
   const DesktopStepper = () => (
-    <div className="hidden lg:block bg-black/20 dark:bg-slate-800/50 backdrop-blur-md p-8 rounded-2xl h-full lg:sticky lg:top-16">
+    <div className="hidden lg:block bg-black/20 backdrop-blur-md p-8 rounded-2xl h-full lg:sticky lg:top-16">
       <p className="text-sm font-semibold text-primary uppercase tracking-wider">
         🗺️ {t("sidebar.planYourTrip")}
       </p>
@@ -114,7 +111,7 @@ const PlannerSidebar = ({
       </h2>
 
       <div className="mt-8 space-y-4 relative">
-        <div className="absolute left-4 top-0 h-full w-0.5 bg-gray-200/30 dark:bg-slate-700/50" />
+        <div className="absolute left-4 top-0 h-full w-0.5 bg-gray-200/30" />
 
         {plannerSteps.map((item) => {
           const isCompleted = currentStep > item.id;
@@ -136,7 +133,7 @@ const PlannerSidebar = ({
                     ? "bg-primary"
                     : isCurrent
                     ? "bg-primary ring-4 ring-primary/20"
-                    : "bg-gray-400/50 dark:bg-slate-700"
+                    : "bg-gray-400/50" // Simplified
                 }`}
               >
                 {isCompleted ? (
@@ -146,7 +143,7 @@ const PlannerSidebar = ({
                     className={`font-bold ${
                       isCurrent
                         ? "text-white"
-                        : "text-gray-100 dark:text-gray-400"
+                        : "text-gray-400" // Simplified
                     }`}
                   >
                     {item.id}
@@ -159,7 +156,7 @@ const PlannerSidebar = ({
                     ? "text-primary"
                     : isCompleted
                     ? "text-white"
-                    : "text-slate-300 dark:text-slate-500"
+                    : "text-slate-300" // Simplified
                 }`}
               >
                 {item.title}
@@ -208,7 +205,7 @@ const SummaryItem = ({
     return null;
   const displayValue = Array.isArray(value) ? value.join(", ") : value;
   return (
-    <div className="py-2 border-b border-gray-200 dark:border-slate-700 last:border-b-0">
+    <div className="py-2 border-b border-gray-200 last:border-b-0">
       <p className="text-sm text-muted-foreground">{label}</p>
       <p className="font-semibold text-foreground">{displayValue}</p>
     </div>
@@ -245,10 +242,10 @@ const FormInput = ({
   selectPlaceholder?: string;
   description?: string;
 }) => {
+  // Simplified classes to only use the light/regular theme versions
   const baseInputClasses =
-    "w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-white text-gray-900 dark:text-slate-800 border border-gray-300 dark:border-slate-300 focus:ring-2 focus:ring-primary focus:outline-none transition placeholder:text-gray-400 dark:placeholder:text-slate-400";
-  const labelClasses =
-    "block text-sm font-semibold text-foreground dark:text-white mb-2";
+    "w-full px-4 py-3 rounded-lg bg-gray-50 text-gray-900 border border-gray-300 focus:ring-2 focus:ring-primary focus:outline-none transition placeholder:text-gray-400";
+  const labelClasses = "block text-sm font-semibold text-foreground mb-2";
 
   if (as === "select") {
     return (
@@ -321,7 +318,7 @@ const FormInput = ({
                 className={`flex items-start space-x-3 p-4 rounded-lg border-2 cursor-pointer transition ${
                   isChecked
                     ? "border-primary bg-primary/10"
-                    : "border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-primary/10"
+                    : "border-gray-300 hover:bg-gray-50" // Simplified
                 }`}
               >
                 <input
@@ -682,8 +679,6 @@ export default function PlannerForm() {
       // Pengguna dapat melihat pesanan baru di tab "Purchase History"
       router.push(`/profile`);
       
-      // [--- LOGIKA PEMBAYARAN SNAP DIHAPUS DARI SINI ---]
-
     } catch (error: unknown) {
       // 5. [BARU] Penanganan error yang diperbarui
       console.error("Booking failed:", error);
@@ -757,7 +752,8 @@ export default function PlannerForm() {
         <button
           type="button"
           onClick={handleBack}
-          className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-200 dark:bg-slate-600 font-semibold hover:bg-gray-300 dark:hover:bg-slate-500 transition text-center dark:text-white"
+          // Simplified dark mode classes
+          className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-200 font-semibold hover:bg-gray-300 transition text-center"
         >
           {t("backButton")}
         </button>
@@ -779,6 +775,7 @@ export default function PlannerForm() {
           <button
             type="submit"
             disabled={isSaving || isBooking}
+            // Simplified dark mode classes
             className="w-full sm:w-auto px-8 py-3 rounded-lg bg-slate-200 text-black font-bold hover:bg-slate-300 transition disabled:opacity-50 text-center"
           >
             {isSaving ? "Saving..." : "Save Progress"}
@@ -828,7 +825,8 @@ export default function PlannerForm() {
             </div>
 
             <div className="lg:col-span-7">
-              <div className="bg-card/95 dark:bg-card/85 backdrop-blur-lg shadow-xl rounded-2xl w-full">
+              {/* Simplified classes to use fixed light theme styles */}
+              <div className="bg-card/95 backdrop-blur-lg shadow-xl rounded-2xl w-full">
                 <div className="p-6 md:p-10 flex flex-col">
                   {/* Use a key on the form if you want animations between steps */}
                   <form
@@ -840,7 +838,7 @@ export default function PlannerForm() {
                       <p className="text-sm text-muted-foreground">
                         {t("stepProgress", { step, totalSteps })}
                       </p>
-                      <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2 mt-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                         <div
                           className="bg-primary h-2 rounded-full transition-all duration-500"
                           style={{ width: `${progress}%` }}
@@ -865,7 +863,7 @@ export default function PlannerForm() {
                               className={`p-6 text-left border-2 rounded-lg shadow-sm cursor-pointer transition ${
                                 formData.type === "personal"
                                   ? "border-primary bg-primary/10"
-                                  : "border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-primary/10"
+                                  : "border-gray-300 hover:bg-gray-50" // Simplified
                               }`}
                             >
                               {" "}
@@ -883,7 +881,7 @@ export default function PlannerForm() {
                               className={`p-6 text-left border-2 rounded-lg shadow-sm cursor-pointer transition ${
                                 formData.type === "company"
                                   ? "border-primary bg-primary/10"
-                                  : "border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-primary/10"
+                                  : "border-gray-300 hover:bg-gray-50" // Simplified
                               }`}
                             >
                               {" "}
@@ -978,7 +976,7 @@ export default function PlannerForm() {
                               className={`p-6 text-left border-2 rounded-lg shadow-sm cursor-pointer transition ${
                                 formData.tripType === "domestic"
                                   ? "border-primary bg-primary/10"
-                                  : "border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-primary/10"
+                                  : "border-gray-300 hover:bg-gray-50"
                               }`}
                             >
                               {" "}
@@ -999,7 +997,7 @@ export default function PlannerForm() {
                               className={`p-6 text-left border-2 rounded-lg shadow-sm cursor-pointer transition ${
                                 formData.tripType === "foreign"
                                   ? "border-primary bg-primary/10"
-                                  : "border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-primary/10"
+                                  : "border-gray-300 hover:bg-gray-50"
                               }`}
                             >
                               {" "}
@@ -1165,7 +1163,7 @@ export default function PlannerForm() {
                                 className={`p-4 border-2 rounded-lg cursor-pointer transition ${
                                   formData.budgetPack === packKey
                                     ? "border-primary bg-primary/10"
-                                    : "border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-primary/10"
+                                    : "border-gray-300 hover:bg-gray-50"
                                 }`}
                               >
                                 {" "}
@@ -1208,16 +1206,16 @@ export default function PlannerForm() {
                           </h3>{" "}
                           <div>
                             {" "}
-                            <h4 className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                            <h4 className="block text-sm font-semibold text-gray-700 mb-3">
                               🚶 {t("step8_travelStyleTitle")}
                             </h4>{" "}
                             <p className="mb-3 text-xs text-muted-foreground">
                               {t("step8_travelStyleDesc")}{" "}
                             </p>{" "}
-                            <div className="w-full min-h-[50px] p-2 mb-4 rounded-lg bg-gray-100 dark:bg-slate-800 border border-gray-300 dark:border-slate-600 flex flex-wrap gap-2 items-center">
+                            <div className="w-full min-h-[50px] p-2 mb-4 rounded-lg bg-gray-100 border border-gray-300 flex flex-wrap gap-2 items-center">
                               {" "}
                               {formData.travelStyle.length === 0 ? (
-                                <span className="text-sm text-gray-400 dark:text-gray-500 px-2">
+                                <span className="text-sm text-gray-400 px-2">
                                   {t("step8_selectStylePlaceholder")}
                                 </span>
                               ) : (
@@ -1254,7 +1252,7 @@ export default function PlannerForm() {
                                   className={`w-full h-16 flex items-center justify-center text-center px-4 py-2 rounded-lg font-semibold transition text-sm ${
                                     formData.travelStyle.includes(style)
                                       ? "bg-primary text-black"
-                                      : "bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600"
+                                      : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                                   }`}
                                 >
                                   {style}
@@ -1275,16 +1273,16 @@ export default function PlannerForm() {
                           </div>{" "}
                           <div>
                             {" "}
-                            <h4 className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                            <h4 className="block text-sm font-semibold text-gray-700 mb-3">
                               😊 {t("step8_personalityTitle")}
                             </h4>{" "}
                             <p className="mb-3 text-xs text-muted-foreground">
                               {t("step8_personalityDesc")}{" "}
                             </p>{" "}
-                            <div className="w-full min-h-[50px] p-2 mb-4 rounded-lg bg-gray-100 dark:bg-slate-800 border border-gray-300 dark:border-slate-600 flex flex-wrap gap-2 items-center">
+                            <div className="w-full min-h-[50px] p-2 mb-4 rounded-lg bg-gray-100 border border-gray-300 flex flex-wrap gap-2 items-center">
                               {" "}
                               {formData.travelPersonality.length === 0 ? (
-                                <span className="text-sm text-gray-400 dark:text-gray-500 px-2">
+                                <span className="text-sm text-gray-400 px-2">
                                   {t("step8_selectPersonalityPlaceholder")}
                                 </span>
                               ) : (
@@ -1328,7 +1326,7 @@ export default function PlannerForm() {
                                   className={`w-full h-16 flex items-center justify-center text-center px-4 py-2 rounded-lg font-semibold transition text-sm ${
                                     formData.travelPersonality.includes(p.value)
                                       ? "bg-primary text-black"
-                                      : "bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600"
+                                      : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                                   }`}
                                 >
                                   {p.label}
@@ -1575,8 +1573,8 @@ export default function PlannerForm() {
                             />
                           </div>
 
-                          <div className="space-y-5 pt-4 border-t border-gray-200 dark:border-slate-700">
-                            <label className="flex items-start space-x-3 p-4 rounded-lg border-2 border-gray-300 dark:border-slate-600 cursor-pointer">
+                          <div className="space-y-5 pt-4 border-t border-gray-200">
+                            <label className="flex items-start space-x-3 p-4 rounded-lg border-2 border-gray-300 cursor-pointer">
                               <input
                                 type="checkbox"
                                 name="consent"

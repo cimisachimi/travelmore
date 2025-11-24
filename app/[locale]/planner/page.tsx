@@ -1,14 +1,13 @@
 // app/[locale]/planner/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import Script from "next/script"; // <-- 1. IMPORT NEXT/SCRIPT
-
-  import { useTheme } from "@/components/ThemeProvider";
+import Script from "next/script"; 
 import ComparisonSection from "@/components/ComparisonSection";
 import PlannerForm from "./PlannerForm";
+import api from "@/lib/api"; 
 
 // --- Helper Icons (Tetap sama) ---
 const CheckIcon = ({ className = "" }: { className?: string }) => (
@@ -31,19 +30,49 @@ const CheckIcon = ({ className = "" }: { className?: string }) => (
 // --- Main Planner Page Component ---
 export default function PlannerPage() {
   const t = useTranslations("PlannerPage");
-  const { theme } = useTheme();
+  
   const [showForm, setShowForm] = useState(false);
+  const [plannerPrice, setPlannerPrice] = useState<number | null>(null);
+  const [isLoadingPrice, setIsLoadingPrice] = useState(true);
 
-  const themeKey = theme === "exclusive" ? "exclusive" : "regular";
+  // Hardcode themeKey to 'regular' for fixed styling/content
+  const themeKey = "regular";
 
   const currentContent = {
     title: t(`${themeKey}.title`),
     description: t(`${themeKey}.description`),
-    price: t(`${themeKey}.price`),
+    // REMOVED: priceLabel from translation file
     ctaText: t(`${themeKey}.ctaText`),
-    image: themeKey === "exclusive" ? "/hero-3.jpg" : "/hero-1.jpg",
+    image: "/hero-1.jpg", 
   };
 
+  
+  useEffect(() => {
+    const fetchPlannerPrice = async () => {
+      setIsLoadingPrice(true);
+      try {
+        const response = await api.get('/public/planner-config');
+        setPlannerPrice(response.data.price);
+      } catch (error) {
+        console.error("Failed to fetch planner price:", error);
+        setPlannerPrice(0); // Fallback price
+      } finally {
+        setIsLoadingPrice(false);
+      }
+    };
+    fetchPlannerPrice();
+  }, []); 
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+  
+  
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const featureKeys = Object.keys(t.raw(`${themeKey}.features` as any));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,14 +88,9 @@ export default function PlannerPage() {
     setShowForm(false);
     window.scrollTo(0, 0); // Scroll ke atas saat kembali
   };
-  const ThemeToggleButton = () => {
-  const { theme, setTheme } = useTheme();
-  const tNav = useTranslations("Navbar"); // Menggunakan terjemahan dari Navbar untuk "Regular" & "Exclusive"
-};
 
   return (
     <>
-      {/* 2. ADD MIDTRANS SCRIPT TAG HERE */}
       <Script
         src={process.env.NEXT_PUBLIC_MIDTRANS_SNAP_URL}
         data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
@@ -74,14 +98,14 @@ export default function PlannerPage() {
       />
 
       <main className="bg-background text-foreground transition-colors duration-300">
-        {/* ===== LOGIKA UTAMA DIPINDAH KE SINI ===== */}
+        
         {showForm ? (
-          // --- TAMPILAN FORM (SEKARANG FULL-WIDTH) ---
+          
           <>
-            {/* PlannerForm dirender langsung tanpa pembungkus pembatas lebar */}
+            
             <PlannerForm />
 
-            {/* Tombol kembali diletakkan di luar, bisa diberi wrapper untuk styling */}
+            
             <div className="w-full text-center pb-16">
               <button
                 onClick={handleBackToInfo}
@@ -92,7 +116,7 @@ export default function PlannerPage() {
             </div>
           </>
         ) : (
-          // --- TAMPILAN INFORMASI AWAL (TETAP DI TENGAH DENGAN CONTAINER) ---
+          
           <section className="container mx-auto px-4 py-16 space-y-20">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="text-left">
@@ -115,10 +139,16 @@ export default function PlannerPage() {
                     ))}
                   </ul>
                 </div>
+                
                 <div className="mb-6">
-                  <p className="text-2xl font-bold text-primary">
-                    {currentContent.price}
-                  </p>
+                  {isLoadingPrice ? (
+                    <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
+                  ) : (
+                    // MODIFIED: Only display the formatted API price
+                    <p className="text-2xl font-bold text-primary">
+                      {plannerPrice !== null && formatCurrency(plannerPrice)}
+                    </p>
+                  )}
                 </div>
                 <div className="mb-8">
                   <h2 className="font-semibold mb-3">{t("termsTitle")}</h2>
