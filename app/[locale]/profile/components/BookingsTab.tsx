@@ -1,9 +1,8 @@
+// app/[locale]/profile/components/BookingsTab.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-// import { SimpleBooking } from "../types"; // We are defining it locally
-
 import { formatCurrency, formatDate, getStatusChip } from "@/lib/utils";
 import {
   User,
@@ -15,9 +14,7 @@ import {
   Plane,
 } from "lucide-react";
 
-// --- ✅ 1. DEFINE THE SHAPE OF 'details' ---
-// This interface includes all possible fields from all your services.
-// All fields are optional (?).
+// --- 1. DEFINE THE SHAPE OF 'details' ---
 interface BookingDetailsShape {
   service_name?: string;
   original_subtotal?: number;
@@ -46,7 +43,7 @@ interface BookingDetailsShape {
   trip_type?: string;
 }
 
-// --- ✅ 2. UPDATE SimpleBooking INTERFACE ---
+// --- 2. UPDATE SimpleBooking INTERFACE ---
 interface SimpleBooking {
   id: number;
   status: string;
@@ -55,7 +52,7 @@ interface SimpleBooking {
   start_date?: string | null;
   end_date?: string | null;
   bookable_type: string;
-  details: BookingDetailsShape; // <-- Use the new, specific shape
+  details: BookingDetailsShape; 
   bookable?: {
     name?: string;
     brand?: string;
@@ -64,9 +61,6 @@ interface SimpleBooking {
 }
 
 // --- BookingDetails Component ---
-// This component renders the specific details for each booking type.
-// No changes needed here, it now has full type safety.
-
 const DetailRow = ({
   icon: Icon,
   label,
@@ -89,9 +83,6 @@ const DetailRow = ({
 function BookingDetails({ booking }: { booking: SimpleBooking }) {
   const { details, bookable_type } = booking;
 
-  // We check the 'bookable_type' string.
-  // In Laravel, this will be like "App\\Models\\CarRental"
-  // We can just check for the model name.
   if (bookable_type?.includes("CarRental")) {
     return (
       <div className="space-y-2">
@@ -164,7 +155,6 @@ function BookingDetails({ booking }: { booking: SimpleBooking }) {
     );
   }
 
-  // Fallback if no details are matched
   return (
     <p className="text-sm text-foreground/60 italic">
       No additional details available for this booking.
@@ -210,16 +200,16 @@ export default function BookingsTab() {
       bookings.map((booking) => {
         const bookable = booking?.bookable;
 
-        // ✅ Improved Service Name Logic
+        // Improved Service Name Logic
         const serviceName =
-          booking.details?.service_name || // Best: from details snapshot
-          bookable?.name || // For Packages, Activities
-          `${bookable?.brand || ""} ${bookable?.car_model || ""}`.trim() || // For Cars
+          booking.details?.service_name || 
+          bookable?.name || 
+          `${bookable?.brand || ""} ${bookable?.car_model || ""}`.trim() || 
           (booking.bookable_type?.includes("TripPlanner")
             ? "Custom Trip Plan"
             : "Service Details Unavailable");
 
-        // ✅ Improved Date Display Logic
+        // Improved Date Display Logic
         const startDate = booking?.start_date;
         const endDate = booking?.end_date;
         let dateDisplay = "N/A";
@@ -248,7 +238,7 @@ export default function BookingsTab() {
 
             {/* --- Body (General & Specific Details) --- */}
             <div className="border-t border-border pt-3 space-y-4">
-              {/* ✅ NEW: Specific Details Section */}
+              {/* Specific Details Section */}
               <BookingDetails booking={booking} />
 
               {/* --- General Details --- */}
@@ -274,7 +264,7 @@ export default function BookingsTab() {
               </div>
             </div>
             
-            {/* ✅ NEW: Footer with Action Button */}
+            {/* --- Footer with Action Button --- */}
             <div className="border-t border-border pt-4 mt-4 flex justify-end">
               <button
                 onClick={() => handleRequestChange(booking.id)}
@@ -295,7 +285,8 @@ export default function BookingsTab() {
   return (
     <div className="animate-fadeIn space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">My Bookings</h2>
+        {/* ✅ JUDUL DIUBAH KE PURCHASE HISTORY (atau bisa "Service History") */}
+        <h2 className="text-2xl font-bold">Purchase History</h2>
       </div>
       <div className="space-y-4">{renderBookingList()}</div>
     </div>

@@ -1,11 +1,13 @@
+// app/[locale]/profile/page.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext"; // Real import
-import { useRouter } from "next/navigation"; // Real import
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-// Import the new tab components
+// Import components
 import SettingsTab from "./components/SettingsTab";
 import BookingsTab from "./components/BookingsTab";
 import HistoryTab from "./components/HistoryTab";
@@ -50,10 +52,15 @@ export default function ProfilePage() {
     switch (activeTab) {
       case "profile":
         return <SettingsTab />;
+      
+      // ✅ PERUBAHAN DISINI: Menu "bookings" memanggil HistoryTab (Pembayaran)
       case "bookings":
-        return <BookingsTab />;
-      case "history":
         return <HistoryTab />;
+
+      // ✅ PERUBAHAN DISINI: Menu "history" memanggil BookingsTab (Detail Layanan)
+      case "history":
+        return <BookingsTab />;
+
       case "refunds":
         return <RefundsTab />;
       default:

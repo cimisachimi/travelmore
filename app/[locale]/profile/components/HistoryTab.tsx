@@ -1,16 +1,18 @@
+// app/[locale]/profile/components/HistoryTab.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { Order } from "../types"; // Assumes types.ts is in ../types
-import { useMidtransSnap } from "@/hooks/useMidtransSnap"; // Assumes hook is in @/hooks
+import { Order } from "../types"; 
+import { useMidtransSnap } from "@/hooks/useMidtransSnap"; 
 import { toast } from "sonner";
 import {
   formatCurrency,
   formatDate,
   formatDateTime,
   getStatusChip,
-} from "@/lib/utils"; // Assumes utils are in @/lib/utils
+} from "@/lib/utils"; 
 import OrderPaymentActions from "./OrderPaymentActions";
 import { AxiosError } from "axios";
 
@@ -40,7 +42,6 @@ export default function HistoryTab() {
     fetchData();
   }, []);
 
-  // ✅ This is the "perfect" handlePayment function from your file
   const handlePayment = async (
     order: Order,
     paymentOption: "down_payment" | "full_payment"
@@ -72,32 +73,29 @@ export default function HistoryTab() {
         return;
       }
 
-      // This flag prevents the 'onClose' toast from firing
-      // if 'onSuccess', 'onPending', or 'onError' has already fired.
       let paymentInProgress = true; 
 
       // 3. Use window.snap.pay to open the Midtrans popup
       window.snap.pay(snap_token, {
         onSuccess: () => {
-          paymentInProgress = false; // Mark payment as completed
+          paymentInProgress = false; 
           toast.success("Payment successful!");
           fetchData();
           setIsPaying(false);
         },
         onPending: () => {
-          paymentInProgress = false; // Mark payment as completed
+          paymentInProgress = false; 
           toast.info("Waiting for your payment.");
           setIsPaying(false);
         },
         onError: () => {
-          paymentInProgress = false; // Mark payment as completed
+          paymentInProgress = false; 
           toast.error("Payment failed. Please try again.");
           setIsPaying(false);
         },
         onClose: () => {
-          setIsPaying(false); // Always set paying to false
+          setIsPaying(false); 
           if (paymentInProgress) {
-            // Only show "closed" if the user *only* closed the popup
             toast.info("Payment popup closed.");
           }
         },
@@ -125,8 +123,8 @@ export default function HistoryTab() {
         const { booking } = order;
         const bookable = booking?.bookable;
         const serviceName =
-          bookable?.name || // For Holiday Packages
-          `${bookable?.brand || ""} ${bookable?.car_model || ""}`.trim() || // For Cars
+          bookable?.name || 
+          `${bookable?.brand || ""} ${bookable?.car_model || ""}`.trim() || 
           "Service Details Unavailable";
 
         const startDate = booking?.start_date;
@@ -204,7 +202,8 @@ export default function HistoryTab() {
   return (
     <div className="animate-fadeIn space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Purchase History</h2>
+        {/* ✅ JUDUL DIUBAH KE MY BOOKINGS */}
+        <h2 className="text-2xl font-bold">My Bookings</h2>
       </div>
       <div className="space-y-4">{renderOrderList()}</div>
     </div>
