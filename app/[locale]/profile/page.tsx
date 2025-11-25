@@ -53,11 +53,11 @@ export default function ProfilePage() {
       case "profile":
         return <SettingsTab />;
       
-      // ✅ PERUBAHAN DISINI: Menu "bookings" memanggil HistoryTab (Pembayaran)
+      
       case "bookings":
         return <HistoryTab />;
 
-      // ✅ PERUBAHAN DISINI: Menu "history" memanggil BookingsTab (Detail Layanan)
+     
       case "history":
         return <BookingsTab />;
 

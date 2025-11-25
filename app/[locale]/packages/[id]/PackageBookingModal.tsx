@@ -1,3 +1,4 @@
+// app/[locale]/packages/[id]/PackageBookingModal.tsx
 "use client";
 
 // [UPDATED] Import useEffect
