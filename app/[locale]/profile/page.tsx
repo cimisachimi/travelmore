@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 // Import components
 import SettingsTab from "./components/SettingsTab";
-import BookingsTab from "./components/BookingsTab";
+import BookingsTab from "./components/Booking/BookingsTab";
 import HistoryTab from "./components/HistoryTab";
 import RefundsTab from "./components/RefundsTab";
 
