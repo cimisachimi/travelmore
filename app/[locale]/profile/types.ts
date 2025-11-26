@@ -1,10 +1,10 @@
-// --- Type Definitions ---
+// app/[locale]/profile/types.ts
 
 export interface Bookable {
   id: number;
   brand?: string;
   car_model?: string;
-  name?: string; // For other types like HolidayPackage
+  name?: string; 
 }
 
 export interface SimpleBooking {
@@ -14,6 +14,11 @@ export interface SimpleBooking {
   payment_status: "unpaid" | "pending" | "partial" | "paid";
   start_date: string | null;
   end_date: string | null;
+
+  // ✅ UPDATE: Properti penting untuk fitur detail
+  bookable_type: string; 
+  details: any; 
+
   bookable: Bookable | null;
 }
 
@@ -58,7 +63,6 @@ export interface RefundRequest {
   service_name: string;
 }
 
-// --- Midtrans Global Type ---
 interface MidtransResult {
   order_id?: string;
   transaction_status?: string;

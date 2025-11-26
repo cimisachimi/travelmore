@@ -36,14 +36,14 @@ interface IFormData {
   duration: string;
   budgetPack: string;
   addons: string[];
-  budgetPriorities: string[]; // Keep this if used elsewhere, though not in form
+  budgetPriorities: string[]; 
   travelStyle: string[];
   otherTravelStyle: string;
   travelPersonality: string[];
   otherTravelPersonality: string;
   activityLevel: string;
   mustVisit: string;
-  attractionPreference: string; // Keep this if used elsewhere, though not in form
+  attractionPreference: string; 
   foodPreference: string[];
   otherFoodPreference: string;
   accommodationPreference: string;
@@ -93,8 +93,6 @@ const PlannerSidebar = ({
   );
 
   const handleStepClick = (stepId: number) => {
-    // Allow clicking only if the target step is already completed (less than current)
-    // OR if the current step is the final summary step (allow going back)
     if (stepId < currentStep || currentStep === totalSteps) {
       setStep(stepId);
     }
@@ -116,7 +114,6 @@ const PlannerSidebar = ({
         {plannerSteps.map((item) => {
           const isCompleted = currentStep > item.id;
           const isCurrent = currentStep === item.id;
-          // Can click if completed OR if currently on the summary step
           const canClick = isCompleted || currentStep === totalSteps;
 
           return (
@@ -133,7 +130,7 @@ const PlannerSidebar = ({
                     ? "bg-primary"
                     : isCurrent
                     ? "bg-primary ring-4 ring-primary/20"
-                    : "bg-gray-400/50" // Simplified
+                    : "bg-gray-400/50"
                 }`}
               >
                 {isCompleted ? (
@@ -143,7 +140,7 @@ const PlannerSidebar = ({
                     className={`font-bold ${
                       isCurrent
                         ? "text-white"
-                        : "text-gray-400" // Simplified
+                        : "text-gray-400"
                     }`}
                   >
                     {item.id}
@@ -156,7 +153,7 @@ const PlannerSidebar = ({
                     ? "text-primary"
                     : isCompleted
                     ? "text-white"
-                    : "text-slate-300" // Simplified
+                    : "text-slate-300"
                 }`}
               >
                 {item.title}
@@ -242,7 +239,6 @@ const FormInput = ({
   selectPlaceholder?: string;
   description?: string;
 }) => {
-  // Simplified classes to only use the light/regular theme versions
   const baseInputClasses =
     "w-full px-4 py-3 rounded-lg bg-gray-50 text-gray-900 border border-gray-300 focus:ring-2 focus:ring-primary focus:outline-none transition placeholder:text-gray-400";
   const labelClasses = "block text-sm font-semibold text-foreground mb-2";
@@ -318,7 +314,7 @@ const FormInput = ({
                 className={`flex items-start space-x-3 p-4 rounded-lg border-2 cursor-pointer transition ${
                   isChecked
                     ? "border-primary bg-primary/10"
-                    : "border-gray-300 hover:bg-gray-50" // Simplified
+                    : "border-gray-300 hover:bg-gray-50"
                 }`}
               >
                 <input
@@ -410,7 +406,6 @@ export default function PlannerForm() {
 
   const totalSteps = 10;
 
-  // [NEW] Function to validate if all required fields are filled up to a certain step
   const isFormCompleteUpToStep = useCallback(
     (targetStep: number, data: IFormData): boolean => {
       for (let i = 1; i <= targetStep; i++) {
@@ -460,21 +455,19 @@ export default function PlannerForm() {
             break;
           case 9:
             stepIsValid = true;
-            break; // Step 9 has optional fields
-          // No need to validate step 10 itself for completeness check
+            break; 
         }
         if (!stepIsValid) {
-          console.log(`Validation failed at step ${i}`); // Debugging
-          return false; // If any step fails, the form is not complete
+          console.log(`Validation failed at step ${i}`); 
+          return false;
         }
       }
-      console.log(`Validation passed up to step ${targetStep}`); // Debugging
-      return true; // All steps up to targetStep are valid
+      console.log(`Validation passed up to step ${targetStep}`); 
+      return true; 
     },
     []
-  ); // Empty dependency array as this function doesn't depend on component state directly
+  );
 
-  // Validate current step whenever step or formData changes
   useEffect(() => {
     const validateCurrentStep = () => {
       switch (step) {
@@ -518,9 +511,9 @@ export default function PlannerForm() {
             !!formData.activityLevel
           );
         case 9:
-          return true; // Optional fields
+          return true; 
         case 10:
-          return true; // Summary step
+          return true; 
         default:
           return false;
       }
@@ -528,14 +521,11 @@ export default function PlannerForm() {
     setIsStepValid(validateCurrentStep());
   }, [step, formData]);
 
-  // Fetch data on initial load and check completeness
   useEffect(() => {
     const fetchPlannerData = async () => {
       try {
         const response = await api.get("/trip-planner");
         if (response.data) {
-          // Sanitize and map data
-          // Use a generic string-indexed container so we can safely assign arrays and other shapes coming from the API
           const sanitizedData: {
             [key: string]: string | number | boolean | string[];
           } = {};
@@ -543,7 +533,7 @@ export default function PlannerForm() {
             const camelKey = key.replace(/_([a-z])/g, (g) =>
               g[1].toUpperCase()
             ) as string;
-            // Ensure array fields are arrays, handle nulls gracefully
+            
             if (
               ([
                 "addons",
@@ -562,17 +552,11 @@ export default function PlannerForm() {
             }
           }
 
-          // Merge fetched data with default structure to ensure all keys exist
           const mergedData = { ...formData, ...sanitizedData };
           setFormData(mergedData);
 
-          // [NEW] Check if the loaded data is complete enough to go to the summary
-          // We check up to step 9 because step 10 is the summary itself.
           if (isFormCompleteUpToStep(9, mergedData)) {
-            console.log("Form is complete, jumping to step 10."); // Debugging
-            setStep(10); // Go directly to the summary step
-          } else {
-            console.log("Form is not complete, staying on step 1."); // Debugging
+            setStep(10); 
           }
         }
       } catch (error) {
@@ -583,7 +567,7 @@ export default function PlannerForm() {
     };
     fetchPlannerData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFormCompleteUpToStep]); // Added isFormCompleteUpToStep dependency
+  }, [isFormCompleteUpToStep]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -612,10 +596,10 @@ export default function PlannerForm() {
     setFormData((prev) => ({ ...prev, [name]: newValues }));
   };
 
-  const handleBack = () => setStep((prev) => Math.max(1, prev - 1)); // Ensure step doesn't go below 1
+  const handleBack = () => setStep((prev) => Math.max(1, prev - 1));
 
   const saveData = useCallback(async () => {
-    if (!formData.type) return; // Don't save if initial step not done
+    if (!formData.type) return; 
     setIsSaving(true);
     try {
       const snakeCaseData: { [key: string]: unknown } = {};
@@ -624,22 +608,20 @@ export default function PlannerForm() {
           /[A-Z]/g,
           (letter) => `_${letter.toLowerCase()}`
         );
-        // Send empty strings for fields that were potentially cleared, don't just filter them
         snakeCaseData[snakeKey] = formData[key as keyof IFormData];
       }
-      // No need to filter here, backend should handle updates correctly
       await api.post("/trip-planner", snakeCaseData);
-      console.log("Data saved:", snakeCaseData); // Debugging
+      console.log("Data saved:", snakeCaseData); 
     } catch (error) {
       console.error("Failed to auto-save trip plan:", error);
-      toast.error("Failed to save progress."); // User feedback
+      toast.error("Failed to save progress."); 
     } finally {
       setIsSaving(false);
     }
   }, [formData]);
 
   const handleNext = async () => {
-    await saveData(); // Save current step data before moving
+    await saveData(); 
     if (step < totalSteps) {
       setStep((prev) => prev + 1);
     }
@@ -647,13 +629,11 @@ export default function PlannerForm() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await saveData(); // Ensure latest data is saved on explicit save
+    await saveData(); 
     toast.success("Progress saved successfully!");
-    console.log("Your trip plan has been saved!");
   };
 
-  // --- [PERUBAHAN] ---
-  // Alur handleBookNow diperbarui untuk tidak memicu pembayaran
+  // --- [PERBAIKAN: HANDLE BOOK NOW] ---
   const handleBookNow = async () => {
     if (!formData.consent) {
       toast.error("You must agree to the terms and conditions first.");
@@ -661,26 +641,35 @@ export default function PlannerForm() {
     }
     setIsBooking(true);
     try {
-      await saveData(); // 1. Pastikan data terbaru disimpan
+      // 1. Ubah data ke format snake_case
+      const snakeCaseData: { [key: string]: unknown } = {};
+      for (const key in formData) {
+        const snakeKey = key.replace(
+          /[A-Z]/g,
+          (letter) => `_${letter.toLowerCase()}`
+        );
+        snakeCaseData[snakeKey] = formData[key as keyof IFormData];
+      }
 
-      // 2. Panggil endpoint untuk membuat pesanan (booking)
-      const bookingResponse = await api.post("/trip-planner/book");
+      // 2. Simpan draft (update data terakhir)
+      await api.post("/trip-planner", snakeCaseData);
+
+      // 3. KIRIM DATA LENGKAP KE ENDPOINT BOOKING
+      // Backend membutuhkan data ini untuk membuat snapshot pesanan
+      const bookingResponse = await api.post("/trip-planner/book", snakeCaseData);
+      
       const { order } = bookingResponse.data;
       if (!order || !order.id) {
         throw new Error("Valid order ID was not returned from booking.");
       }
 
-      // 3. [BARU] Tampilkan pesan sukses dan arahkan ke profil
       toast.success(
         "Your trip plan has been booked! Redirecting to your profile..."
       );
 
-      // 4. [BARU] Arahkan pengguna ke halaman profil mereka
-      // Pengguna dapat melihat pesanan baru di tab "Purchase History"
       router.push(`/profile`);
       
     } catch (error: unknown) {
-      // 5. [BARU] Penanganan error yang diperbarui
       console.error("Booking failed:", error);
       const axiosError = error as AxiosError<{ message?: string }>;
       const message =
@@ -691,11 +680,10 @@ export default function PlannerForm() {
       setIsBooking(false);
     }
   };
-  // --- [AKHIR PERUBAHAN] ---
+  // --- [AKHIR PERBAIKAN] ---
 
   const progress = (step / totalSteps) * 100;
 
-  // Memoize options to prevent re-renders unless translations change
   const travelTypes = useMemo(
     () => Object.values(t.raw("options.travelTypes")) as string[],
     [t]
@@ -726,7 +714,7 @@ export default function PlannerForm() {
   const foodPreferences = useMemo(() => {
   const prefsObject = t.raw("options.foodPreferences") as Record<string, { label: string; description: string }>;
   return Object.values(prefsObject).map(pref => ({
-    value: pref.label, // Nilai yang disimpan saat dicentang
+    value: pref.label, 
     label: pref.label,
     description: pref.description
     }));
@@ -752,7 +740,6 @@ export default function PlannerForm() {
         <button
           type="button"
           onClick={handleBack}
-          // Simplified dark mode classes
           className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-200 font-semibold hover:bg-gray-300 transition text-center"
         >
           {t("backButton")}
@@ -766,7 +753,6 @@ export default function PlannerForm() {
           disabled={!isStepValid || isSaving}
           className="w-full sm:w-auto px-8 py-3 rounded-lg bg-primary text-black font-bold hover:brightness-90 transition disabled:opacity-50 disabled:cursor-not-allowed text-center"
         >
-          {/* Show Saving... on the next button too */}
           {isSaving ? "Saving..." : `${t("continueButton")} `}
         </button>
       )}
@@ -775,7 +761,6 @@ export default function PlannerForm() {
           <button
             type="submit"
             disabled={isSaving || isBooking}
-            // Simplified dark mode classes
             className="w-full sm:w-auto px-8 py-3 rounded-lg bg-slate-200 text-black font-bold hover:bg-slate-300 transition disabled:opacity-50 text-center"
           >
             {isSaving ? "Saving..." : "Save Progress"}
@@ -786,7 +771,6 @@ export default function PlannerForm() {
             disabled={!formData.consent || isSaving || isBooking}
             className="w-full sm:w-auto px-8 py-3 rounded-lg bg-primary text-black font-bold hover:brightness-90 transition disabled:opacity-50 disabled:cursor-not-allowed text-center"
           >
-            {/* [PERUBAHAN] Teks tombol diperbarui, tidak lagi menyebut pembayaran */}
             {isBooking ? "Booking..." : "Book Now"}
           </button>
         </div>
@@ -802,7 +786,6 @@ export default function PlannerForm() {
     );
   }
 
-  // --- RENDER FORM ---
   return (
     <div
       className="w-full min-h-screen"
@@ -825,10 +808,8 @@ export default function PlannerForm() {
             </div>
 
             <div className="lg:col-span-7">
-              {/* Simplified classes to use fixed light theme styles */}
               <div className="bg-card/95 backdrop-blur-lg shadow-xl rounded-2xl w-full">
                 <div className="p-6 md:p-10 flex flex-col">
-                  {/* Use a key on the form if you want animations between steps */}
                   <form
                     onSubmit={handleSubmit}
                     className="flex flex-col flex-grow min-h-[500px]"
@@ -863,7 +844,7 @@ export default function PlannerForm() {
                               className={`p-6 text-left border-2 rounded-lg shadow-sm cursor-pointer transition ${
                                 formData.type === "personal"
                                   ? "border-primary bg-primary/10"
-                                  : "border-gray-300 hover:bg-gray-50" // Simplified
+                                  : "border-gray-300 hover:bg-gray-50" 
                               }`}
                             >
                               {" "}
@@ -881,7 +862,7 @@ export default function PlannerForm() {
                               className={`p-6 text-left border-2 rounded-lg shadow-sm cursor-pointer transition ${
                                 formData.type === "company"
                                   ? "border-primary bg-primary/10"
-                                  : "border-gray-300 hover:bg-gray-50" // Simplified
+                                  : "border-gray-300 hover:bg-gray-50" 
                               }`}
                             >
                               {" "}
@@ -1247,7 +1228,10 @@ export default function PlannerForm() {
                                   key={style}
                                   type="button"
                                   onClick={() =>
-                                    handleMultiSelectToggle("travelStyle", style)
+                                    handleMultiSelectToggle(
+                                      "travelStyle",
+                                      style
+                                    )
                                   }
                                   className={`w-full h-16 flex items-center justify-center text-center px-4 py-2 rounded-lg font-semibold transition text-sm ${
                                     formData.travelStyle.includes(style)
