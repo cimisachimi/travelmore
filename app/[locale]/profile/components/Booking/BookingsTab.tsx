@@ -1,10 +1,10 @@
-// app/[locale]/profile/components/BookingsTab.tsx
+// app/[locale]/profile/components/Booking/BookingsTab.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import Link from "next/link"; // ✅ Ganti useRouter dengan Link
-import { useLocale } from "next-intl"; // ✅ Import useLocale
+import Link from "next/link"; 
+import { useLocale } from "next-intl"; 
 import { formatCurrency, formatDate, getStatusChip } from "@/lib/utils";
 import {
   User,
@@ -15,9 +15,13 @@ import {
   Package,
   Plane,
   ArrowRight,
+  RefreshCcw,
 } from "lucide-react";
 
-// --- Interface (Sama seperti sebelumnya) ---
+// ✅ Import Modal dari file sebelah
+import RefundModal from "./RefundModal"; 
+
+// --- Interface ---
 interface BookingDetailsShape {
   service_name?: string;
   original_subtotal?: number;
@@ -54,7 +58,7 @@ interface SimpleBooking {
   } | null;
 }
 
-// --- BookingDetails Component (Sama seperti sebelumnya) ---
+// --- Helper Components ---
 const DetailRow = ({ icon: Icon, label, value }: any) => {
   if (!value) return null;
   return (
@@ -112,10 +116,14 @@ function BookingDetails({ booking }: { booking: SimpleBooking }) {
 // --- MAIN COMPONENT ---
 
 export default function BookingsTab() {
-  const locale = useLocale(); // ✅ Ambil locale aktif (id/en)
+  const locale = useLocale();
   const [bookings, setBookings] = useState<SimpleBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // ✅ State untuk Modal
+  const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
+  const [selectedBookingForRefund, setSelectedBookingForRefund] = useState<SimpleBooking | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -134,6 +142,11 @@ export default function BookingsTab() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleOpenRefund = (booking: SimpleBooking) => {
+    setSelectedBookingForRefund(booking);
+    setIsRefundModalOpen(true);
+  };
 
   const renderBookingList = () =>
     !bookings || bookings.length === 0 ? (
@@ -159,16 +172,17 @@ export default function BookingsTab() {
           }
         }
 
-        // ✅ URL Detail yang Benar
-        // Sesuai struktur folder kamu: app/[locale]/profile/components/Booking/[id]/page.tsx
         const detailUrl = `/${locale}/profile/components/Booking/${booking.id}`;
+        
+        // Cek status booking
+        const showRefundButton = booking.status !== 'cancelled' && booking.status !== 'refunded';
 
         return (
           <div
             key={booking.id}
             className="bg-card border border-border rounded-lg p-4 transition-shadow hover:shadow-md flex flex-col gap-4"
           >
-            {/* --- Header --- */}
+            {/* Header */}
             <div className="flex justify-between items-start">
               <div>
                 <p className="font-bold text-lg">{serviceName}</p>
@@ -181,25 +195,37 @@ export default function BookingsTab() {
               </span>
             </div>
 
-            {/* --- Body --- */}
+            {/* Body */}
             <div className="bg-muted/30 p-3 rounded-md border border-border/50">
                  <BookingDetails booking={booking} />
             </div>
 
-            {/* --- Footer --- */}
-            <div className="flex justify-between items-center border-t border-dashed pt-3 mt-1">
-                <div className="flex flex-col">
+            {/* Footer */}
+            <div className="flex flex-col sm:flex-row justify-between items-center border-t border-dashed pt-3 mt-1 gap-4 sm:gap-0">
+                <div className="flex flex-col w-full sm:w-auto text-left">
                     <span className="text-xs text-muted-foreground">Total Price</span>
                     <span className="font-bold text-lg">{formatCurrency(booking.total_price)}</span>
                 </div>
 
-                {/* ✅ TOMBOL MENGGUNAKAN LINK (Lebih Stabil) */}
-                <Link 
-                    href={detailUrl}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-full hover:brightness-110 transition-all"
-                >
-                    View Details <ArrowRight size={16} />
-                </Link>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    {/* Tombol Refund - Trigger Modal */}
+                    {showRefundButton && (
+                      <button 
+                          onClick={() => handleOpenRefund(booking)}
+                          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-border bg-background text-foreground text-sm font-bold rounded-full hover:bg-muted transition-all cursor-pointer"
+                      >
+                          <RefreshCcw size={16} /> Refund
+                      </button>
+                    )}
+
+                    {/* Tombol Details - Link Halaman */}
+                    <Link 
+                        href={detailUrl}
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-full hover:brightness-110 transition-all"
+                    >
+                        Details <ArrowRight size={16} />
+                    </Link>
+                </div>
             </div>
           </div>
         );
@@ -210,11 +236,21 @@ export default function BookingsTab() {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="animate-fadeIn space-y-6">
+    <div className="animate-fadeIn space-y-6 relative">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Purchase History</h2>
       </div>
       <div className="space-y-4">{renderBookingList()}</div>
+
+      {/* Render Modal */}
+      <RefundModal 
+        isOpen={isRefundModalOpen}
+        onClose={() => setIsRefundModalOpen(false)}
+        booking={selectedBookingForRefund}
+        onSuccess={() => {
+            fetchData(); 
+        }}
+      />
     </div>
   );
 }
