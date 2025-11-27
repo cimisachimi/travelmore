@@ -63,9 +63,10 @@ export default function TripPlannerTeaser() {
                 <span className="text-primary">Yogyakarta</span>
               </h2>
               <p className="mt-4 text-lg text-gray-600 leading-relaxed">
-                From the majestic Borobudur to the vibrant streets of Malioboro. 
-                Tell us your style, and we'll craft a personalized Jogja itinerary just for you.
-              </p>
+  {"From the majestic Borobudur to the vibrant streets of Malioboro. Tell us your style, and we'll craft a personalized Jogja itinerary just for you."}
+</p>
+
+
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

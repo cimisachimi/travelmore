@@ -1,4 +1,3 @@
-// app/[locale]/activities/page.tsx
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -6,58 +5,90 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import { useTranslations } from "next-intl";
-import api from "@/lib/api"; // Import your API instance
+import api from "@/lib/api";
+import { 
+  MapPin, 
+  Clock, 
+  Search, 
+  SlidersHorizontal, 
+  X, 
+  ChevronRight, 
+  Tag
+} from "lucide-react";
 
-// [NEW] Define the Activity type based on your API response
+// --- Types ---
+export interface Addon {
+  name: string;
+  price: number;
+}
+
 interface Activity {
   id: number;
   name: string;
   category: string | null;
   description: string | null;
   location: string | null;
-  price: number; // Use the single price from the API
+  price: number;
+  duration: string | null; // ✅ Added duration from backend
+  addons?: Addon[];
   thumbnail_url: string | null;
-  // Add any other fields your API returns
 }
 
-// [NEW] Define the API response structure (assuming pagination)
 interface ApiResponse {
   data: Activity[];
-  // Add other pagination fields if needed (e.g., current_page, last_page)
+  meta?: {
+    current_page: number;
+    last_page: number;
+    total: number;
+  };
 }
+
+// --- Skeleton Component ---
+const ActivitySkeleton = () => (
+  <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 animate-pulse">
+    <div className="h-56 bg-gray-200 dark:bg-gray-700" />
+    <div className="p-5 space-y-4">
+      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+      <div className="space-y-2">
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+      </div>
+      <div className="flex justify-between pt-4">
+        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
+      </div>
+    </div>
+  </div>
+);
 
 export default function ActivitiesPage() {
   const { theme, setTheme } = useTheme();
   const t = useTranslations("activities");
   const tNav = useTranslations("Navbar");
 
-  // [NEW] State for API data, loading, and errors
+  // --- State ---
   const [allActivities, setAllActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // State for filters
-  const [maxPrice, setMaxPrice] = useState<number>(1000000); // Default max
+  // Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [maxPrice, setMaxPrice] = useState<number>(2000000); // Increased default range
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // [NEW] Fetch data from the backend
+  // --- Fetch Data ---
   useEffect(() => {
     const fetchActivities = async () => {
       try {
         setIsLoading(true);
-        //
         const response = await api.get<ApiResponse>("/activities");
-
-        // Assuming paginated response, access the 'data' array
-        setAllActivities(response.data.data || []);
+        // Handle both simple array or paginated 'data' response
+        const data = Array.isArray(response.data) ? response.data : response.data.data;
+        setAllActivities(data || []);
       } catch (err) {
         console.error("Failed to fetch activities:", err);
-        // [FIXED] Pass default message as an object
-        setError(
-          t("empty.fetchError", {
-            defaultMessage: "Could not load activities. Please try again later.",
-          })
-        );
+        setError(t("empty.fetchError", { defaultMessage: "Could not load activities." }));
       } finally {
         setIsLoading(false);
       }
@@ -66,254 +97,273 @@ export default function ActivitiesPage() {
     fetchActivities();
   }, [t]);
 
-  // [UPDATED] Get all unique categories from fetched data
-  const allCategories = useMemo(
-    () => [
-      ...new Set(
-        allActivities
-          .map((act) => act.category)
-          .filter((c): c is string => c !== null && c !== "")
-      ),
-    ],
+  // --- Derived Data ---
+  const allCategories = useMemo(() => 
+    [...new Set(allActivities.map(act => act.category).filter(Boolean) as string[])].sort(),
     [allActivities]
   );
 
-  // Handle category changes (no change needed)
-  const handleCategoryChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const category = event.target.name;
-    if (event.target.checked) {
-      setSelectedCategories((prev) => [...prev, category]);
-    } else {
-      setSelectedCategories((prev) => prev.filter((c) => c !== category));
-    }
-  };
-
-  // [UPDATED] Filter logic based on fetched data
   const filteredActivities = useMemo(() => {
     return allActivities.filter((act) => {
-      // [UPDATED] Use the single 'price' field
       const priceMatch = act.price <= maxPrice;
-      const categoryMatch =
-        selectedCategories.length === 0 ||
-        (act.category && selectedCategories.includes(act.category));
-      return priceMatch && categoryMatch;
+      const categoryMatch = selectedCategories.length === 0 || (act.category && selectedCategories.includes(act.category));
+      const searchMatch = act.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (act.location && act.location.toLowerCase().includes(searchQuery.toLowerCase()));
+      return priceMatch && categoryMatch && searchMatch;
     });
-  }, [allActivities, maxPrice, selectedCategories]);
+  }, [allActivities, maxPrice, selectedCategories, searchQuery]);
 
-  // Format currency (no change needed)
+  // --- Handlers ---
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategories(prev => 
+      prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
+    );
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
       minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
-  // Dynamic classes (no change needed)
-  const mainBgClass = theme === "regular" ? "bg-gray-50" : "bg-black";
-  const cardBgClass = theme === "regular" ? "bg-white" : "bg-gray-800";
-  const textClass = theme === "regular" ? "text-gray-900" : "text-white";
-  const textMutedClass =
-    theme === "regular" ? "text-gray-600" : "text-gray-300";
-  const headerBgClass = theme === "regular" ? "bg-white" : "bg-gray-900";
-
-  // [UPDATED] ThemeToggleButton no longer controls price, only theme
-  const ThemeToggleButton = () => {
-    return (
-      <div className="flex items-center p-1 rounded-full bg-gray-200 dark:bg-gray-700">
-        <button
-          onClick={() => setTheme("regular")}
-          className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300 ${
-            theme === "regular"
-              ? "bg-white text-black shadow-sm"
-              : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-          }`}
-        >
-          {tNav("regular")}
-        </button>
-        <button
-          onClick={() => setTheme("exclusive")}
-          className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300 ${
-            theme === "exclusive"
-              ? "bg-primary text-black shadow-sm"
-              : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-          }`}
-        >
-          {tNav("exclusive")}
-        </button>
-      </div>
-    );
-  };
+  // --- Styles ---
+  const isExclusive = theme === "exclusive";
+  const mainBgClass = isExclusive ? "bg-black" : "bg-gray-50";
+  const textClass = isExclusive ? "text-white" : "text-gray-900";
+  const textMutedClass = isExclusive ? "text-gray-400" : "text-gray-500";
+  const cardBgClass = isExclusive ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100";
+  const accentColor = isExclusive ? "text-yellow-500" : "text-blue-600";
+  const buttonClass = isExclusive 
+    ? "bg-gradient-to-r from-yellow-600 to-yellow-500 text-black hover:from-yellow-500 hover:to-yellow-400" 
+    : "bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:from-blue-700 hover:to-cyan-600";
 
   return (
-    <div className={`${mainBgClass}`}>
-      {/* Header */}
-      <header
-        className={`py-12 ${headerBgClass} border-b ${
-          theme === "regular" ? "border-gray-200" : "border-gray-800"
-        }`}
-      >
-        <div className="container mx-auto px-4 lg:px-8 text-center">
-          <h1 className={`text-4xl md:text-5xl font-extrabold ${textClass}`}>
-            {t("title")}
+    <div className={`min-h-screen ${mainBgClass} transition-colors duration-300`}>
+      {/* --- Hero Header --- */}
+      <div className={`relative py-16 lg:py-24 overflow-hidden ${isExclusive ? "bg-gray-900" : "bg-white border-b border-gray-200"}`}>
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+           <Image src="/pattern-dot.png" alt="pattern" fill className="object-cover" />
+        </div>
+        
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <span className={`inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase mb-4 ${isExclusive ? "bg-yellow-900/30 text-yellow-500" : "bg-blue-100 text-blue-600"}`}>
+            {t("subtitle", { defaultMessage: "Explore The World" })}
+          </span>
+          <h1 className={`text-4xl md:text-6xl font-black tracking-tight mb-6 ${textClass}`}>
+            {t("title", { defaultMessage: "Unforgettable Activities" })}
           </h1>
-          <p className={`mt-4 text-lg max-w-2xl mx-auto ${textMutedClass}`}>
-            {t("subtitle")}
-          </p>
+          
+          {/* Theme Toggle */}
+          <div className="flex justify-center mt-8">
+            <div className={`flex items-center p-1.5 rounded-full ${isExclusive ? "bg-gray-800" : "bg-gray-100"}`}>
+              <button
+                onClick={() => setTheme("regular")}
+                className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${!isExclusive ? "bg-white text-blue-600 shadow-md" : "text-gray-400 hover:text-white"}`}
+              >
+                {tNav("regular", { defaultMessage: "Regular" })}
+              </button>
+              <button
+                onClick={() => setTheme("exclusive")}
+                className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${isExclusive ? "bg-yellow-500 text-black shadow-md" : "text-gray-500 hover:text-black"}`}
+              >
+                {tNav("exclusive", { defaultMessage: "Exclusive" })}
+              </button>
+            </div>
+          </div>
         </div>
-      </header>
+      </div>
 
-      <div className="container mx-auto px-4 lg:px-8 py-12">
-        <div className="mb-6 flex justify-center md:justify-end">
-          <ThemeToggleButton />
-        </div>
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex flex-col lg:flex-row gap-10">
+          
+          {/* --- Mobile Filter Button --- */}
+          <button 
+            onClick={() => setShowMobileFilters(true)}
+            className={`lg:hidden w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold mb-4 ${isExclusive ? "bg-gray-800 text-white" : "bg-white text-gray-900 shadow-sm border"}`}
+          >
+            <SlidersHorizontal size={18} />
+            {t("filters.title", { defaultMessage: "Filters" })}
+          </button>
 
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Filter Sidebar */}
-          <aside className="w-full md:w-1/4">
-            <div
-              className={`${cardBgClass} p-6 rounded-lg shadow-md sticky top-24`}
-            >
-              <h3 className={`text-xl font-bold mb-4 ${textClass}`}>
-                {t("filters.title")}
-              </h3>
-
-              {/* Price Filter */}
-              <div className="mb-6">
-                <label
-                  htmlFor="priceRange"
-                  className={`block font-semibold mb-2 ${textClass}`}
-                >
-                  {t("filters.price")}
-                </label>
-                <input
-                  id="priceRange"
-                  type="range"
-                  min="150000"
-                  max="1000000" // You might want to make this dynamic later
-                  step="50000"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(Number(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer custom-range"
-                />
-                <div className={`mt-2 ${textMutedClass}`}>
-                  {t("filters.upTo")}:{" "}
-                  <strong>{formatCurrency(maxPrice)}</strong>
-                </div>
+          {/* --- Sidebar (Filters) --- */}
+          <aside className={`
+            fixed inset-0 z-50 transform transition-transform duration-300 lg:relative lg:transform-none lg:w-80 lg:block lg:inset-auto lg:z-auto
+            ${showMobileFilters ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+            ${isExclusive ? "bg-black lg:bg-transparent" : "bg-white lg:bg-transparent"}
+          `}>
+            <div className={`h-full overflow-y-auto lg:overflow-visible p-6 lg:p-0 ${isExclusive ? "lg:bg-gray-900/50" : "lg:bg-white"} lg:rounded-2xl lg:shadow-sm lg:border ${isExclusive ? "lg:border-gray-800" : "lg:border-gray-200"} lg:sticky lg:top-24`}>
+              
+              <div className="flex justify-between items-center lg:hidden mb-6">
+                <h3 className={`text-xl font-bold ${textClass}`}>{t("filters.title")}</h3>
+                <button onClick={() => setShowMobileFilters(false)} className={textClass}><X size={24} /></button>
               </div>
 
-              <hr className="my-6 border-gray-200 dark:border-gray-700" />
-
-              {/* Categories */}
-              <div>
-                <h4 className={`font-semibold mb-2 ${textClass}`}>
-                  {t("filters.categories")}
-                </h4>
-                <div className="space-y-2">
-                  {allCategories.map((category) => (
-                    <label key={category} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        name={category}
-                        checked={selectedCategories.includes(category)}
-                        onChange={handleCategoryChange}
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
-                      />
-                      <span className={`ml-3 ${textMutedClass}`}>
-                        {category}
-                      </span>
-                    </label>
-                  ))}
+              <div className="lg:p-6 space-y-8">
+                {/* Search */}
+                <div>
+                  <h4 className={`font-bold mb-3 flex items-center gap-2 ${textClass}`}>
+                    <Search size={16} className={accentColor} />
+                    Search
+                  </h4>
+                  <input 
+                    type="text" 
+                    placeholder="Search activities..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:outline-none transition-all ${isExclusive ? "bg-gray-800 border-gray-700 text-white focus:ring-yellow-500" : "bg-gray-50 border-gray-200 focus:ring-blue-500"}`}
+                  />
                 </div>
+
+                {/* Price Filter */}
+                <div>
+                  <h4 className={`font-bold mb-4 flex items-center gap-2 ${textClass}`}>
+                    <Tag size={16} className={accentColor} />
+                    {t("filters.price", { defaultMessage: "Price Range" })}
+                  </h4>
+                  <input
+                    type="range"
+                    min="0"
+                    max="5000000"
+                    step="50000"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(Number(e.target.value))}
+                    className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${isExclusive ? "bg-gray-700 accent-yellow-500" : "bg-gray-200 accent-blue-600"}`}
+                  />
+                  <div className="flex justify-between mt-2 text-sm">
+                    <span className={textMutedClass}>0</span>
+                    <span className={`font-bold ${textClass}`}>{formatCurrency(maxPrice)}</span>
+                  </div>
+                </div>
+
+                {/* Categories */}
+                <div>
+                  <h4 className={`font-bold mb-3 flex items-center gap-2 ${textClass}`}>
+                    <SlidersHorizontal size={16} className={accentColor} />
+                    {t("filters.categories", { defaultMessage: "Categories" })}
+                  </h4>
+                  <div className="space-y-2.5">
+                    {allCategories.map((category) => (
+                      <label key={category} className="flex items-center group cursor-pointer">
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${selectedCategories.includes(category) ? (isExclusive ? "bg-yellow-500 border-yellow-500" : "bg-blue-600 border-blue-600") : "border-gray-400 bg-transparent"}`}>
+                           {selectedCategories.includes(category) && <X size={12} className="text-white rotate-45" />}
+                        </div>
+                        <input
+                          type="checkbox"
+                          className="hidden"
+                          checked={selectedCategories.includes(category)}
+                          onChange={() => handleCategoryChange(category)}
+                        />
+                        <span className={`text-sm transition-colors ${selectedCategories.includes(category) ? `font-medium ${textClass}` : textMutedClass} group-hover:${textClass}`}>
+                          {category}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Reset Button */}
+                {(selectedCategories.length > 0 || maxPrice < 2000000 || searchQuery) && (
+                  <button 
+                    onClick={() => { setSelectedCategories([]); setMaxPrice(5000000); setSearchQuery(""); }}
+                    className={`w-full py-2 text-sm font-semibold rounded-lg transition-colors ${isExclusive ? "bg-gray-800 text-gray-300 hover:bg-gray-700" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                  >
+                    Reset Filters
+                  </button>
+                )}
               </div>
             </div>
           </aside>
 
-          {/* Activities Grid */}
-          <main className="w-full md:w-3/4">
-            {/* [NEW] Loading and Error Handling */}
+          {/* --- Main Content --- */}
+          <main className="flex-1">
             {isLoading ? (
-              <div className="flex justify-center items-center h-64">
-                {/* [FIXED] Pass default message as an object */}
-                <p className={`${textMutedClass}`}>
-                  {t("empty.loading", {
-                    defaultMessage: "Loading activities...",
-                  })}
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {[1, 2, 3, 4, 5, 6].map((i) => <ActivitySkeleton key={i} />)}
               </div>
             ) : error ? (
-              <div className="flex justify-center items-center h-64">
-                <p className="text-red-500 text-xl">{error}</p>
+              <div className="flex flex-col items-center justify-center h-64 text-center">
+                <p className="text-red-500 font-medium mb-2">{error}</p>
+                <button onClick={() => window.location.reload()} className="text-sm underline text-gray-500">Try Again</button>
               </div>
             ) : filteredActivities.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredActivities.map((act) => (
-                  <Link key={act.id} href={`/activities/${act.id}`}>
-                    <div
-                      className={`${cardBgClass} rounded-lg shadow-lg overflow-hidden flex flex-col group transition hover:shadow-2xl hover:-translate-y-1 h-full`}
-                    >
+                  <Link key={act.id} href={`/activities/${act.id}`} className="group h-full">
+                    <article className={`h-full flex flex-col rounded-2xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border ${cardBgClass}`}>
+                      {/* Image */}
                       <div className="relative h-56 w-full overflow-hidden">
                         <Image
-                          // [UPDATED] Use thumbnail_url
-                          src={act.thumbnail_url || "/placeholder.jpg"} // Add a placeholder
+                          src={act.thumbnail_url || "/placeholder.jpg"}
                           alt={act.name}
                           fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover transition-transform duration-700 group-hover:scale-110"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
+                        {/* Category Badge */}
+                        {act.category && (
+                          <span className={`absolute top-4 left-4 text-xs font-bold px-3 py-1 rounded-full backdrop-blur-md shadow-sm ${isExclusive ? "bg-black/60 text-white" : "bg-white/90 text-gray-900"}`}>
+                            {act.category}
+                          </span>
+                        )}
                       </div>
-                      <div className="p-6 flex flex-col flex-grow">
-                        <p
-                          className={`text-sm font-semibold text-primary mb-2`}
-                        >
-                          {act.category}
-                        </p>
-                        <h2
-                          // [UPDATED] Use name
-                          className={`text-xl font-bold mb-2 ${textClass}`}
-                        >
+
+                      {/* Content */}
+                      <div className="p-5 flex flex-col flex-grow">
+                        <h2 className={`text-lg font-bold mb-2 line-clamp-2 leading-tight ${textClass} group-hover:${accentColor} transition-colors`}>
                           {act.name}
                         </h2>
-                        <p
-                          // [UPDATED] Use description
-                          className={`mb-4 flex-grow ${textMutedClass} text-sm overflow-hidden text-ellipsis`}
-                          style={{
-                            display: "-webkit-box",
-                            WebkitLineClamp: 3,
-                            WebkitBoxOrient: "vertical",
-                          }}
-                        >
-                          {act.description}
+
+                        {/* Metadata Row */}
+                        <div className="flex items-center gap-4 text-xs mb-4">
+                          {act.duration && (
+                            <div className={`flex items-center gap-1.5 ${textMutedClass}`}>
+                              <Clock size={14} className={accentColor} />
+                              <span>{act.duration}</span>
+                            </div>
+                          )}
+                          {act.location && (
+                            <div className={`flex items-center gap-1.5 ${textMutedClass}`}>
+                              <MapPin size={14} className={accentColor} />
+                              <span className="truncate max-w-[100px]">{act.location}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <p className={`text-sm line-clamp-2 mb-6 ${textMutedClass} flex-grow`}>
+                          {act.description || "Experience an unforgettable journey..."}
                         </p>
-                        <div
-                          className={`flex justify-between items-center mt-auto pt-4 border-t ${
-                            theme === "regular"
-                              ? "border-gray-100"
-                              : "border-gray-700"
-                          }`}
-                        >
-                          <p
-                            className={`text-lg font-bold text-primary dark:text-primary`}
-                          >
-                            {/* [UPDATED] Use single 'price' */}
-                            {formatCurrency(act.price)}
-                          </p>
-                          <span
-                            className={`text-sm font-semibold ${textClass} group-hover:text-primary transition`}
-                          >
-                            {t("buttons.details")}
+
+                        {/* Footer */}
+                        <div className={`pt-4 mt-auto border-t flex items-end justify-between ${isExclusive ? "border-gray-800" : "border-gray-100"}`}>
+                          <div>
+                            <p className={`text-xs ${textMutedClass} mb-0.5`}>{t("filters.startingFrom", { defaultMessage: "Starting from" })}</p>
+                            <p className={`text-lg font-bold ${isExclusive ? "text-yellow-500" : "text-blue-600"}`}>
+                              {formatCurrency(act.price)}
+                            </p>
+                          </div>
+                          <span className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isExclusive ? "bg-gray-800 text-white group-hover:bg-yellow-500 group-hover:text-black" : "bg-gray-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white"}`}>
+                            <ChevronRight size={20} />
                           </span>
                         </div>
                       </div>
-                    </div>
+                    </article>
                   </Link>
                 ))}
               </div>
             ) : (
-              <div className="lg:col-span-2 text-center py-16">
-                <p className="text-gray-500 text-xl">{t("empty.message")}</p>
+              <div className={`text-center py-20 rounded-2xl border border-dashed ${isExclusive ? "border-gray-800 bg-gray-900/50" : "border-gray-200 bg-gray-50"}`}>
+                <Search size={48} className={`mx-auto mb-4 opacity-20 ${textClass}`} />
+                <h3 className={`text-xl font-bold mb-2 ${textClass}`}>No activities found</h3>
+                <p className={textMutedClass}>Try adjusting your filters or search query.</p>
+                <button 
+                  onClick={() => { setSelectedCategories([]); setMaxPrice(5000000); setSearchQuery(""); }}
+                  className={`mt-6 px-6 py-2 rounded-lg font-medium text-sm transition-colors ${isExclusive ? "bg-white text-black hover:bg-gray-200" : "bg-black text-white hover:bg-gray-800"}`}
+                >
+                  Clear all filters
+                </button>
               </div>
             )}
           </main>

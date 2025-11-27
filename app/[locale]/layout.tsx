@@ -8,7 +8,7 @@ import { Toaster } from "sonner";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeProvider } from "@/components/ThemeProvider"; // Importing your custom provider
 import ClientBreadcrumbsWrapper from "@/components/ui/ClientBreadcrumbsWrapper";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { routing } from "@/i18n/routing";
@@ -67,16 +67,12 @@ export default async function RootLayout({
       <body className="bg-background text-foreground font-sans antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <AuthProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
+            {/* ✅ Fixed: Removed unsupported props (attribute, defaultTheme, etc.) */}
+            <ThemeProvider>
               <div className="flex flex-col min-h-screen">
                 <Navbar />
                 
-                {/* Breadcrumbs wrapper (Optional: adjust padding if needed) */}
+                {/* Breadcrumbs wrapper */}
                 <ClientBreadcrumbsWrapper />
                 
                 <main className="flex-grow">

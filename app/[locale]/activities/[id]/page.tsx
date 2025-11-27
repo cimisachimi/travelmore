@@ -1,8 +1,6 @@
-// app/[locale]/activities/[id]/page.tsx
-
 "use client";
 
-import React, { useState, useEffect, ReactNode } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -17,26 +15,45 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-// Import Modal Booking Activity
+// Import Modal
 import ActivityBookingModal from "./ActivityBookingModal";
-// Import Icons yang sama dengan Packages
-import { CheckIcon, UsersIcon, TagIcon, CalendarIcon, X as XIcon } from "lucide-react";
 
-// --- Interfaces (Disamakan dengan struktur Packages agar fitur bisa jalan) ---
+// Icons
+import { 
+  Check,       
+  X as XMark, 
+  MapPin, 
+  Clock, 
+  Tag, 
+  Users,       
+  CalendarCheck, 
+  ChevronLeft, 
+  Camera, 
+  Info,
+  ShieldCheck,
+  CheckCircle2, // ✅ Added missing import
+  LucideIcon   
+} from "lucide-react";
+
+// --- Interfaces ---
 export interface AuthUser {
   id: number;
   name: string;
   email: string;
+  phone_number?: string;
 }
 
-// Tambahkan PriceTier untuk Activities
+export interface Addon {
+  name: string;
+  price: number;
+}
+
 export interface ActivityPriceTier {
   min_pax: number;
   max_pax: number;
   price: number;
 }
 
-// Update Interface Activity agar mendukung fitur lengkap
 export interface Activity {
   id: number;
   name: string;
@@ -44,11 +61,12 @@ export interface Activity {
   category: string | null;
   description: string | null;
   location: string | null;
-  price: number; // Harga single (fallback)
-  images_url: { id: number; url: string; type: string }[];
+  price: number;
+  addons?: Addon[];
+  images_url: { id: number; url: string; type: string }[]; 
   thumbnail_url: string | null;
+  status: string;
   
-  // Field tambahan untuk fitur "Packages style" (Optional jika backend belum siap)
   itinerary?: { day: number; title: string; description: string }[];
   cost?: { included: string[]; excluded: string[] };
   faqs?: { question: string; answer: string }[];
@@ -57,21 +75,18 @@ export interface Activity {
   price_tiers?: ActivityPriceTier[]; 
 }
 
-export type TFunction = (key: string, defaultMessage?: string) => string;
+export type TFunction = (key: string, values?: Record<string, string | number | Date>) => string;
 
-// --- MobileImageSlider Component ---
-interface MobileImageSliderProps {
-  images: string[];
-  title: string;
-}
-const MobileImageSlider: React.FC<MobileImageSliderProps> = ({ images, title }) => (
+// --- Components ---
+
+const MobileImageSlider: React.FC<{ images: string[]; title: string }> = ({ images, title }) => (
   <Swiper
     modules={[Navigation, Pagination]}
     spaceBetween={0}
     slidesPerView={1}
     navigation
     pagination={{ clickable: true }}
-    className="h-72 w-full"
+    className="h-[400px] w-full"
   >
     {images.map((src, index) => (
       <SwiperSlide key={index}>
@@ -81,19 +96,28 @@ const MobileImageSlider: React.FC<MobileImageSliderProps> = ({ images, title }) 
             alt={`${title} - image ${index + 1}`}
             fill
             className="object-cover"
-            sizes="100vw"
+            priority={index === 0}
           />
+          {/* ✅ Fixed: Updated to canonical class */}
+          <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent md:hidden" />
         </div>
       </SwiperSlide>
     ))}
   </Swiper>
 );
 
-// --- Komponen Utama ---
+const SectionTitle = ({ children, icon: Icon, theme }: { children: React.ReactNode; icon?: LucideIcon; theme: string }) => (
+  <h3 className={`text-2xl font-bold mb-6 flex items-center gap-3 ${theme === "regular" ? "text-gray-900" : "text-white"}`}>
+    {Icon && <Icon className="w-6 h-6 text-blue-600" />}
+    {children}
+  </h3>
+);
+
+// --- Main Page ---
 export default function ActivityDetailPage() {
   const { theme } = useTheme();
-  const t = useTranslations("packages"); // Gunakan translasi packages agar labelnya sama
-  const tAct = useTranslations("activities"); // Fallback untuk spesifik activity
+  const t = useTranslations("packages"); 
+  const tAct = useTranslations("activities"); 
   const params = useParams();
   const { user } = useAuth();
   const id = params?.id as string;
@@ -102,95 +126,56 @@ export default function ActivityDetailPage() {
   const [activity, setActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("Overview"); // State Tab
+  const [activeTab, setActiveTab] = useState<string>("Overview");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-
-  const errorNotFound = tAct("status.notFound");
 
   useEffect(() => {
     if (!id) return;
-
     const fetchActivity = async () => {
       try {
         setLoading(true);
-        setError(null);
         const response = await api.get(`/activities/${id}`);
         setActivity(response.data as Activity);
-      } catch (err: unknown) {
+      } catch (err) {
         console.error("Failed to fetch activity:", err);
-        // Error handling logic...
-        setError(tAct("status.fetchError", { defaultMessage: "Failed to load activity data." }));
+        setError(tAct("status.fetchError"));
       } finally {
         setLoading(false);
       }
     };
-
     fetchActivity();
-  }, [id, errorNotFound, tAct]);
+  }, [id, tAct]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
-        {tAct("status.loading")}
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
+  if (error || !activity) return <div className="min-h-screen flex items-center justify-center text-red-500">{error || "Activity not found"}</div>;
 
-  if (error || !activity) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-red-500 p-4 text-center">
-        {error || tAct("status.notFound")}
-      </div>
-    );
-  }
-
-  // --- Data Processing (Logika menyamakan format data) ---
-  const images = activity.images_url ? activity.images_url.map(img => img.url) : [];
-  const title = activity.name; // Nama activity biasanya tidak pakai prefix "Package:" jadi langsung saja
-
-  // Siapkan data untuk Tabs (Gunakan fallback array kosong jika data backend belum ada)
+  // Data Extraction
+  const images = activity.images_url?.map(img => img.url) || [];
+  const title = activity.name;
+  
+  // Fallbacks
   const itineraryData = activity.itinerary || [];
   const costData = activity.cost || { included: [], excluded: [] };
   const faqsData = activity.faqs || [];
   const tripInfo = activity.tripInfo || [];
   const mapUrl = activity.mapUrl || "";
 
-  // Logika Harga Bertingkat (Price Tiers)
-  // Jika backend activity belum kirim price_tiers, kita buat dummy tier dari single price
-  const priceTiers = activity.price_tiers && activity.price_tiers.length > 0 
-    ? activity.price_tiers 
-    : [
-        { min_pax: 1, max_pax: 0, price: activity.price } // Default tier
-      ];
-
-  // Hitung harga "Starting From"
-  const startingPrice = priceTiers.length > 0 
-    ? Math.min(...priceTiers.map(t => t.price)) 
-    : activity.price;
-
+  // Price Logic
+  const priceTiers = activity.price_tiers || [{ min_pax: 1, max_pax: 0, price: activity.price }];
+  const startingPrice = priceTiers.length > 0 ? Math.min(...priceTiers.map(t => t.price)) : activity.price;
   const hasMultipleTiers = priceTiers.length > 1;
 
-  // Cari tier terbaik (harga terendah)
-  const bestPriceTier = priceTiers.reduce((prev, curr) => prev.price < curr.price ? prev : curr);
-
-  // List Tab yang akan ditampilkan
   const tabs = ["Overview", "Itinerary", "Pricing", "Cost", "FAQs", "Map"];
 
-  // Styling Classes
-  const mainBgClass = theme === "regular" ? "bg-gray-50" : "bg-black";
-  const cardBgClass = theme === "regular" ? "bg-white" : "bg-gray-800";
-  const textClass = theme === "regular" ? "text-gray-900" : "text-white";
-  const textMutedClass = theme === "regular" ? "text-gray-600" : "text-gray-300";
-  const borderClass = theme === "regular" ? "border-gray-200" : "border-gray-700";
+  // Styling
+  const isDark = theme === "exclusive";
+  const mainBg = isDark ? "bg-black" : "bg-gray-50";
+  const cardBg = isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100";
+  const textColor = isDark ? "text-white" : "text-gray-900";
+  const textMuted = isDark ? "text-gray-400" : "text-gray-600";
+  const borderColor = isDark ? "border-gray-800" : "border-gray-200";
 
-  const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
+  const formatPrice = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
   const formatPaxRange = (min: number, max: number): string => {
     if (min === max) return `${min} pax`;
@@ -198,271 +183,190 @@ export default function ActivityDetailPage() {
     return `${min}–${max} pax`;
   };
 
-  // Render Gallery (Sama seperti sebelumnya)
-  const renderGallery = (): ReactNode => {
-    const count = images.length;
-    if (count === 0) return <div className={`w-full h-72 md:h-[400px] ${theme === "regular" ? "bg-gray-200" : "bg-gray-900"} rounded-lg flex items-center justify-center text-gray-500`}>{tAct("gallery.noImage")}</div>;
-
-    return (
-      <>
-        <div className="md:hidden"><MobileImageSlider images={images} title={title} /></div>
-        <div className="hidden md:block">
-          {count === 1 && <div className="relative h-96 md:h-[600px]"><Image src={images[0]} alt={title} fill className="object-cover rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none" priority sizes="(max-width: 767px) 100vw, 50vw" /></div>}
-          {count >= 2 && (
-             <div className={`grid ${count > 2 ? "grid-cols-4 grid-rows-2" : "grid-cols-2"} gap-2 h-96 md:h-[600px]`}>
-               {/* Logic grid gambar disederhanakan untuk brevity */}
-               <div className={`relative ${count > 2 ? "col-span-2 row-span-2 rounded-tl-2xl" : "w-full h-full rounded-l-2xl"} overflow-hidden`}>
-                 <Image src={images[0]} alt={title} fill className="object-cover" priority />
-               </div>
-               {images.slice(1, count > 2 ? 4 : 2).map((src, i) => (
-                 <div key={i} className="relative w-full h-full overflow-hidden">
-                   <Image src={src} alt={`${title}-${i}`} fill className="object-cover" />
-                 </div>
-               ))}
-             </div>
-          )}
-        </div>
-      </>
-    );
-  };
-
   return (
-    <div className={mainBgClass}>
-      <div className="max-w-7xl mx-auto p-4 md:p-8">
-        <div className={`${cardBgClass} rounded-2xl shadow-2xl overflow-hidden`}>
-          {renderGallery()}
+    <div className={`min-h-screen ${mainBg} transition-colors duration-300`}>
+      
+      {/* --- Header / Gallery Section --- */}
+      <div className="relative">
+        <div className="md:hidden">
+          <MobileImageSlider images={images} title={title} />
+          <div className="absolute top-4 left-4 z-10">
+            <Link href="/activities" className="bg-white/90 p-2 rounded-full text-black shadow-lg backdrop-blur-sm">
+              <ChevronLeft size={24} />
+            </Link>
+          </div>
+        </div>
 
-          <div className={`p-6 md:p-10 border-b ${borderClass}`}>
-            <div className="flex flex-wrap items-center gap-4 mb-4">
-              {activity.duration && (
-                <div className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular" ? "bg-blue-100 text-blue-800" : "bg-blue-900 text-blue-200"}`}>
-                  {activity.duration}
-                </div>
-              )}
+        {/* Desktop Gallery */}
+        <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 h-[500px] max-w-7xl mx-auto pt-8 px-8">
+           <div className="col-span-2 row-span-2 relative rounded-l-2xl overflow-hidden group">
+             {images[0] && <Image src={images[0]} alt="Main" fill className="object-cover transition-transform duration-700 group-hover:scale-105" priority />}
+             <div className="absolute top-4 left-4">
+                <Link href="/activities" className="bg-white/90 py-2 px-4 rounded-full text-black font-semibold text-sm shadow-lg backdrop-blur-sm hover:bg-white transition flex items-center gap-2">
+                  <ChevronLeft size={16} /> Back
+                </Link>
+             </div>
+           </div>
+           <div className="col-span-1 row-span-1 relative overflow-hidden group">
+             {images[1] && <Image src={images[1]} alt="Gallery 1" fill className="object-cover transition-transform duration-700 group-hover:scale-105" />}
+           </div>
+           <div className="col-span-1 row-span-1 relative rounded-tr-2xl overflow-hidden group">
+             {images[2] && <Image src={images[2]} alt="Gallery 2" fill className="object-cover transition-transform duration-700 group-hover:scale-105" />}
+           </div>
+           <div className="col-span-1 row-span-1 relative overflow-hidden group">
+             {images[3] && <Image src={images[3]} alt="Gallery 3" fill className="object-cover transition-transform duration-700 group-hover:scale-105" />}
+           </div>
+           <div className="col-span-1 row-span-1 relative rounded-br-2xl overflow-hidden group bg-gray-800 flex items-center justify-center">
+             {images[4] ? (
+               <Image src={images[4]} alt="Gallery 4" fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
+             ) : (
+               <div className="text-white/70 font-medium flex flex-col items-center">
+                 <Camera size={24} className="mb-2" />
+                 <span>View Gallery</span>
+               </div>
+             )}
+           </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
+        
+        {/* --- Title & Meta --- */}
+        <div className="mb-8">
+           <div className="flex flex-wrap gap-3 mb-4">
               {activity.category && (
-                <div className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular" ? "bg-gray-100 text-gray-800" : "bg-gray-700 text-gray-200"}`}>
-                  {activity.category}
-                </div>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isDark ? "bg-blue-900/30 text-blue-400" : "bg-blue-100 text-blue-700"}`}>
+                  <Tag size={12} /> {activity.category}
+                </span>
+              )}
+              {activity.duration && (
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isDark ? "bg-purple-900/30 text-purple-400" : "bg-purple-100 text-purple-700"}`}>
+                  <Clock size={12} /> {activity.duration}
+                </span>
               )}
               {activity.location && (
-                <div className={`text-sm font-bold py-1 px-3 rounded-full ${theme === "regular" ? "bg-emerald-100 text-emerald-800" : "bg-emerald-900 text-emerald-200"}`}>
-                  {activity.location}
-                </div>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isDark ? "bg-emerald-900/30 text-emerald-400" : "bg-emerald-100 text-emerald-700"}`}>
+                  <MapPin size={12} /> {activity.location}
+                </span>
               )}
-            </div>
-            <h1 className={`text-3xl md:text-5xl font-extrabold ${textClass}`}>{title}</h1>
-          </div>
+           </div>
+           <h1 className={`text-3xl md:text-5xl font-black leading-tight ${textColor}`}>{title}</h1>
+           {activity.location && <p className={`mt-2 flex items-center gap-2 ${textMuted}`}><MapPin size={16} /> {activity.location}</p>}
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 md:p-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          
+          {/* --- LEFT COLUMN: CONTENT --- */}
+          <div className="lg:col-span-2 space-y-8">
             
-            {/* --- KONTEN KIRI: TABS & INFO --- */}
-            <div className="lg:col-span-2">
-              <div className="w-full">
-                {/* Tab Navigation */}
-                <div className={`w-full border-b ${borderClass} overflow-x-auto [&::-webkit-scrollbar]:hidden`}>
-                  <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-                    {tabs.map((tab) => (
-                      <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`${
-                          activeTab === tab
-                            ? "border-blue-500 text-blue-600"
-                            : `border-transparent ${textMutedClass} hover:border-gray-300 hover:text-gray-700`
-                        } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-                      >
-                        {/* Gunakan translasi packages agar konsisten */}
-                        {t(`tabs.${tab.toLowerCase()}`)}
-                      </button>
-                    ))}
-                  </nav>
-                </div>
-
-                <div className="py-8 min-h-[300px]">
-                  {/* CONTENT: OVERVIEW */}
-                  {activeTab === "Overview" && (
-                    <div>
-                      <h3 className={`text-2xl font-bold mb-4 ${textClass}`}>{t("trip.about")}</h3>
-                      <p className={`text-lg leading-relaxed ${textMutedClass} whitespace-pre-wrap`}>
-                        {activity.description || "No description available."}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* CONTENT: ITINERARY */}
-                  {activeTab === "Itinerary" && (
-                    <div className="space-y-8">
-                      {itineraryData.length > 0 ? (
-                        itineraryData.map((item, index) => (
-                          <div key={index} className="flex gap-4">
-                            <div className="flex flex-col items-center shrink-0">
-                              <div className="flex items-center justify-center w-10 h-10 bg-blue-500 text-white rounded-full font-bold">
-                                {item.day}
-                              </div>
-                              {index < itineraryData.length - 1 && <div className={`w-px grow ${borderClass} mt-2`}></div>}
-                            </div>
-                            <div className="pt-1">
-                              <h4 className={`text-lg font-bold ${textClass}`}>{item.title}</h4>
-                              <p className={`${textMutedClass}`}>{item.description}</p>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <p className={textMutedClass}>{t("status.noItinerary", { defaultMessage: "No itinerary details available." })}</p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* CONTENT: PRICING */}
-                  {activeTab === "Pricing" && (
-                    <div className="space-y-6">
-                      <h3 className={`text-2xl font-bold mb-4 ${textClass}`}>{t("tabs.pricing")}</h3>
-                      
-                      {/* Pricing Table */}
-                      <div className={`border ${borderClass} rounded-lg overflow-hidden`}>
-                        <table className="w-full">
-                          <thead className={theme === "regular" ? "bg-gray-50" : "bg-gray-700"}>
-                            <tr>
-                              <th className={`px-6 py-4 text-left text-sm font-semibold ${textClass} uppercase`}>Group Size</th>
-                              <th className={`px-6 py-4 text-left text-sm font-semibold ${textClass} uppercase`}>Price per Person</th>
-                            </tr>
-                          </thead>
-                          <tbody className={`divide-y ${borderClass} ${cardBgClass}`}>
-                            {priceTiers.map((tier) => (
-                              <tr key={tier.min_pax}>
-                                <td className={`px-6 py-4 whitespace-nowrap text-sm ${textClass}`}>
-                                  {formatPaxRange(tier.min_pax, tier.max_pax)}
-                                </td>
-                                <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${textClass}`}>
-                                  {formatPrice(tier.price)}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* CONTENT: COST (Included/Excluded) */}
-                  {activeTab === "Cost" && (
-                    <div>
-                      <h3 className={`text-2xl font-bold mb-6 ${textClass}`}>{t("cost.facilitiesIncluded")}</h3>
-                      {costData.included && costData.included.length > 0 ? (
-                        <ul className="space-y-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mb-10">
-                          {costData.included.map((item, index) => (
-                            <li key={index} className="flex items-center gap-3">
-                              <CheckIcon className="w-5 h-5 text-green-500 shrink-0" />
-                              <span className={textMutedClass}>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : <p className={`mb-10 ${textMutedClass}`}>No data available.</p>}
-
-                      <h3 className={`text-2xl font-bold mb-6 ${textClass}`}>{t("cost.facilitiesExcluded")}</h3>
-                      {costData.excluded && costData.excluded.length > 0 ? (
-                        <ul className="space-y-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-                          {costData.excluded.map((item, index) => (
-                            <li key={index} className="flex items-center gap-3">
-                              <XIcon className="w-5 h-5 text-red-500 shrink-0" />
-                              <span className={textMutedClass}>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : <p className={textMutedClass}>No data available.</p>}
-                    </div>
-                  )}
-
-                  {/* CONTENT: FAQs */}
-                  {activeTab === "FAQs" && (
-                    <div className="space-y-6">
-                      {faqsData.length > 0 ? (
-                        faqsData.map((faq, index) => (
-                          <div key={index} className={`p-4 rounded-lg ${borderClass} border`}>
-                            <h4 className={`font-bold text-lg ${textClass} mb-2`}>{faq.question}</h4>
-                            <p className={textMutedClass}>{faq.answer}</p>
-                          </div>
-                        ))
-                      ) : (
-                        <p className={textMutedClass}>No FAQs available.</p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* CONTENT: MAP */}
-                  {activeTab === "Map" && (
-                    mapUrl ? (
-                      <iframe src={mapUrl} width="100%" height="450" style={{ border: 0 }} loading="lazy" className="rounded-lg"></iframe>
-                    ) : <p className={textMutedClass}>{t("status.noMap", { defaultMessage: "Map not available." })}</p>
-                  )}
-                </div>
+            {/* Tabs */}
+            <div className={`sticky top-0 z-30 pt-4 pb-2 -mt-4 ${mainBg}`}>
+              <div className={`flex overflow-x-auto gap-2 pb-2 hide-scrollbar border-b ${borderColor}`}>
+                {tabs.map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`
+                      px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200
+                      ${activeTab === tab 
+                        ? "bg-blue-600 text-white shadow-md shadow-blue-600/20" 
+                        : `${isDark ? "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white" : "bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900"} border ${borderColor}`
+                      }
+                    `}
+                  >
+                    {t(`tabs.${tab.toLowerCase()}`)}
+                  </button>
+                ))}
               </div>
-              
-              {/* Trip Info Footer */}
-              {tripInfo.length > 0 && (
-                <div className={`mt-10 pt-10 border-t ${borderClass}`}>
-                  <h2 className={`text-2xl font-bold mb-6 ${textClass}`}>{t("trip.info")}</h2>
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
-                    {tripInfo.map((item) => (
-                      <div key={item.label} className="flex items-start space-x-4">
-                        <div className="text-2xl mt-1 shrink-0 w-6 text-center">{item.icon}</div>
-                        <div>
-                          <p className={`text-sm ${textMutedClass}`}>{item.label}</p>
-                          <p className={`font-bold ${textClass}`}>{item.value}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
-            {/* --- KONTEN KANAN: SIDEBAR BOOKING (Packages Style) --- */}
-            <div className="lg:col-span-1">
-              <div className={`border ${borderClass} rounded-xl shadow-lg p-6 sticky top-8`}>
-                <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TagIcon className="w-5 h-5 text-blue-500" />
-                    <p className={`text-sm font-semibold ${textMutedClass}`}>
-                      {tAct("activityDetail.startingFrom")}
+            {/* Content Card */}
+            <div className={`p-6 md:p-8 rounded-3xl border shadow-sm ${cardBg}`}>
+              
+              {activeTab === "Overview" && (
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <SectionTitle icon={Info} theme={theme}>About this activity</SectionTitle>
+                  <div className={`prose ${isDark ? "prose-invert" : ""} max-w-none`}>
+                    <p className={`whitespace-pre-wrap leading-relaxed ${textMuted}`}>
+                      {activity.description || "No description provided."}
                     </p>
                   </div>
-                  <p className={`text-3xl font-bold ${textClass} mb-1`}>
-                    {formatPrice(startingPrice)}
-                  </p>
-                  <p className={`text-sm ${textMutedClass}`}>
-                    per person
-                  </p>
-                  {hasMultipleTiers && (
-                    <div className={`mt-3 p-3 rounded-lg ${theme === "regular" ? "bg-green-50" : "bg-green-900/20"} mb-4`}>
-                      <div className="flex items-start gap-2">
-                        <UsersIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                        <div>
-                          <p className={`text-xs font-semibold ${theme === "regular" ? "text-green-800" : "text-green-300"}`}>
-                            Group Discounts Available
-                          </p>
-                          <p className={`text-xs ${theme === "regular" ? "text-green-700" : "text-green-400"}`}>
-                            Save more when you book for more people!
-                          </p>
-                        </div>
+
+                  {tripInfo.length > 0 && (
+                    <div className={`mt-8 pt-8 border-t ${borderColor}`}>
+                      <h4 className={`text-lg font-bold mb-4 ${textColor}`}>Highlights</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {tripInfo.map((info, idx) => (
+                          <div key={idx} className={`p-4 rounded-xl ${isDark ? "bg-gray-800" : "bg-gray-50"}`}>
+                            <div className="text-2xl mb-2">{info.icon}</div>
+                            <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${textMuted}`}>{info.label}</p>
+                            <p className={`font-bold ${textColor}`}>{info.value}</p>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
+                </div>
+              )}
 
-                  {/* Quick Pricing Preview di Sidebar */}
-                  {priceTiers.length > 0 && (
-                    <div className={`border-t ${borderClass} pt-4 mt-4`}>
-                      <p className={`text-sm font-semibold ${textClass} mb-2`}>
-                        Quick Price Guide:
-                      </p>
-                      <div className="space-y-2">
-                        {priceTiers.slice(0, 3).map((tier) => (
-                          <div key={tier.min_pax} className="flex justify-between items-center text-sm">
-                            <span className={textMutedClass}>
-                              {formatPaxRange(tier.min_pax, tier.max_pax)}
-                            </span>
-                            <span className={`font-semibold ${textClass}`}>
-                              {formatPrice(tier.price)}
+              {activeTab === "Itinerary" && (
+                <div className="space-y-6">
+                  <SectionTitle icon={CalendarCheck} theme={theme}>Itinerary</SectionTitle>
+                  {itineraryData.length > 0 ? (
+                    <div className="relative pl-8 space-y-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-blue-200 dark:before:bg-blue-900">
+                      {itineraryData.map((item, index) => (
+                        <div key={index} className="relative">
+                           <div className="absolute -left-[35px] w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-lg ring-4 ring-white dark:ring-gray-900">
+                             {item.day}
+                           </div>
+                           <h4 className={`text-lg font-bold ${textColor}`}>{item.title}</h4>
+                           <p className={`mt-2 ${textMuted}`}>{item.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className={textMuted}>Detailed itinerary is not available for this activity.</p>
+                  )}
+                </div>
+              )}
+
+              {activeTab === "Pricing" && (
+                <div className="space-y-8">
+                  <SectionTitle icon={Tag} theme={theme}>Pricing Packages</SectionTitle>
+                  
+                  {/* Price Tiers */}
+                  <div className={`overflow-hidden rounded-xl border ${borderColor}`}>
+                    <table className="w-full text-left">
+                      <thead className={isDark ? "bg-gray-800" : "bg-gray-50"}>
+                        <tr>
+                          <th className={`px-6 py-4 text-sm font-bold uppercase ${textMuted}`}>Pax</th>
+                          <th className={`px-6 py-4 text-sm font-bold uppercase ${textMuted}`}>Price / Person</th>
+                        </tr>
+                      </thead>
+                      <tbody className={`divide-y ${borderColor}`}>
+                        {priceTiers.map((tier) => (
+                          <tr key={tier.min_pax}>
+                            <td className={`px-6 py-4 ${textColor}`}>{formatPaxRange(tier.min_pax, tier.max_pax)}</td>
+                            <td className="px-6 py-4 font-bold text-blue-600">{formatPrice(tier.price)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Add-ons Display */}
+                  {activity.addons && activity.addons.length > 0 && (
+                    <div className="pt-4">
+                      <h4 className={`text-lg font-bold mb-4 flex items-center gap-2 ${textColor}`}>
+                        <Camera className="w-5 h-5 text-purple-500" /> 
+                        Optional Add-ons
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {activity.addons.map((addon, idx) => (
+                          <div key={idx} className={`p-4 rounded-xl border flex justify-between items-center ${cardBg}`}>
+                            <span className={`font-medium ${textColor}`}>{addon.name}</span>
+                            <span className={`px-3 py-1 rounded-lg text-sm font-bold ${isDark ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-900"}`}>
+                              +{formatPrice(addon.price)}
                             </span>
                           </div>
                         ))}
@@ -470,56 +374,125 @@ export default function ActivityDetailPage() {
                     </div>
                   )}
                 </div>
+              )}
 
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-4 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                  disabled={!user}
-                >
-                  {user ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <CalendarIcon className="w-5 h-5" />
-                      {tAct("booking.checkAvailability")}
-                    </div>
-                  ) : (
-                    tAct("booking.loginToBook", { defaultMessage: "Login to Book" })
-                  )}
-                </button>
-
-                <div className={`mt-4 p-3 rounded-lg ${theme === "regular" ? "bg-gray-50" : "bg-gray-700/50"}`}>
-                  <div className="flex items-center gap-2 text-sm">
-                    <CheckIcon className="w-4 h-4 text-green-500 shrink-0" />
-                    <span className={textMutedClass}>Best price guarantee</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm mt-1">
-                    <CheckIcon className="w-4 h-4 text-green-500 shrink-0" />
-                    <span className={textMutedClass}>Free cancellation</span>
-                  </div>
+              {activeTab === "Cost" && (
+                <div className="grid md:grid-cols-2 gap-8">
+                   <div>
+                     <h4 className="font-bold text-lg mb-4 flex items-center gap-2 text-green-600"><Check className="w-5 h-5" /> Included</h4>
+                     <ul className="space-y-3">
+                       {costData.included?.length ? costData.included.map((item, i) => (
+                         <li key={i} className={`flex items-start gap-3 text-sm ${textMuted}`}>
+                           <Check className="w-4 h-4 text-green-500 mt-0.5 shrink-0" /> {item}
+                         </li>
+                       )) : <li className={textMuted}>-</li>}
+                     </ul>
+                   </div>
+                   <div>
+                     <h4 className="font-bold text-lg mb-4 flex items-center gap-2 text-red-500"><XMark className="w-5 h-5" /> Excluded</h4>
+                     <ul className="space-y-3">
+                       {costData.excluded?.length ? costData.excluded.map((item, i) => (
+                         <li key={i} className={`flex items-start gap-3 text-sm ${textMuted}`}>
+                           <XMark className="w-4 h-4 text-red-500 mt-0.5 shrink-0" /> {item}
+                         </li>
+                       )) : <li className={textMuted}>-</li>}
+                     </ul>
+                   </div>
                 </div>
+              )}
 
-                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
-                  {tAct("booking.needHelp")}{" "}
-                  <a href="#" className="text-cyan-600 font-semibold hover:underline">
-                    {tAct("booking.sendMessage")}
-                  </a>
-                </p>
-              </div>
+              {activeTab === "FAQs" && (
+                <div className="space-y-6">
+                  <SectionTitle theme={theme}>Frequently Asked Questions</SectionTitle>
+                  {faqsData.length ? faqsData.map((faq, i) => (
+                    <div key={i} className={`p-5 rounded-xl border ${borderColor} ${isDark ? "bg-gray-800/30" : "bg-gray-50/50"}`}>
+                      <h4 className={`font-bold flex gap-3 ${textColor}`}>
+                        <Users className="w-5 h-5 text-blue-500 shrink-0" />
+                        {faq.question}
+                      </h4>
+                      <p className={`mt-3 pl-8 text-sm leading-relaxed ${textMuted}`}>{faq.answer}</p>
+                    </div>
+                  )) : <p className={textMuted}>No FAQs available.</p>}
+                </div>
+              )}
+
+              {activeTab === "Map" && (
+                <div className="h-[400px] rounded-xl overflow-hidden bg-gray-200 relative">
+                  {mapUrl ? (
+                    <iframe src={mapUrl} width="100%" height="100%" style={{ border: 0 }} loading="lazy"></iframe>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-gray-500">Map unavailable</div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* Back Button */}
-        <div className="text-center mt-12">
-          <Link
-            href="/activities"
-            className={`inline-block py-3 px-8 rounded-lg font-bold shadow-lg transition-transform transform hover:scale-105 ${theme === "regular" ? "bg-white text-blue-600 hover:bg-gray-50" : "bg-gray-800 text-white hover:bg-gray-700"}`}
-          >
-            {tAct("buttons.back")}
-          </Link>
+          {/* --- RIGHT COLUMN: SIDEBAR --- */}
+          <div className="lg:col-span-1 space-y-6">
+            
+            {/* Booking Card */}
+            <div className={`p-6 rounded-3xl border shadow-xl sticky top-8 ${cardBg}`}>
+              <div className="mb-6">
+                <p className={`text-sm font-medium mb-1 ${textMuted}`}>Starting from</p>
+                <div className="flex items-baseline gap-2">
+                   <span className={`text-4xl font-black ${isDark ? "text-white" : "text-blue-600"}`}>
+                     {formatPrice(startingPrice)}
+                   </span>
+                   <span className={textMuted}>/ pax</span>
+                </div>
+                {hasMultipleTiers && (
+                  <div className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold ${isDark ? "bg-green-900/30 text-green-400" : "bg-green-100 text-green-700"}`}>
+                     <Users size={14} /> Group discounts available
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className={`
+                    w-full py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-600/20 transform transition-all hover:-translate-y-1
+                    /* ✅ Fixed: Updated to canonical class */
+                    bg-linear-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white
+                  `}
+                >
+                  {user ? "Book Now" : "Login to Book"}
+                </button>
+
+                <div className={`flex flex-col gap-3 p-4 rounded-xl ${isDark ? "bg-gray-800" : "bg-gray-50"}`}>
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="w-5 h-5 text-green-500" />
+                    <div>
+                      <p className={`text-sm font-bold ${textColor}`}>Secure Booking</p>
+                      <p className={`text-xs ${textMuted}`}>Your data is protected</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    <div>
+                      <p className={`text-sm font-bold ${textColor}`}>Instant Confirmation</p>
+                      <p className={`text-xs ${textMuted}`}>Receive ticket via email</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Help Card */}
+            <div className={`p-6 rounded-3xl border ${cardBg}`}>
+               <h4 className={`font-bold mb-2 ${textColor}`}>Need Help?</h4>
+               <p className={`text-sm mb-4 ${textMuted}`}>Contact our support team for custom arrangements.</p>
+               <a href="#" className={`block w-full py-3 rounded-xl border font-bold text-center transition ${isDark ? "border-gray-700 hover:bg-gray-800" : "border-gray-200 hover:bg-gray-50"}`}>
+                 Contact Support
+               </a>
+            </div>
+
+          </div>
         </div>
       </div>
 
-      {/* Modal Booking (Tetap pakai ActivityBookingModal) */}
+      {/* --- Modal --- */}
       {activity && (
         <ActivityBookingModal
           isOpen={isModalOpen}
