@@ -3,13 +3,9 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { Order } from "../types";
-import { useMidtransSnap } from "@/hooks/useMidtransSnap";
 import { toast } from "sonner";
-import {
-  formatCurrency,
-  formatDate,
-  getStatusChip,
-} from "@/lib/utils";
+import { useMidtransSnap } from "@/hooks/useMidtransSnap";
+import { formatCurrency, formatDate, getStatusChip } from "@/lib/utils";
 import OrderPaymentActions from "./OrderPaymentActions";
 import { AxiosError } from "axios";
 import {
@@ -20,62 +16,182 @@ import {
   Mail,
   User,
   Plane,
-  MessageSquare,
   Flag,
   Car,
   Clock,
   Calendar,
   Wallet,
   Compass,
-  Briefcase,
   Building2,
   Users,
+  Luggage,
+  Baby,
+  Ticket, 
+  FileText
 } from "lucide-react";
 
-// --- 1. Detail untuk Car Rental ---
-const CarRentalDetails = ({ details }: { details: any }) => {
+// --- TYPES ---
+// Defined locally to ensure type safety regardless of global types.ts state
+interface BookingDetails {
+  brand?: string;
+  car_model?: string;
+  plate_number?: string;
+  total_days?: number;
+  pickup_location?: string;
+  pickup_time?: string;
+  phone_number?: string;
+  phone?: string;
+  email?: string;
+  type?: string;
+  company_name?: string;
+  companyName?: string;
+  brand_name?: string;
+  brandName?: string;
+  full_name?: string;
+  fullName?: string;
+  name?: string;
+  pax_adults?: string | number;
+  paxAdults?: string | number;
+  pax_teens?: string | number;
+  paxTeens?: string | number;
+  pax_kids?: string | number;
+  paxKids?: string | number;
+  pax_seniors?: string | number;
+  paxSeniors?: string | number;
+  trip_type?: string;
+  tripType?: string;
+  city?: string;
+  province?: string;
+  country?: string;
+  travel_type?: string;
+  travelType?: string;
+  departure_date?: string;
+  departureDate?: string;
+  start_date?: string;
+  duration?: string | number;
+  days?: string | number;
+  budget_pack?: string;
+  budgetPack?: string;
+  addons?: string[] | string;
+  must_visit?: string;
+  mustVisit?: string;
+  adults?: number;
+  children?: number;
+  participant_nationality?: string;
+  total_pax?: number;
+  flight_number?: string;
+  special_request?: string;
+  quantity?: number;
+  service_name?: string;
+  [key: string]: unknown;
+}
+
+// --- HELPER: SERVICE TYPE BADGE ---
+const ServiceTypeBadge = ({ type }: { type: string }) => {
+  let config = { 
+    label: "Service", 
+    color: "bg-gray-100 text-gray-700 border-gray-200", 
+    icon: FileText 
+  };
+
+  if (type.includes("CarRental")) {
+    config = { 
+      label: "Car Rental", 
+      color: "bg-blue-50 text-blue-700 border-blue-200", 
+      icon: Car 
+    };
+  } else if (type.includes("TripPlanner")) {
+    config = { 
+      label: "Trip Planner", 
+      color: "bg-purple-50 text-purple-700 border-purple-200", 
+      icon: Compass 
+    };
+  } else if (type.includes("HolidayPackage")) {
+    config = { 
+      label: "Holiday Package", 
+      color: "bg-emerald-50 text-emerald-700 border-emerald-200", 
+      icon: Luggage 
+    };
+  } else if (type.includes("Activity")) {
+    config = { 
+      label: "Activity", 
+      color: "bg-orange-50 text-orange-700 border-orange-200", 
+      icon: Ticket 
+    };
+  }
+
+  const Icon = config.icon;
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-      <div className="col-span-full font-semibold text-primary border-b border-border pb-1 mb-1 flex items-center gap-2">
-        <Car size={16} /> Rental Information
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${config.color} mb-1 w-fit`}>
+      <Icon size={12} /> {config.label}
+    </span>
+  );
+};
+
+// --- 1. Detail untuk Car Rental ---
+const CarRentalDetails = ({ details }: { details: BookingDetails }) => {
+  return (
+    <div className="space-y-4 text-sm animate-fadeIn">
+      <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
+        <Car size={16} /> Car Rental Details
       </div>
       
-      <div className="flex flex-col">
-        <span className="text-xs text-muted-foreground">Pickup Location</span>
-        <span className="font-medium flex items-center gap-1">
-          <MapPin size={12} /> {details.pickup_location || "-"}
-        </span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Car Info */}
+        <div className="space-y-3">
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Vehicle</span>
+            <span className="font-medium text-base">
+              {details.brand} {details.car_model}
+            </span>
+            {details.plate_number && (
+               <span className="text-xs text-muted-foreground">{details.plate_number}</span>
+            )}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Duration</span>
+            <span className="font-medium flex items-center gap-1">
+              <Clock size={12} /> {details.total_days} Day(s)
+            </span>
+          </div>
+        </div>
+
+        {/* Pickup Info */}
+        <div className="space-y-3">
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Pickup Location</span>
+            <span className="font-medium flex items-center gap-1">
+              <MapPin size={12} /> {details.pickup_location || "-"}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Pickup Time</span>
+            <span className="font-medium flex items-center gap-1">
+              <Clock size={12} /> {details.pickup_time || "-"}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col">
-        <span className="text-xs text-muted-foreground">Pickup Time</span>
-        <span className="font-medium flex items-center gap-1">
-          <Clock size={12} /> {details.pickup_time || "-"}
-        </span>
-      </div>
-
-      <div className="flex flex-col">
-        <span className="text-xs text-muted-foreground">Contact Phone</span>
-        <span className="font-medium flex items-center gap-1">
-          <Phone size={12} /> {details.phone_number || "-"}
-        </span>
+      {/* Contact Info */}
+      <div className="bg-muted/30 p-3 rounded-lg border border-border mt-2">
+         <span className="text-xs text-muted-foreground block mb-1 font-semibold">Contact Driver / Renter</span>
+         <div className="flex items-center gap-2 text-xs">
+            <Phone size={12} /> {details.phone_number || "-"}
+         </div>
       </div>
     </div>
   );
 };
 
-// --- 2. Detail untuk Trip Planner (FIXED & MATCHING PLANNER FORM) ---
-const TripPlannerDetails = ({ details }: { details: any }) => {
-  // Debugging: Cek console browser (F12) untuk melihat data asli
-  console.log("Trip Details Received:", details);
-
-  // Helper Kuat: Mencari data berdasarkan variasi nama key
-  // Prioritas: snake_case (dari DB/Laravel) -> camelCase (Fallback)
+// --- 2. Detail untuk Trip Planner ---
+const TripPlannerDetails = ({ details }: { details: BookingDetails }) => {
   const get = (...keys: string[]) => {
     if (!details) return null;
     for (const k of keys) {
       if (details[k] !== undefined && details[k] !== null && details[k] !== "") {
-        return details[k];
+        return details[k] as string;
       }
     }
     return null;
@@ -83,12 +199,10 @@ const TripPlannerDetails = ({ details }: { details: any }) => {
 
   const safeInt = (...keys: string[]) => {
     const val = get(...keys);
-    const parsed = parseInt(val);
+    const parsed = parseInt(val || "0");
     return isNaN(parsed) ? 0 : parsed;
   };
 
-  // --- A. Mapping Data Kontak ---
-  // PlannerForm mengirim: 'type', 'full_name', 'company_name', 'email', 'phone'
   const type = get('type') || 'personal'; 
   const email = get('email');
   const phone = get('phone', 'phone_number', 'whatsapp'); 
@@ -97,22 +211,18 @@ const TripPlannerDetails = ({ details }: { details: any }) => {
   let brandName = null;
   
   if (type === 'company') {
-    contactName = get('company_name', 'companyName');
+    contactName = get('company_name', 'companyName') || "-";
     brandName = get('brand_name', 'brandName');
   } else {
-    contactName = get('full_name', 'fullName', 'name');
+    contactName = get('full_name', 'fullName', 'name') || "-";
   }
 
-  // --- B. Mapping Data Peserta ---
-  // PlannerForm mengirim: 'pax_adults', 'pax_teens', dst
   const adults = safeInt('pax_adults', 'paxAdults');
   const teens = safeInt('pax_teens', 'paxTeens');
   const kids = safeInt('pax_kids', 'paxKids');
   const seniors = safeInt('pax_seniors', 'paxSeniors');
   const totalPax = adults + teens + kids + seniors;
 
-  // --- C. Mapping Lokasi ---
-  // PlannerForm mengirim: 'trip_type', 'city', 'province', 'country'
   const tripType = get('trip_type', 'tripType'); 
   const city = get('city');
   const province = get('province');
@@ -129,15 +239,12 @@ const TripPlannerDetails = ({ details }: { details: any }) => {
     }
   }
 
-  // --- D. Mapping Waktu & Detail ---
-  // PlannerForm mengirim: 'travel_type', 'departure_date', 'duration', 'budget_pack'
   const travelType = get('travel_type', 'travelType') || "-";
   const departureDate = get('departure_date', 'departureDate', 'start_date') || "-";
   const duration = get('duration', 'days');
   const budgetPack = get('budget_pack', 'budgetPack') || "-";
   
-  // --- E. Tambahan ---
-  const addons = get('addons');
+  const addons = details.addons;
   const mustVisit = get('must_visit', 'mustVisit');
 
   return (
@@ -146,10 +253,7 @@ const TripPlannerDetails = ({ details }: { details: any }) => {
         <Compass size={16} /> Custom Trip Plan Details
       </div>
 
-      {/* Grid Utama */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        
-        {/* KIRI: Destinasi & Waktu */}
         <div className="space-y-3">
           <div className="flex flex-col">
             <span className="text-xs text-muted-foreground">Destination</span>
@@ -164,7 +268,6 @@ const TripPlannerDetails = ({ details }: { details: any }) => {
           </div>
         </div>
 
-        {/* KANAN: Tipe & Budget */}
         <div className="space-y-3">
           <div className="flex flex-col">
             <span className="text-xs text-muted-foreground">Travel Type</span>
@@ -181,37 +284,29 @@ const TripPlannerDetails = ({ details }: { details: any }) => {
         </div>
       </div>
 
-      {/* SECTION KONTAK & PESERTA */}
       <div className="bg-muted/30 p-3 rounded-lg border border-border mt-2">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          
-          {/* Kolom Kontak */}
           <div>
             <span className="text-xs text-muted-foreground block mb-1 font-semibold flex items-center gap-1">
               {type === 'company' ? <Building2 size={12}/> : <User size={12}/>}
               Contact Person ({type})
             </span>
-            
             <div className="font-medium text-sm truncate" title={contactName}>
               {contactName}
             </div>
-            
             {type === 'company' && brandName && (
                <div className="text-xs text-muted-foreground italic">Brand: {brandName}</div>
             )}
-
             <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
               <div className="flex items-center gap-1"><Mail size={10}/> {email || '-'}</div>
               <div className="flex items-center gap-1"><Phone size={10}/> {phone || '-'}</div>
             </div>
           </div>
 
-          {/* Kolom Peserta */}
           <div>
             <span className="text-xs text-muted-foreground block mb-1 font-semibold flex items-center gap-1">
               <Users size={12}/> Participants ({totalPax})
             </span>
-            
             {totalPax > 0 ? (
               <div className="flex flex-wrap gap-2 text-xs mt-1">
                 {adults > 0 && <span className="bg-background px-2 py-1 rounded border border-border">Adults: {adults}</span>}
@@ -223,23 +318,21 @@ const TripPlannerDetails = ({ details }: { details: any }) => {
               <span className="text-xs text-muted-foreground italic">No participant details found</span>
             )}
           </div>
-
         </div>
       </div>
 
-      {/* Tambahan (Add-ons & Notes) */}
-      {( (addons && addons.length > 0) || mustVisit ) && (
+      {( (Array.isArray(addons) && addons.length > 0) || mustVisit ) && (
         <div className="text-xs space-y-2 pt-2 border-t border-dashed border-border mt-2">
-          {addons && addons.length > 0 && (
+          {Array.isArray(addons) && addons.length > 0 && (
             <div>
               <span className="text-muted-foreground font-semibold">Add-ons: </span>
-              <span>{Array.isArray(addons) ? addons.join(", ") : addons}</span>
+              <span>{addons.join(", ")}</span>
             </div>
           )}
           {mustVisit && (
             <div>
               <span className="text-muted-foreground font-semibold">Must Visit: </span>
-              <span className="italic">"{mustVisit}"</span>
+              <span className="italic">&quot;{mustVisit}&quot;</span>
             </div>
           )}
         </div>
@@ -248,76 +341,157 @@ const TripPlannerDetails = ({ details }: { details: any }) => {
   );
 };
 
-// --- 3. Detail Umum (Activity & Package) ---
-const GeneralBookingDetails = ({ details }: { details: any }) => {
+// --- 3. Detail untuk Holiday Package ---
+const HolidayPackageDetails = ({ details }: { details: BookingDetails }) => {
+  const adults = details.adults || 0;
+  const children = details.children || 0;
+  const totalPax = details.total_pax || (adults + children);
+
   return (
-    <div className="space-y-3 text-sm">
-      {/* Section: Guest Info */}
-      <div>
-        <div className="font-semibold text-primary border-b border-border pb-1 mb-2 flex items-center gap-2">
-          <User size={16} /> Guest Information
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Name</span>
-            <span className="font-medium">{details.full_name || "-"}</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Nationality</span>
-            <span className="font-medium flex items-center gap-1">
-              <Flag size={12} /> {details.participant_nationality || "-"}
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Contact</span>
-            <span className="font-medium flex items-center gap-1">
-              <Phone size={12} /> {details.phone_number || "-"}
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Email</span>
-            <span className="font-medium flex items-center gap-1">
-              <Mail size={12} /> {details.email || "-"}
-            </span>
-          </div>
-        </div>
+    <div className="space-y-4 text-sm animate-fadeIn">
+      <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
+        <Luggage size={16} /> Holiday Package Details
       </div>
 
-      {/* Section: Logistics */}
-      <div>
-        <div className="font-semibold text-primary border-b border-border pb-1 mb-2 mt-3 flex items-center gap-2">
-          <MapPin size={16} /> Logistics & Requests
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Kolom Kiri: Tamu & Peserta */}
+        <div className="space-y-3">
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Lead Guest</span>
+            <span className="font-medium">{details.full_name || "-"}</span>
+            <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+              <Flag size={10} /> {details.participant_nationality || "-"}
+            </span>
+          </div>
+
+          <div className="flex flex-col">
+             <span className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
+                <Users size={12}/> Participants ({totalPax})
+             </span>
+             <div className="flex gap-2">
+                <span className="bg-background px-2 py-1 rounded border border-border text-xs">
+                  Adults: {adults}
+                </span>
+                {children > 0 && (
+                  <span className="bg-background px-2 py-1 rounded border border-border text-xs flex items-center gap-1">
+                    <Baby size={12}/> Children: {children}
+                  </span>
+                )}
+             </div>
+          </div>
         </div>
-        <div className="space-y-2">
+
+        {/* Kolom Kanan: Logistik */}
+        <div className="space-y-3">
           <div className="flex flex-col">
             <span className="text-xs text-muted-foreground">Pickup Location</span>
-            <span className="font-medium">{details.pickup_location || "-"}</span>
+            <span className="font-medium flex items-center gap-1">
+              <MapPin size={12} /> {details.pickup_location || "-"}
+            </span>
           </div>
-          
+
           {details.flight_number && (
             <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground">Flight Number</span>
+              <span className="text-xs text-muted-foreground">Flight Information</span>
               <span className="font-medium flex items-center gap-1">
                 <Plane size={12} /> {details.flight_number}
               </span>
             </div>
           )}
-
-          {details.special_request && (
-            <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground">Special Request</span>
-              <span className="font-medium italic flex items-start gap-1">
-                <MessageSquare size={12} className="mt-0.5" /> "{details.special_request}"
-              </span>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Pax Info */}
-      <div className="text-right text-xs font-medium text-muted-foreground border-t border-dashed pt-2 mt-2">
-        Total Participants: {(details.adults || 0) + (details.children || 0) + (details.quantity || 0)}
+      {/* Footer: Kontak & Request */}
+      <div className="bg-muted/30 p-3 rounded-lg border border-border mt-2 space-y-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <div className="flex items-center gap-2">
+             <Mail size={12} className="text-muted-foreground"/> {details.email}
+          </div>
+          <div className="flex items-center gap-2">
+             <Phone size={12} className="text-muted-foreground"/> {details.phone_number}
+          </div>
+        </div>
+
+        {details.special_request && (
+          <div className="pt-2 border-t border-dashed border-border">
+             <span className="text-xs text-muted-foreground block mb-0.5">Special Request:</span>
+             <span className="text-sm italic">&quot;{details.special_request}&quot;</span>
+          </div>
+        )}
       </div>
+    </div>
+  );
+};
+
+// --- 4. Detail untuk Activity ---
+const ActivityDetails = ({ details }: { details: BookingDetails }) => {
+  const quantity = details.quantity || 1;
+
+  return (
+    <div className="space-y-4 text-sm animate-fadeIn">
+      <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
+        <Ticket size={16} /> Activity Details
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Kolom Kiri: Tamu & Quantity */}
+        <div className="space-y-3">
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Lead Guest</span>
+            <span className="font-medium">{details.full_name || "-"}</span>
+            <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+              <Flag size={10} /> {details.participant_nationality || "-"}
+            </span>
+          </div>
+
+          <div className="flex flex-col">
+             <span className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
+                <Users size={12}/> Tickets / Pax
+             </span>
+             <span className="bg-background w-fit px-2 py-1 rounded border border-border text-xs font-medium">
+                Quantity: {quantity}
+             </span>
+          </div>
+        </div>
+
+        {/* Kolom Kanan: Logistik */}
+        <div className="space-y-3">
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Pickup Location</span>
+            <span className="font-medium flex items-center gap-1">
+              <MapPin size={12} /> {details.pickup_location || "-"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer: Kontak & Request */}
+      <div className="bg-muted/30 p-3 rounded-lg border border-border mt-2 space-y-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <div className="flex items-center gap-2">
+             <Mail size={12} className="text-muted-foreground"/> {details.email}
+          </div>
+          <div className="flex items-center gap-2">
+             <Phone size={12} className="text-muted-foreground"/> {details.phone_number}
+          </div>
+        </div>
+
+        {details.special_request && (
+          <div className="pt-2 border-t border-dashed border-border">
+             <span className="text-xs text-muted-foreground block mb-0.5">Special Request:</span>
+             <span className="text-sm italic">&quot;{details.special_request}&quot;</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- Fallback Component ---
+const GeneralBookingDetails = () => {
+  return (
+    <div className="text-sm text-muted-foreground italic">
+      No additional details available for this service.
     </div>
   );
 };
@@ -432,15 +606,22 @@ export default function HistoryTab() {
     ) : (
       orders.map((order) => {
         const { booking } = order;
-        const bookable = booking?.bookable;
+        // ✅ FIX: Correct initialization of bookable. 
+        // DO NOT use || {} because empty object has no properties (causes TypeScript error)
+        const bookable = booking?.bookable; 
         const bookableType = booking?.bookable_type || "";
         
-       
-        const details = booking?.details || {}; 
+        const snapshotDetails = booking?.details || {};
+        
+        // ✅ FIX: Handle null bookable when merging
+        // If bookable is null/undefined, fallback to {} for the merge
+        const combinedDetails: BookingDetails = { ...(bookable || {}), ...snapshotDetails };
 
+        // Determine Service Name
         const serviceName =
-          bookable?.name || // Activity / Package Name
-          (bookable?.brand ? `${bookable.brand} ${bookable.car_model}` : null) || // Car Name
+          combinedDetails.service_name || 
+          bookable?.name || // Now safe because bookable is Bookable | undefined
+          (bookable?.brand ? `${bookable.brand} ${bookable.car_model}` : null) || 
           (bookableType.includes("TripPlanner") ? "Custom Trip Plan" : "Service Details Unavailable");
 
         const startDate = booking?.start_date;
@@ -450,13 +631,18 @@ export default function HistoryTab() {
         return (
           <div
             key={order.id}
-            className="bg-card border border-border rounded-lg p-4 transition-all hover:shadow-md"
+            className="bg-card border border-border rounded-lg p-4 transition-all hover:shadow-md mb-4"
           >
-            {/* --- Header Section --- */}
+            {/* --- Header Section (UPDATED WITH BADGE) --- */}
             <div className="flex justify-between items-start mb-3">
-              <div>
-                <p className="font-bold text-lg">Order #{order.order_number}</p>
-                <p className="text-sm text-foreground/60">
+              <div className="flex flex-col gap-1">
+                {/* ✅ VISUAL TAG HERE */}
+                <ServiceTypeBadge type={bookableType} />
+                
+                <div className="flex items-center gap-2">
+                   <p className="font-bold text-lg">Order #{order.order_number}</p>
+                </div>
+                <p className="text-xs text-foreground/60">
                   Ordered on {formatDate(order.created_at)}
                 </p>
               </div>
@@ -492,14 +678,16 @@ export default function HistoryTab() {
               {/* --- DYNAMIC DETAIL RENDERING --- */}
               {isExpanded && (
                 <div className="bg-muted/30 rounded-md p-4 mb-4 border border-border animate-fadeIn">
-                  {/* SWITCH CASE LOGIC BERDASARKAN TIPE LAYANAN */}
                   {bookableType.includes("CarRental") ? (
-                    <CarRentalDetails details={details} />
+                    <CarRentalDetails details={combinedDetails} />
                   ) : bookableType.includes("TripPlanner") ? (
-                    <TripPlannerDetails details={details} />
+                    <TripPlannerDetails details={combinedDetails} />
+                  ) : bookableType.includes("HolidayPackage") ? (
+                    <HolidayPackageDetails details={combinedDetails} />
+                  ) : bookableType.includes("Activity") ? (
+                    <ActivityDetails details={combinedDetails} />
                   ) : (
-                    // Default untuk Activity & HolidayPackage
-                    <GeneralBookingDetails details={details} />
+                    <GeneralBookingDetails />
                   )}
                 </div>
               )}

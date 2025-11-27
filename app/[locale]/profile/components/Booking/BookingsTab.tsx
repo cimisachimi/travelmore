@@ -1,4 +1,3 @@
-// app/[locale]/profile/components/Booking/BookingsTab.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,50 +15,42 @@ import {
   Plane,
   ArrowRight,
   RefreshCcw,
+  LucideIcon,
 } from "lucide-react";
 
-// ✅ Import Modal dari file sebelah
+// Import Shared Types
+import { SimpleBooking } from "../../types";
+
+// Import Modal
 import RefundModal from "./RefundModal"; 
 
-// --- Interface ---
-interface BookingDetailsShape {
-  service_name?: string;
-  original_subtotal?: number;
-  discount_applied?: number;
+// --- LOCAL TYPES ---
+// We define a local interface to tell TypeScript what 'details' actually contains
+interface LocalBookingDetails {
   phone_number?: string;
   pickup_location?: string;
   pickup_time?: string;
-  total_days?: number;
   num_participants?: number;
   quantity?: number;
   activity_time?: string;
-  price_per_person?: number;
   adults?: number;
   children?: number;
   num_travelers?: number;
   price_tier?: string;
   full_name?: string;
   trip_type?: string;
-}
-
-interface SimpleBooking {
-  id: number;
-  status: string;
-  payment_status: string;
-  total_price: number;
-  start_date?: string | null;
-  end_date?: string | null;
-  bookable_type: string;
-  details: BookingDetailsShape;
-  bookable?: {
-    name?: string;
-    brand?: string;
-    car_model?: string;
-  } | null;
+  service_name?: string;
+  [key: string]: unknown; // Allow other properties
 }
 
 // --- Helper Components ---
-const DetailRow = ({ icon: Icon, label, value }: any) => {
+interface DetailRowProps {
+  icon: LucideIcon;
+  label: string;
+  value?: string | number | null;
+}
+
+const DetailRow = ({ icon: Icon, label, value }: DetailRowProps) => {
   if (!value) return null;
   return (
     <div className="flex items-center gap-3 text-sm">
@@ -71,7 +62,9 @@ const DetailRow = ({ icon: Icon, label, value }: any) => {
 };
 
 function BookingDetails({ booking }: { booking: SimpleBooking }) {
-  const { details, bookable_type } = booking;
+  // ✅ FIX: Cast details to our local interface so TypeScript knows the fields are strings/numbers
+  const details = booking.details as unknown as LocalBookingDetails;
+  const { bookable_type } = booking;
 
   if (bookable_type?.includes("CarRental")) {
     return (
@@ -121,7 +114,7 @@ export default function BookingsTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ State untuk Modal
+  // State for Modal
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
   const [selectedBookingForRefund, setSelectedBookingForRefund] = useState<SimpleBooking | null>(null);
 
@@ -154,8 +147,12 @@ export default function BookingsTab() {
     ) : (
       bookings.map((booking) => {
         const bookable = booking?.bookable;
+        
+        // Cast details here as well for service name access
+        const details = booking.details as unknown as LocalBookingDetails;
+
         const serviceName =
-          booking.details?.service_name ||
+          details?.service_name ||
           bookable?.name ||
           `${bookable?.brand || ""} ${bookable?.car_model || ""}`.trim() ||
           (booking.bookable_type?.includes("TripPlanner")
@@ -174,7 +171,6 @@ export default function BookingsTab() {
 
         const detailUrl = `/${locale}/profile/components/Booking/${booking.id}`;
         
-        // Cek status booking
         const showRefundButton = booking.status !== 'cancelled' && booking.status !== 'refunded';
 
         return (
@@ -208,7 +204,7 @@ export default function BookingsTab() {
                 </div>
 
                 <div className="flex items-center gap-3 w-full sm:w-auto">
-                    {/* Tombol Refund - Trigger Modal */}
+                    {/* Refund Button */}
                     {showRefundButton && (
                       <button 
                           onClick={() => handleOpenRefund(booking)}
@@ -218,7 +214,7 @@ export default function BookingsTab() {
                       </button>
                     )}
 
-                    {/* Tombol Details - Link Halaman */}
+                    {/* Details Button */}
                     <Link 
                         href={detailUrl}
                         className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-full hover:brightness-110 transition-all"
@@ -242,15 +238,17 @@ export default function BookingsTab() {
       </div>
       <div className="space-y-4">{renderBookingList()}</div>
 
-      {/* Render Modal */}
-      <RefundModal 
-        isOpen={isRefundModalOpen}
-        onClose={() => setIsRefundModalOpen(false)}
-        booking={selectedBookingForRefund}
-        onSuccess={() => {
-            fetchData(); 
-        }}
-      />
+      {/* Render Modal only if selectedBookingForRefund is not null */}
+      {selectedBookingForRefund && (
+        <RefundModal 
+          isOpen={isRefundModalOpen}
+          onClose={() => setIsRefundModalOpen(false)}
+          booking={selectedBookingForRefund}
+          onSuccess={() => {
+              fetchData(); 
+          }}
+        />
+      )}
     </div>
   );
 }

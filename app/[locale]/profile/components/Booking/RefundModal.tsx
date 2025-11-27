@@ -1,17 +1,18 @@
-//quote app/[locale]/profile/components/Booking/RefundModal.tsx
 "use client";
 
 import { useState, FormEvent } from "react";
 import api from "@/lib/api";
 import { formatCurrency, getStatusChip } from "@/lib/utils";
-import { X, AlertCircle, Info, CheckCircle } from "lucide-react";
+import { X, Info } from "lucide-react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+// ✅ Import shared type
+import { SimpleBooking } from "../../types";
 
 interface RefundModalProps {
   isOpen: boolean;
   onClose: () => void;
-  booking: any; 
+  booking: SimpleBooking | null; 
   onSuccess: () => void;
 }
 
@@ -27,6 +28,10 @@ export default function RefundModal({ isOpen, onClose, booking, onSuccess }: Ref
     booking.bookable?.name || 
     (booking.bookable?.brand ? `${booking.bookable.brand} ${booking.bookable.car_model}` : "Service");
 
+  // ✅ FIX: Use intersection type instead of 'any' to safely access potential order_number
+  const bookingWithOrder = booking as SimpleBooking & { order_number?: string };
+  const orderDisplay = bookingWithOrder.order_number ? `#${bookingWithOrder.order_number}` : `#${booking.id}`;
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -38,9 +43,8 @@ export default function RefundModal({ isOpen, onClose, booking, onSuccess }: Ref
     setIsSubmitting(true);
 
     try {
-      // Coba kirim ke Backend
       await api.post("/my-refunds", {
-        order_id: booking.id,
+        order_id: booking.id, 
         reason: reason,
         amount: booking.total_price, 
       });
@@ -55,8 +59,7 @@ export default function RefundModal({ isOpen, onClose, booking, onSuccess }: Ref
       console.error("Refund request failed", error);
       const axiosError = error as AxiosError<{ message?: string }>;
       
-      // ✅ PERBAIKAN DISINI: SIMULASI SUKSES JIKA 404
-      // Jika Backend belum siap (404), kita anggap sukses di Frontend agar UX berjalan
+      // Simulation for 404 (Backend not ready)
       if (axiosError.response?.status === 404) {
          toast.success("Simulasi: Permintaan refund berhasil dikirim! (API 404 bypassed)");
          onSuccess();
@@ -64,7 +67,6 @@ export default function RefundModal({ isOpen, onClose, booking, onSuccess }: Ref
          setReason("");
          setConfirm(false);
       } else {
-         // Error asli selain 404 tetap ditampilkan
          const msg = axiosError.response?.data?.message || "Failed to submit refund request.";
          toast.error(msg);
       }
@@ -96,12 +98,13 @@ export default function RefundModal({ isOpen, onClose, booking, onSuccess }: Ref
             <div className="flex justify-between items-start mb-2">
               <div>
                  <p className="font-bold text-primary">{serviceName}</p>
-                 <p className="text-xs text-muted-foreground">Order #{booking.order_number || booking.id}</p>
+                 <p className="text-xs text-muted-foreground">Order {orderDisplay}</p>
               </div>
               <span className={getStatusChip(booking.status)}>{booking.status}</span>
             </div>
             <div className="flex justify-between text-sm font-medium border-t border-dashed border-border/50 pt-2 mt-2">
                <span>Refundable Amount</span>
+               {/* formatCurrency handles string or number input */}
                <span>{formatCurrency(booking.total_price)}</span>
             </div>
           </div>

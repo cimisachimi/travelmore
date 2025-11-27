@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 // ✅ DATA DUMMY / MOCK DATA
 // Gunakan ini agar tampilan bisa dicek walaupun Backend belum siap
-const MOCK_REFUNDS: any[] = [
+const MOCK_REFUNDS: RefundRequest[] = [
   {
     id: 101,
     order_number: "ORD-2025-001",
