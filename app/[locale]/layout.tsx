@@ -1,22 +1,19 @@
-// app/[locale]/layout.tsx
 import "./globals.css";
 import React from "react";
 import { Poppins, Montserrat, Lora } from "next/font/google";
+import { notFound } from "next/navigation";
+import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { getMessages } from 'next-intl/server';
+import { Toaster } from "sonner";
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ClientBreadcrumbsWrapper from "@/components/ui/ClientBreadcrumbsWrapper";
-import { Toaster } from "sonner"; // 1. IMPORT THE TOASTER
-// ✅ 1. Import 'NextIntlClientProvider' (NOT 'useMessages')
-import { hasLocale, NextIntlClientProvider } from "next-intl";
-
-// ✅ 2. Import 'getMessages' to load messages on the server
-import { getMessages } from 'next-intl/server'; 
-
-import { routing } from "@/i18n/routing";
-import { notFound } from "next/navigation";
 import { AuthProvider } from "@/contexts/AuthContext";
-// Font configurations remain the same...
+import { routing } from "@/i18n/routing";
+
+// --- Font Configurations ---
 const fontPoppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
@@ -37,8 +34,10 @@ const fontSerif = Lora({
   variable: "--font-serif",
   display: "swap",
 });
+
 export const metadata = {
-  title: "TravelMore",
+  title: "TravelMore - Explore Yogyakarta",
+  description: "Plan your personalized trip to Yogyakarta with ease.",
 };
 
 export default async function RootLayout({
@@ -46,14 +45,17 @@ export default async function RootLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>; // ✅ Mark params as Promise
+  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params; // ✅ Await destructure
+  // Await params for Next.js 15+ compatibility
+  const { locale } = await params;
 
+  // Validate locale
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
 
+  // Load translations based on locale
   const messages = await getMessages();
 
   return (
@@ -62,14 +64,29 @@ export default async function RootLayout({
       className={`${fontPoppins.variable} ${fontMontserrat.variable} ${fontSerif.variable}`}
       suppressHydrationWarning
     >
-      <body className="bg-background text-foreground font-sans">
+      <body className="bg-background text-foreground font-sans antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <AuthProvider>
-            <ThemeProvider>
-              <Navbar />
-              <ClientBreadcrumbsWrapper />
-              <main>{children}</main>
-              <Footer />
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <div className="flex flex-col min-h-screen">
+                <Navbar />
+                
+                {/* Breadcrumbs wrapper (Optional: adjust padding if needed) */}
+                <ClientBreadcrumbsWrapper />
+                
+                <main className="flex-grow">
+                  {children}
+                </main>
+                
+                <Footer />
+              </div>
+              
+              {/* Toast Notification */}
               <Toaster richColors closeButton position="top-right" />
             </ThemeProvider>
           </AuthProvider>

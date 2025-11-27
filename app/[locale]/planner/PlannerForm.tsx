@@ -10,9 +10,10 @@ import React, {
 } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
-import { useRouter } from "next/navigation";
+// ✅ 1. Import useSearchParams
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { AxiosError } from "axios"; // Import AxiosError
+import { AxiosError } from "axios";
 
 // --- Tipe Data ---
 interface IFormData {
@@ -362,6 +363,10 @@ const FormInput = ({
 export default function PlannerForm() {
   const t = useTranslations("PlannerForm");
   const router = useRouter();
+  
+  // ✅ 2. Init Search Params
+  const searchParams = useSearchParams();
+
   const [step, setStep] = useState(1);
   const [isStepValid, setIsStepValid] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -388,14 +393,14 @@ export default function PlannerForm() {
     duration: "",
     budgetPack: "",
     addons: [],
-    budgetPriorities: [],
+    budgetPriorities: [], 
     travelStyle: [],
     otherTravelStyle: "",
     travelPersonality: [],
     otherTravelPersonality: "",
     activityLevel: "",
     mustVisit: "",
-    attractionPreference: "",
+    attractionPreference: "", 
     foodPreference: [],
     otherFoodPreference: "",
     accommodationPreference: "",
@@ -405,6 +410,22 @@ export default function PlannerForm() {
   });
 
   const totalSteps = 10;
+
+  // ✅ 3. Tambahkan Logic untuk menangkap data dari URL (Trip Planner Teaser)
+  useEffect(() => {
+    const destParam = searchParams.get("dest");
+    const daysParam = searchParams.get("days");
+
+    if (destParam || daysParam) {
+      setFormData((prev) => ({
+        ...prev,
+        // Jika ada destParam, kita masukkan ke 'city' (atau field lain yg relevan)
+        city: destParam || prev.city, 
+        // Jika ada daysParam, kita masukkan ke 'duration'
+        duration: daysParam || prev.duration,
+      }));
+    }
+  }, [searchParams]);
 
   const isFormCompleteUpToStep = useCallback(
     (targetStep: number, data: IFormData): boolean => {
@@ -633,7 +654,6 @@ export default function PlannerForm() {
     toast.success("Progress saved successfully!");
   };
 
-  // --- [PERBAIKAN: HANDLE BOOK NOW] ---
   const handleBookNow = async () => {
     if (!formData.consent) {
       toast.error("You must agree to the terms and conditions first.");
@@ -680,7 +700,6 @@ export default function PlannerForm() {
       setIsBooking(false);
     }
   };
-  // --- [AKHIR PERBAIKAN] ---
 
   const progress = (step / totalSteps) * 100;
 
