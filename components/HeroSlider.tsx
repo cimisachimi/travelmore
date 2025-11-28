@@ -1,79 +1,26 @@
+// components/HeroSlider.tsx
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-// import Image from "next/image"; // UNCOMMENT DI PROYEK ASLI
-// import { useRouter } from "next/navigation"; // UNCOMMENT DI PROYEK ASLI
-// import { useTranslations } from "next-intl"; // UNCOMMENT DI PROYEK ASLI
+import Image from "next/image"; 
+import { useRouter } from "next/navigation"; 
+import { useTranslations } from "next-intl"; 
 import { 
   Calendar, ArrowRight, Clock, Compass, CalendarDays, ChevronDown, Check
 } from "lucide-react";
 
-// --- MOCK COMPONENTS (HAPUS BAGIAN INI DI PROYEK ASLI) ---
-const useRouter = () => ({
-  push: (url: string) => console.log("Navigasi ke:", url),
-});
-
-const useTranslations = (namespace: string) => {
-  const t = (key: string) => key;
-  t.raw = (key: string) => {
-    // Data dummy untuk preview
-    if (key === "slides") {
-      return [
-        { subtitle: "The Perfect Introduction to Java's Soul", title: "Rasakan Magisnya Yogyakarta" },
-        { subtitle: "Explore Ancient Temples", title: "Borobudur & Prambanan" },
-        { subtitle: "Nature & Adventure", title: "Merapi Lava Tour" },
-      ];
-    }
-    return [];
-  };
-  return t;
-};
-
-const Image = ({ src, alt, fill, className, style, priority }: any) => (
-  <img 
-    src={src} 
-    alt={alt} 
-    className={className}
-    style={{
-      ...style,
-      position: fill ? "absolute" : "relative",
-      height: "100%",
-      width: "100%",
-      objectFit: "cover"
-    }} 
-  />
-);
-// ---------------------------------------------------------
-
+// --- TIPE DATA ---
 interface ISlide {
   subtitle: string;
   title: string;
 }
-
-const CustomArrowButton = ({ direction, onClick }: { direction: "up" | "down"; onClick: () => void }) => (
-  <button onClick={onClick} className="p-2 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-sm border border-white/10 text-white transition">
-    {/* SVG Icons */}
-    {direction === "up" ? (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
-        </svg>
-    ) : (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-        </svg>
-    )}
-  </button>
-);
-
-const DotIndicator = ({ active, onClick }: { active: boolean; onClick: () => void }) => (
-  <button onClick={onClick} className={`w-2 h-2 rounded-full mx-1 transition-all ${active ? "bg-white scale-125" : "bg-gray-400/70"}`} />
-);
 
 export default function HeroSlider() {
   const t = useTranslations("HeroSlider");
   const router = useRouter(); 
 
   // Mengambil data slides dari translation file
+  // Pastikan file translation (en.json/id.json) memiliki key "slides" berbentuk array
   const slides = t.raw("slides") as ISlide[];
   
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -143,15 +90,17 @@ export default function HeroSlider() {
     if (travelDate) params.set("date", travelDate);
     
     // Redirect ke planner dengan query params
+    // ✅ KARENA MOCK SUDAH DIHAPUS, INI AKAN BENAR-BENAR PINDAH HALAMAN
     router.push(`/planner?${params.toString()}`);
   };
 
+  // Fallback jika slides belum terload
   const currentSlide = slides?.[currentSlideIndex] || { subtitle: "", title: "" };
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-gray-900">
       {/* Background Images */}
-      {slides.map((slide, index) => (
+      {slides && slides.map((slide, index) => (
         <div key={index} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlideIndex ? "opacity-100" : "opacity-0"}`}>
              <Image
                 src={`/hero-${index + 1}.jpg`} 
@@ -166,7 +115,6 @@ export default function HeroSlider() {
       <div className="absolute inset-0 bg-black/40 z-10"></div>
       
       {/* Content & Form */}
-      {/* ✅ Z-INDEX 50: Agar form muncul di atas komponen SampleItineraries */}
       <div className="relative z-50 flex flex-col justify-center items-center h-full w-full px-4 text-white pb-24 md:pb-0">
         
         {/* Title */}

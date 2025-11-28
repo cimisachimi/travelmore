@@ -21,12 +21,10 @@ export default function Home() {
       {/* 1. Hero Section (Slider + Form didalamnya jika pakai versi Glassmorphism) */}
       <HeroSlider />
       
-      {/* 2. Sample Itineraries Cards */}
-      {/* Komponen ini memiliki margin negatif (-mt-24) agar naik/overlap ke atas HeroSlider */}
+      
       <SampleItineraries />
 
-      {/* 3. Section Teaser Planner (Opsional: Jika ingin form terpisah lagi di bawah) */}
-      {/* Jika form sudah ada di HeroSlider, bagian ini bisa di-comment atau dihapus agar tidak duplikat */}
+      
       <div className="mt-16">
          {/* <TripPlannerTeaser /> */}
       </div>

@@ -11,19 +11,24 @@ import {
   Users, 
   Utensils, 
   Camera,
-  ArrowLeft
+  ArrowLeft,
+  Compass, 
+  Heart    
 } from "lucide-react";
 
-// --- Data Dummy (Bisa dipindah ke file terpisah) ---
+
 const itinerariesData: Record<string, any> = {
   "3d2n-explorer": {
     title: "3D2N Yogyakarta Explorer",
     tagline: "The Perfect Introduction to Java's Soul",
-    description: "Rasakan magisnya Yogyakarta dalam 3 hari. Mulai dari kemegahan Candi kuno hingga hiruk pikuk jalanan Malioboro yang legendaris.",
+    description: "Rasakan magisnya Yogyakarta dalam 3 hari. Mulai dari kemegahan Candi kuno hingga hiruk pikuk jalanan Malioboro.",
     image: "/jogja-1.WEBP", 
     duration: "3 Days 2 Nights",
     price: "Start from Rp 1.850.000 /pax",
     highlights: ["Sunrise Borobudur", "Sunset Prambanan", "Merapi Lava Tour", "Malioboro Street Food"],
+   
+    styles: ["Culture & Heritage", "City & Urban Life", "Culinary & Lifestyle"], 
+    personalities: ["History Buff", "Foodie", "City Explorer"],
     timeline: [
       {
         day: 1,
@@ -45,11 +50,14 @@ const itinerariesData: Record<string, any> = {
   "4d3n-culture": {
     title: "4D3N Culture + Nature Trip",
     tagline: "Deep Dive into Javanese Culture & Scenic Nature",
-    description: "Paket lengkap untuk pecinta budaya dan alam. Jelajahi museum terbaik, hutan pinus yang asri, dan pantai selatan yang eksotis.",
+    description: "Paket lengkap untuk pecinta budaya dan alam. Jelajahi museum terbaik dan hutan pinus yang asri.",
     image: "/jogja-2.WEBP",
     duration: "4 Days 3 Nights",
     price: "Start from Rp 2.500.000 /pax",
     highlights: ["Ullen Sentalu", "Timang Beach", "HeHa Sky View", "Keraton"],
+   
+    styles: ["Culture & Heritage", "Nature & Adventure", "Photography & Instagrammable"],
+    personalities: ["Nature Lover", "History Buff", "Photographer"],
     timeline: [
        { day: 1, title: "Highlands", activities: ["Ullen Sentalu", "Bhumi Merapi", "HeHa Sky View"] },
        { day: 2, title: "Gunung Kidul", activities: ["Gondola Timang", "Indrayanti Beach", "Pinus Pengger"] },
@@ -65,6 +73,9 @@ const itinerariesData: Record<string, any> = {
     duration: "2 Days 1 Night",
     price: "Start from Rp 1.200.000 /pax",
     highlights: ["Kopi Klotok", "Mangut Lele", "Gumuk Pasir", "Obelix Hills"],
+    
+    styles: ["Culinary & Lifestyle", "Wellness & Healing"],
+    personalities: ["Foodie", "Relaxed Traveler"],
     timeline: [
         { day: 1, title: "Authentic Flavors", activities: ["Mangut Lele", "Gumuk Pasir", "Obelix Hills", "Bakmi Jowo"] },
         { day: 2, title: "Morning Vibes", activities: ["Kopi Klotok", "Sawah Kaliurang", "Tempo Gelato", "Transfer Out"] },
@@ -72,7 +83,6 @@ const itinerariesData: Record<string, any> = {
   },
 };
 
-// ✅ Helper: Ambil angka hari dari string durasi (ex: "3 Days 2 Nights" -> "3")
 const getDaysFromDuration = (durationStr: string) => {
   const match = durationStr.match(/(\d+)\s*Days?/i);
   return match ? match[1] : "";
@@ -90,27 +100,21 @@ export default async function ItineraryDetailPage({
     notFound();
   }
 
-  // ✅ Hitung durasi hari untuk dikirim ke planner
   const daysValue = getDaysFromDuration(data.duration);
+  
+  
+  const styleParams = data.styles ? data.styles.join(",") : "";
+  const personalityParams = data.personalities ? data.personalities.join(",") : "";
 
   return (
     <div className="bg-white min-h-screen pb-20">
       
-      {/* --- HERO SECTION --- */}
+     
       <div className="relative h-[60vh] w-full">
-        <Image
-          src={data.image}
-          alt={data.title}
-          fill
-          className="object-cover"
-          priority
-        />
+        <Image src={data.image} alt={data.title} fill className="object-cover" priority />
         <div className="absolute inset-0 bg-black/50" />
         <div className="absolute inset-0 flex flex-col justify-end pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
-          <Link 
-            href="/" 
-            className="text-white/80 hover:text-white flex items-center gap-2 mb-6 w-fit transition-colors"
-          >
+          <Link href="/" className="text-white/80 hover:text-white flex items-center gap-2 mb-6 w-fit transition-colors">
             <ArrowLeft size={20} /> Back to Home
           </Link>
           <span className="text-primary font-bold tracking-wider uppercase mb-2 bg-primary/20 backdrop-blur-sm w-fit px-3 py-1 rounded-full text-xs">
@@ -125,41 +129,55 @@ export default async function ItineraryDetailPage({
         </div>
       </div>
 
-      {/* --- MAIN CONTENT --- */}
+     
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           
-          {/* LEFT COLUMN: DETAILS */}
+         
           <div className="lg:col-span-2 space-y-10">
             
-            {/* 1. Overview Card */}
+            
             <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
-              <div className="flex flex-wrap gap-6 mb-6 pb-6 border-b border-gray-100">
-                <div className="flex items-center gap-3 text-gray-700">
-                  <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                    <Clock size={24} />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6 pb-6 border-b border-gray-100">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2 text-blue-600 mb-1">
+                    <Clock size={18} />
+                    <span className="text-xs font-bold uppercase text-gray-400">Duration</span>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase font-bold">Duration</p>
-                    <p className="font-semibold">{data.duration}</p>
+                  <p className="font-semibold text-gray-900">{data.duration}</p>
+                </div>
+                
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2 text-green-600 mb-1">
+                    <MapPin size={18} />
+                    <span className="text-xs font-bold uppercase text-gray-400">Region</span>
+                  </div>
+                  <p className="font-semibold text-gray-900">Yogyakarta</p>
+                </div>
+
+                
+                <div className="flex flex-col gap-1 col-span-2 md:col-span-1">
+                  <div className="flex items-center gap-2 text-purple-600 mb-1">
+                    <Compass size={18} />
+                    <span className="text-xs font-bold uppercase text-gray-400">Genre</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {data.styles.slice(0, 2).map((s: string) => (
+                      <span key={s} className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">{s}</span>
+                    ))}
                   </div>
                 </div>
-                <div className="flex items-center gap-3 text-gray-700">
-                  <div className="p-2 bg-green-50 text-green-600 rounded-lg">
-                    <MapPin size={24} />
+
+                
+                <div className="flex flex-col gap-1 col-span-2 md:col-span-1">
+                  <div className="flex items-center gap-2 text-red-500 mb-1">
+                    <Heart size={18} />
+                    <span className="text-xs font-bold uppercase text-gray-400">Vibe</span>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase font-bold">Location</p>
-                    <p className="font-semibold">Yogyakarta Region</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 text-gray-700">
-                  <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                    <Users size={24} />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase font-bold">Type</p>
-                    <p className="font-semibold">Private Tour</p>
+                  <div className="flex flex-wrap gap-1">
+                    {data.personalities.slice(0, 2).map((p: string) => (
+                      <span key={p} className="text-xs bg-red-50 text-red-700 px-2 py-0.5 rounded-full">{p}</span>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -180,7 +198,7 @@ export default async function ItineraryDetailPage({
               </ul>
             </div>
 
-            {/* 2. Itinerary Timeline */}
+           
             <div>
               <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                 <CalendarDays className="text-primary" /> 
@@ -217,30 +235,27 @@ export default async function ItineraryDetailPage({
             </div>
           </div>
 
-          {/* RIGHT COLUMN: STICKY BOOKING CARD */}
+         
           <div className="lg:col-span-1">
             <div className="sticky top-24">
               <div className="bg-white rounded-2xl p-6 shadow-2xl border border-gray-100">
                 <div className="text-center mb-6">
-                  <p className="text-gray-500 text-sm mb-1">Best Price Offer</p>
+                  <p className="text-gray-500 text-sm mb-1">Estimated Price</p>
                   <h3 className="text-3xl font-bold text-primary">{data.price}</h3>
                   <p className="text-xs text-gray-400 mt-2">*Price depends on pax & season</p>
                 </div>
 
                 <div className="space-y-3">
-                  {/* ✅ UPDATE: Mengirim data dest, days, dan base ke planner */}
+                 
                   <Link 
-                    href={`/planner?dest=Yogyakarta&days=${daysValue}&base=${slug}&mode=booking`}
-                    className="block w-full py-3.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl text-center transition-colors shadow-lg shadow-primary/20"
-                  >
-                    Book This Trip Now
-                  </Link>
-                  <Link 
-                    href={`/planner?dest=Yogyakarta&days=${daysValue}&base=${slug}&mode=custom`}
-                    className="block w-full py-3.5 bg-white border-2 border-gray-200 hover:border-primary hover:text-primary text-gray-700 font-bold rounded-xl text-center transition-colors"
+                    href={`/planner?dest=Yogyakarta&days=${daysValue}&base=${slug}&style=${styleParams}&personality=${personalityParams}&mode=custom`}
+                    className="block w-full py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl text-center transition-all shadow-lg shadow-primary/30 transform hover:scale-[1.02]"
                   >
                     Customize This Plan
                   </Link>
+                  <p className="text-xs text-center text-gray-500 mt-2">
+                    Adjust destinations, hotels, or activities based on this template.
+                  </p>
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-gray-100">
@@ -253,7 +268,8 @@ export default async function ItineraryDetailPage({
                   </ul>
                 </div>
               </div>
-
+              
+             
               <div className="mt-6 bg-blue-50 rounded-xl p-4 flex gap-3 items-start">
                 <div className="p-2 bg-white rounded-full text-blue-600 shadow-sm">
                    <Users size={20} />
@@ -261,10 +277,11 @@ export default async function ItineraryDetailPage({
                 <div>
                     <h5 className="font-bold text-blue-900 text-sm">Need Help?</h5>
                     <p className="text-xs text-blue-700 mt-1">
-                        Chat with our Jogja expert to tailor this itinerary for your group.
+                        Chat with our Jogja expert to tailor this itinerary.
                     </p>
                 </div>
               </div>
+
             </div>
           </div>
 
