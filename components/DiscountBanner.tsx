@@ -1,24 +1,21 @@
 "use client";
 
-// ✅ Ini adalah import yang benar untuk project Anda
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Link } from '@/i18n/navigation';
-
-// --- KODE TIRUAN (MOCK) SUDAH DIHAPUS ---
 
 export default function DiscountBanner() {
   const t = useTranslations("DiscountBanner");
 
   return (
-    <section className="my-16 md:my-24">
+   
+    <section className="mt-8 mb-16 md:mt-12 md:mb-24">
       <div className="relative w-full h-[500px] md:h-[350px] overflow-hidden shadow-xl flex">
         
         <div className="relative flex-grow">
         
-          {/* ✅ Ini adalah komponen <Image> Next.js yang benar */}
           <Image
-            src="/banner.webp" // Ini sudah benar merujuk ke public/banner.webp
+            src="/banner.webp" 
             alt="Yogyakarta cityscape"
             fill
             className="object-cover"
@@ -26,15 +23,11 @@ export default function DiscountBanner() {
             priority
           />
 
-         
-         {/* Ini adalah perbaikan responsif dari sebelumnya */}
-         <div
+          <div
             className="absolute inset-0 bg-primary/80 md:bg-primary 
                        md:[clip-path:polygon(100%_0,_100%_100%,_35%_100%,_50%_0)]"
           />
 
-          
-          {/* Ini adalah perbaikan responsif dari sebelumnya */}
           <div className="absolute inset-0 flex justify-center items-center md:justify-end z-10">
             <div className="w-11/12 md:w-3/5 lg:w-1/2 p-8 md:p-12 text-white text-center md:text-left">
               <span className="inline-block bg-white/20 text-white text-xs font-bold py-1 px-3 rounded-full uppercase tracking-wider mb-4">
@@ -50,7 +43,6 @@ export default function DiscountBanner() {
               </p>
               <div className="mt-6 space-y-4">
                 
-                {/* ✅ Ini adalah komponen <Link> yang benar */}
                 <Link
                   href="/packages"
                   className="inline-block bg-white text-gray-900 font-bold py-3 px-8 rounded-lg text-sm shadow-md transition-transform hover:scale-105"

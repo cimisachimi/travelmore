@@ -10,7 +10,6 @@ import React, {
 } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
-// ✅ 1. Import useSearchParams
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
@@ -363,7 +362,7 @@ const FormInput = ({
 export default function PlannerForm() {
   const t = useTranslations("PlannerForm");
   const router = useRouter();
-  
+   
   // ✅ 2. Init Search Params
   const searchParams = useSearchParams();
 
@@ -411,19 +410,67 @@ export default function PlannerForm() {
 
   const totalSteps = 10;
 
-  // ✅ 3. Tambahkan Logic untuk menangkap data dari URL (Trip Planner Teaser)
+  // ✅ 3. Logic Baru untuk Menangkap Semua Data URL
   useEffect(() => {
+    // Ambil parameter dari URL
     const destParam = searchParams.get("dest");
     const daysParam = searchParams.get("days");
+    const dateParam = searchParams.get("date");
+    const styleParam = searchParams.get("style");
+    const baseParam = searchParams.get("base");
+    const modeParam = searchParams.get("mode");
 
-    if (destParam || daysParam) {
-      setFormData((prev) => ({
-        ...prev,
-        // Jika ada destParam, kita masukkan ke 'city' (atau field lain yg relevan)
-        city: destParam || prev.city, 
-        // Jika ada daysParam, kita masukkan ke 'duration'
-        duration: daysParam || prev.duration,
-      }));
+    // Jika ada parameter, update state
+    if (destParam || daysParam || dateParam || styleParam || baseParam) {
+      setFormData((prev) => {
+        const newData = { ...prev };
+
+        // 1. Destinasi (dari Itinerary page)
+        if (destParam) {
+          newData.city = destParam;
+          newData.tripType = "domestic"; // Asumsi default domestic
+          // Auto-fill provinsi jika destinasinya Jogja
+          if (destParam.toLowerCase().includes("jogja") || destParam.toLowerCase().includes("yogyakarta")) {
+            newData.province = "DI Yogyakarta";
+          }
+        }
+
+        // 2. Durasi (dari Hero atau Itinerary)
+        if (daysParam) {
+          newData.duration = daysParam;
+        }
+
+        // 3. Tanggal Keberangkatan (dari Hero)
+        if (dateParam) {
+          newData.departureDate = dateParam;
+        }
+
+        // 4. Travel Style (dari Hero - string dipisah koma)
+        if (styleParam) {
+          const stylesArray = styleParam.split(",").map((s) => s.trim());
+          // Menggabungkan style baru dengan yang sudah ada (menghindari duplikasi)
+          const combinedStyles = Array.from(new Set([...newData.travelStyle, ...stylesArray]));
+          newData.travelStyle = combinedStyles;
+        }
+
+        // 5. Base Package (dari Itinerary - Booking Mode)
+        if (baseParam) {
+          const pkgName = baseParam.replace(/-/g, " ").toUpperCase();
+          const noteToAdd = `Interested in package: ${pkgName}. `;
+          
+          // Tambahkan ke notes jika belum ada
+          if (!newData.mustVisit.includes("Interested in package")) {
+            newData.mustVisit = noteToAdd + (newData.mustVisit || "");
+          }
+
+          // Jika mode booking langsung, set budget default ke standard (opsional)
+          if (modeParam === "booking" && !newData.budgetPack) {
+            newData.budgetPack = "standard";
+          }
+        }
+
+        return newData;
+      });
     }
   }, [searchParams]);
 
