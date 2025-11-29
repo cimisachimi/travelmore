@@ -2,40 +2,12 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react"; // Import useRef and useEffect
+import { useState, useRef, useEffect } from "react";
 import { useTheme } from "./ThemeProvider";
 import { useTranslations, useLocale } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
-// --- Sub-components for better organization ---
-
-// 🔘 Theme Switcher
-/*
-const ThemeToggle = () => {
-  const { theme, setTheme } = useTheme();
-  const t = useTranslations("Navbar");
-
-  return (
-    <div className="flex items-center p-1 rounded-full bg-gray-200 dark:bg-gray-700">
-      <button
-        onClick={() => setTheme("regular")}
-        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${theme === "regular" ? "bg-white text-black" : "text-gray-500"
-          }`}
-      >
-        {t("regular")}
-      </button>
-      <button
-        onClick={() => setTheme("exclusive")}
-        className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${theme === "exclusive" ? "bg-primary text-black" : "text-gray-500"
-          }`}
-      >
-        {t("exclusive")}
-      </button>
-    </div>
-  );
-};
-*/
 // 🌐 Language Switcher
 const LocaleSwitcher = () => {
   const locale = useLocale();
@@ -255,11 +227,9 @@ function MobileMenu({
   return (
     <div className="md:hidden flex flex-col space-y-4 pb-4 animate-fadeIn">
       <NavLink href="/">{t("home")}</NavLink>
-      {/* --- PERUBAHAN MOBILE --- */}
       <DropdownLink title={t("ourServices")} items={serviceLinks} />
       <NavLink href="/blog">{t("blog")}</NavLink>
       <DropdownLink title={t("more")} items={moreLinks} />
-      {/* --- AKHIR PERUBAHAN MOBILE --- */}
 
       <div className="border-t border-border my-2"></div>
 
@@ -310,21 +280,19 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const t = useTranslations("Navbar");
 
-  // --- PERUBAHAN DATA LINK ---
-  // Link untuk dropdown "Our Services" baru
+  // --- MENU LINKS ---
   const serviceLinks = [
     { name: t("planner"), href: "/planner" },
     { name: t("packages"), href: "/packages" },
+    { name: t("openTrip"), href: "/open-trip" }, // ✅ Added Open Trip here
     { name: t("carRental"), href: "/car-rental" },
     { name: t("activities"), href: "/activities" },
   ];
 
-  // Link untuk dropdown "More"
   const pageLinks = [
     { name: t("gallery"), href: "/gallery" },
     { name: t("about"), href: "/about" },
   ];
-  // --- AKHIR PERUBAHAN DATA LINK ---
 
   const logoSrc =
     theme === "regular"
@@ -347,14 +315,13 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* --- PERUBAHAN DESKTOP --- */}
+          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             <NavLink href="/">{t("home")}</NavLink>
             <DropdownLink title={t("ourServices")} items={serviceLinks} />
             <NavLink href="/blog">{t("blog")}</NavLink>
             <DropdownLink title={t("more")} items={pageLinks} />
           </div>
-          {/* --- AKHIR PERUBAHAN DESKTOP --- */}
 
           {/* Right-side Controls */}
           <div className="flex items-center space-x-4">

@@ -3,6 +3,7 @@
     "home": "Home",
     "planner": "Trip Planner",
     "packages": "Packages",
+    "openTrip": "Open Trip",
     "carRental": "Car Rental",
     "activities": "Activities",
     "ourServices": "Our Services",
@@ -229,7 +230,7 @@
       "button": "Start Planning"
     }
   },
-    "activities": {
+  "activities": {
     "title": "Our Activities",
     "subtitle": "Discover experiences and adventures curated just for you. Find your next journey with us.",
     "popularActivities": "Popular Activities",
@@ -278,28 +279,20 @@
       "optional": "Optional",
       "date": "Select Date",
       "quantity": "Quantity",
-      
-
+      "discountCode": "Discount Code",
+      "subtotal": "Subtotal",
+      "discountInfo": "Discount Info",
+      "enhanceTrip": "Enhance your trip",
       "nationality": {
         "title": "Participant Nationality",
         "local": "Domestik (Local)",
         "foreign": "Mancanegara (Foreign)"
       },
       "selectOption": "-- Select Option --",
-
-      "fullName": {
-        "title": "Full Name"
-      },
-      "email": {
-        "title": "Email"
-      },
-      "phone": {
-        "title": "Phone Number (WA)"
-      },
-      "pickupLocation": {
-        "title": "Pickup Location"
-      },
-  
+      "fullName": "Full Name",
+      "email": "Email",
+      "phone": "Phone Number (WA)",
+      "pickupLocation": "Pickup Location",
       "pickup": {
         "title": "Pickup Location",
         "airport": "Bandara (Airport)",
@@ -307,12 +300,21 @@
         "hotel": "Hotel",
         "placeholder": "e.g., Hotel, Villa or Address"
       },
+      "meetingPoint": {
+        "title": "Meeting Point",
+        "select": "Select Meeting Point",
+        "placeholder": "e.g. Tugu Station Yogyakarta",
+        "note": "*Participants must gather at this point at the specified time."
+      },
       "specialRequest": {
         "title": "Special Request",
         "optional": "Optional",
         "placeholder": "e.g., allergies, dietary needs, late pickup..."
       },
-
+      "flightNumber": {
+        "title": "Flight Number",
+        "placeholder": "e.g., GA 205"
+      },
       "success": {
         "message": "Booking created! Redirecting..."
       },
@@ -320,6 +322,8 @@
         "notLoggedIn": "You must be logged in to book.",
         "noDate": "Please select a date.",
         "noParticipants": "You must have at least one participant.",
+        "minAdults": "Minimum 1 adult required.",
+        "invalidChildren": "Invalid number of children.",
         "noPrice": "Price could not be calculated for this activity.",
         "general": "Booking failed. Please try again.",
         "priceOrPax": "Price or participant count is invalid.",
@@ -328,7 +332,9 @@
         "noEmail": "Please enter your email.",
         "invalidEmail": "Please enter a valid email.",
         "noPhone": "Please enter your phone number.",
-        "noPickup": "Please select a pickup location."
+        "noPickup": "Please select a pickup location.",
+        "noMeetingPoint": "Please select a meeting point.",
+        "validation": "Please check your input fields."
       }
     },
     "pricing": {
@@ -360,7 +366,16 @@
     "subtitle": "Travel inspiration, holiday tips, and interesting stories from Travelmore.",
     "by": "by",
     "destinasi-jogja-2025": {
+      "id": 1,
       "title": "10 Must-Visit Tourist Destinations in Yogyakarta",
+      "author": "Admin Travelmore",
+      "published_at": "2025-10-30",
+      "images": [
+        "/articles-image/borobudur.webp",
+        "/articles-image/prambanan.webp",
+        "/articles-image/keraton.webp",
+        "/articles-image/malio.webp"
+      ],
       "excerpt": "Discover the latest and most popular tourist spots in Yogyakarta that should be on your travel list.",
       "content": [
         "### 1. Borobudur Temple",
@@ -405,7 +420,14 @@
       ]
     },
     "tips-hemat-liburan-jogja": {
+      "id": 2,
       "title": "Budget Travel Tips for Yogyakarta",
+      "author": "Sarah Traveler",
+      "published_at": "2025-11-02",
+      "images": [
+        "/hero-1.jpg",
+        "/hero-2.jpg"
+      ],
       "excerpt": "Enjoy an exciting trip without breaking the bank. Here are budget-friendly tips for your holiday in Jogja.",
       "content": [
         "Yogyakarta, affectionately known as Jogja, has always been a favorite destination offering rich culture, natural beauty, and delicious cuisine without having to break the bank. With proper planning, you can enjoy all of Jogja's charms on a very affordable budget.",
@@ -433,7 +455,13 @@
       ]
     },
     "kuliner-khas-jogja": {
+      "id": 3,
       "title": "Must-Try Local Cuisine in Jogja",
+      "author": "Foodie Jogja",
+      "published_at": "2025-11-05",
+      "images": [
+        "/articles-image/gudeg.webp"
+      ],
       "excerpt": "A trip to Jogja isn't complete without tasting its local food. Here are the best recommendations for you.",
       "content": [
         "Yogyakarta is not only rich in culture and tourist destinations but is also a paradise for food lovers. From its signature sweet flavors to a spicy kick, every corner of the city offers legendary and authentic tastes. Here is a list of legendary Jogja culinary delights that must be on your food journey list.",
@@ -472,10 +500,64 @@
       ]
     }
   },
-  "blogDetail": {
-    "back": "Back to Blog",
-    "notFound": "Article not found.",
-    "by": "by"
+  "OpenTripPage": {
+    "title": "Open Trip Adventures",
+    "subtitle": "Join other travelers, share costs, and make new friends on curated journeys.",
+    "filters": "Filters",
+    "priceRange": "Price Range",
+    "upTo": "Up to",
+    "categories": "Categories",
+    "showFilters": "Show Filters",
+    "closeFilters": "Close Filters",
+    "days": "Days",
+    "viewDetails": "View Details",
+    "noResults": "No open trips match your filters.",
+    "from": "Starts from",
+    "status": {
+      "loading": "Loading open trips...",
+      "noCategories": "No categories found.",
+      "fetchError": "Failed to load open trips. Please try again."
+    }
+  },
+  "OpenTripDetail": {
+    "back": "Back to Open Trip",
+    "badge": "Open Trip",
+    "overview": "Trip Overview",
+    "highlights": "Highlights",
+    "meetingPointTitle": "Meeting Point",
+    "pickupLocation": "Pickup Location",
+    "pickupDesc": "Meeting point details are available when you select booking options. Please arrive 30 minutes prior.",
+    "quota": "Quota Status",
+    "available": "Available",
+    "bookNow": "Book Now",
+    "startingFrom": "Starting from",
+    "priceDisclaimer": "*Price subject to change based on date & availability.",
+    "facilities": {
+      "transport": "AC Transportation",
+      "ticket": "Entrance Tickets",
+      "doc": "Trip Documentation",
+      "guide": "Tour Leader"
+    },
+    "defaultDescription": "Enjoy the excitement of {name} with other travelers. This package is designed to provide the best experience at an affordable price. Explore the beauty of {location} and create unforgettable memories."
+  },
+  "PackagesPage": {
+    "title": "Explore Our Tour Packages",
+    "subtitle": "Find the perfect adventure in Yogyakarta, curated just for you. Adjust the filters to match your preferences.",
+    "filters": "Filters",
+    "priceRange": "Price Range",
+    "upTo": "Up to",
+    "categories": "Categories",
+    "showFilters": "Show Filters",
+    "closeFilters": "Close Filters",
+    "days": "Days",
+    "viewDetails": "View Details",
+    "noResults": "No packages match your filters.",
+    "status": {
+      "loading": "Loading packages...",
+      "noCategories": "No categories found.",
+      "fetchError": "Failed to load packages. Please try again."
+    },
+    "from": "Starts from"
   },
   "booking": {
     "title": "Booking Form",
@@ -496,7 +578,75 @@
       "address": "e.g., Jakarta, Indonesia"
     },
     "button": "Submit Booking",
-    "alert": "Your booking request has been sent! We will contact you shortly."
+    "alert": "Your booking request has been sent! We will contact you shortly.",
+    "checkAvailability": "Book Now",
+    "loginToBook": "Login to Book",
+    "needHelp": "Need help?",
+    "sendMessage": "Send Message",
+    "startDate": "Select Date",
+    "total": "Total Price",
+    "submitting": "Booking...",
+    "confirm": "Book Now",
+    "optional": "Optional",
+    "date": "Select Date",
+    "quantity": "Quantity",
+    "discountCode": "Discount Code",
+    "subtotal": "Subtotal",
+    "discountInfo": "Discount Info",
+    "enhanceTrip": "Enhance your trip",
+    "nationality": {
+      "title": "Participant Nationality",
+      "local": "Domestik (Local)",
+      "foreign": "Mancanegara (Foreign)"
+    },
+    "selectOption": "-- Select Option --",
+    "fullName": "Full Name",
+    "email": "Email",
+    "phone": "Phone Number (WA)",
+    "pickupLocation": "Pickup Location",
+    "pickup": {
+      "title": "Pickup Location",
+      "airport": "Bandara (Airport)",
+      "station": "Stasiun (Train Station)",
+      "hotel": "Hotel",
+      "placeholder": "e.g., Hotel, Villa or Address"
+    },
+    "meetingPoint": {
+      "title": "Meeting Point",
+      "select": "Select Meeting Point",
+      "placeholder": "e.g. Tugu Station Yogyakarta",
+      "note": "*Participants must gather at this point at the specified time."
+    },
+    "specialRequest": {
+      "title": "Special Request",
+      "optional": "Optional",
+      "placeholder": "e.g., allergies, dietary needs, late pickup..."
+    },
+    "flightNumber": {
+      "title": "Flight Number",
+      "placeholder": "e.g., GA 205"
+    },
+    "success": {
+      "message": "Booking created! Redirecting..."
+    },
+    "errors": {
+      "notLoggedIn": "You must be logged in to book.",
+      "noDate": "Please select a date.",
+      "noParticipants": "You must have at least one participant.",
+      "minAdults": "Minimum 1 adult required.",
+      "invalidChildren": "Invalid number of children.",
+      "noPrice": "Price could not be calculated for this activity.",
+      "general": "Booking failed. Please try again.",
+      "priceOrPax": "Price or participant count is invalid.",
+      "noNationality": "Please select nationality.",
+      "noName": "Please enter your full name.",
+      "noEmail": "Please enter your email.",
+      "invalidEmail": "Please enter a valid email.",
+      "noPhone": "Please enter your phone number.",
+      "noPickup": "Please select a pickup location.",
+      "noMeetingPoint": "Please select a meeting point.",
+      "validation": "Please check your input fields."
+    }
   },
   "carDetail": {
     "notFound": "Car not found.",
@@ -636,25 +786,6 @@
     "buttons": {
       "back": "Back to Packages"
     }
-  },
-  "PackagesPage": {
-    "title": "Explore Our Tour Packages",
-    "subtitle": "Find the perfect adventure in Yogyakarta, curated just for you. Adjust the filters to match your preferences.",
-    "filters": "Filters",
-    "priceRange": "Price Range",
-    "upTo": "Up to",
-    "categories": "Categories",
-    "showFilters": "Show Filters",
-    "closeFilters": "Close Filters",
-    "days": "Days",
-    "viewDetails": "View Details",
-    "noResults": "No packages match your filters.",
-    "status": {
-      "loading": "Loading packages...",
-      "noCategories": "No categories found.",
-      "fetchError": "Failed to load packages. Please try again."
-    },
-    "from": "test"
   },
   "PlannerPage": {
     "regular": {
@@ -897,8 +1028,8 @@
       },
       "foodPreferences": {
         "f1": {
-        "label": "Halal",
-        "description": "“Food prepared in accordance with Islamic law."
+          "label": "Halal",
+          "description": "“Food prepared in accordance with Islamic law."
         },
         "f2": {
           "label": "Vegan",
@@ -957,4 +1088,3 @@
     }
   }
 }
-

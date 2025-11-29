@@ -1,4 +1,4 @@
-// packages/page.tsx
+// app/[locale]/packages/page.tsx
 
 "use client";
 

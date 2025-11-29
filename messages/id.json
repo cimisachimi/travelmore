@@ -2,7 +2,8 @@
   "Navbar": {
     "home": "Beranda",
     "planner": "Perencana Perjalanan",
-    "packages": "Paket",
+    "packages": "Paket Wisata",
+    "openTrip": "Open Trip",
     "carRental": "Sewa Mobil",
     "activities": "Aktivitas",
     "ourServices": "Layanan Kami",
@@ -12,39 +13,39 @@
     "about": "Tentang Kami",
     "regular": "Reguler",
     "exclusive": "Eksklusif",
-    "toggleMenu": "Alihkan Menu"
+    "toggleMenu": "Buka Menu"
   },
   "PersonalizedTripPlanner": {
-    "regularTitle": "Berhenti Menebak. Mulai Rencanakan Perjalanan Jogja Sempurna Anda.",
-    "exclusiveTitle": "Rancang Perjalanan Yogyakarta Eksklusif Anda",
-    "regularDesc": "Bosan dengan tur yang itu-itu saja? Perencana Perjalanan kami adalah layanan konsultasi pribadi. Beri tahu kami gaya, anggaran, dan minat Anda, dan pakar lokal kami akan menyusun rencana perjalanan 100% khusus untuk Anda.",
-    "exclusiveDesc": "Ini adalah pramutamu perjalanan pribadi Anda. Lebih dari sekadar paket standar. Dari akses VIP hingga pengalaman kuliner pribadi, gunakan perencana kami untuk menentukan setiap detail, dan kami akan merancang rencana perjalanan eksklusif yang sesuai dengan definisi kemewahan Anda.",
-    "customizeBasedOn": "Kami menyusun rencana Anda berdasarkan:",
+    "regularTitle": "Berhenti Menebak. Mulai Rencanakan Liburan Jogja Sempurna Anda.",
+    "exclusiveTitle": "Desain Perjalanan Yogyakarta Impian Anda",
+    "regularDesc": "Bosan dengan tur yang monoton? Perencana Perjalanan kami adalah layanan konsultasi pribadi. Beritahu kami gaya, anggaran, dan minat Anda, dan ahli lokal kami akan menyusun rencana perjalanan 100% khusus untuk Anda.",
+    "exclusiveDesc": "Ini adalah asisten perjalanan pribadi Anda. Lebih dari sekadar paket standar. Dari akses VIP hingga pengalaman kuliner pribadi, gunakan perencana kami untuk menentukan setiap detail, dan kami akan menyusun rencana perjalanan eksklusif yang sesuai dengan definisi kemewahan Anda.",
+    "customizeBasedOn": "Kami menyusun rencana berdasarkan:",
     "interests": "Minat & Hobi Anda",
     "budget": "Anggaran Perjalanan Anda",
-    "groupSize": "Ukuran Rombongan Anda",
+    "groupSize": "Ukuran Grup Anda",
     "tripStyle": "Gaya Perjalanan Unik Anda",
-    "extraServicesTitle": "Butuh Fleksibilitas Lebih?",
-    "extraServicesDesc": "Kami juga menawarkan <strong>Paket Tur & Aktivitas Harian</strong> untuk kebebasan penuh selama Anda berada di Jogja.",
+    "extraServicesTitle": "Butuh Lebih Banyak Fleksibilitas?",
+    "extraServicesDesc": "Kami juga menawarkan <strong>Paket Tur & Aktivitas Harian</strong> untuk kebebasan penuh selama Anda tinggal di Jogja.",
     "regularButton": "Mulai Rencana Khusus Anda",
     "exclusiveButton": "Mulai Konsultasi Eksklusif",
     "heroAlt": "Perencanaan Perjalanan Pribadi di Yogyakarta"
   },
   "DiscountBanner": {
     "badge": "PENAWARAN TERBATAS",
-    "title": "Dapatkan Diskon 20% untuk Petualangan Anda Berikutnya",
+    "title": "Dapatkan Diskon 20% untuk Petualangan Berikutnya",
     "description": "Pesan paket atau aktivitas apa pun sebelum akhir bulan ini dan gunakan kode JOGJA20 untuk mendapatkan diskon eksklusif pada pemesanan Anda.",
     "ctaButton": "Lihat Semua Paket"
   },
   "WhyChooseUs": {
     "title": "Mengapa Memilih Kami?",
-    "heroAlt": "Wisatawan senang di Yogyakarta",
+    "heroAlt": "Wisatawan bahagia di Yogyakarta",
     "guideTitle": "Pemandu Lokal Ahli",
-    "guideDesc": "Pemandu kami adalah penduduk lokal yang akan memberi Anda pengalaman otentik dan tak terlupakan.",
+    "guideDesc": "Pemandu kami adalah penduduk lokal yang akan memberikan pengalaman otentik dan berkesan.",
     "flexibleTitle": "Paket Fleksibel",
-    "flexibleDesc": "Sesuaikan perjalanan Anda sesuai minat dan anggaran dengan rencana kami yang mudah disesuaikan.",
+    "flexibleDesc": "Sesuaikan perjalanan Anda menurut minat dan anggaran dengan rencana kami yang mudah disesuaikan.",
     "priceTitle": "Harga Terjangkau",
-    "priceDesc": "Kami menawarkan harga kompetitif tanpa mengurangi kualitas.",
+    "priceDesc": "Kami menawarkan harga kompetitif tanpa mengorbankan kualitas.",
     "supportTitle": "Dukungan 24/7",
     "supportDesc": "Tim kami selalu siap membantu Anda, memastikan perjalanan yang lancar dan bebas khawatir."
   },
@@ -53,26 +54,26 @@
     "subtitle": "Kami menawarkan berbagai layanan untuk membuat perjalanan Anda tak terlupakan.",
     "packageTitle": "Paket Lengkap",
     "packageFeatures": "Perjalanan + Hotel/Homestay + Aktivitas",
-    "packageDesc": "Sempurna bagi mereka yang menginginkan liburan bebas stres dengan semua yang telah diatur dari awal hingga akhir.",
+    "packageDesc": "Sempurna bagi mereka yang menginginkan liburan bebas stres dengan segala sesuatu diatur dari awal hingga akhir.",
     "tourTitle": "Hanya Perjalanan",
-    "tourFeatures": "Tur Terpandu, Pengalaman Budaya, Perjalanan Harian",
-    "tourDesc": "Sudah memiliki tempat menginap? Bergabunglah dengan tur lokal terpandu kami dan selami budayanya.",
+    "tourFeatures": "Tur Terpandu, Pengalaman Budaya, Perjalanan Sehari",
+    "tourDesc": "Sudah punya penginapan? Bergabunglah dengan tur lokal kami yang dipandu ahli dan selami budayanya.",
     "cityTitle": "Tur Kota",
     "cityFeatures": "Dengan atau Tanpa Sopir",
-    "cityDesc": "Nikmati fleksibilitas menjelajahi Yogyakarta sesuai keinginan Anda dengan kendaraan kami yang andal dan terawat."
+    "cityDesc": "Nikmati fleksibilitas menjelajahi Yogyakarta sesuai kecepatan Anda sendiri dengan kendaraan kami yang andal dan terawat."
   },
   "HeroSlider": {
     "slides": [
       {
         "subtitle": "Lupakan Rencana Perjalanan yang Kaku & Membosankan",
-        "title": "Rancang Petualangan Impian Anda di Yogyakarta"
+        "title": "Desain Petualangan Impian Anda di Yogyakarta"
       },
       {
         "subtitle": "Disesuaikan dengan Minat, Anggaran, dan Gaya Anda",
         "title": "Dari Kuliner Lokal hingga Petualangan Tersembunyi"
       },
       {
-        "subtitle": "Dipandu oleh Pakar Lokal",
+        "subtitle": "Dipandu oleh Ahli Lokal",
         "title": "Perjalanan Bebas Stres Penuh Momen Tak Terlupakan"
       }
     ],
@@ -90,18 +91,18 @@
       {
         "id": "yogyakarta-adventure",
         "title": "3 Hari: Petualangan Yogyakarta",
-        "description": "Rasakan sensasi Goa Jomblang, Pantai Timang, dan lereng Gunung Merapi."
+        "description": "Rasakan sensasi Gua Jomblang, Pantai Timang, dan lereng Gunung Merapi."
       },
       {
         "id": "cultural-immersion",
-        "title": "4 Hari: Penjelajahan Budaya",
-        "description": "Selami budaya Jawa dengan kunjungan ke Keraton, Taman Sari, dan lokakarya batik."
+        "title": "4 Hari: Pendalaman Budaya",
+        "description": "Benamkan diri Anda dalam budaya Jawa dengan kunjungan ke Keraton, Taman Sari, dan lokakarya batik."
       }
     ],
     "cta": "Lihat Detail →"
   },
   "HowItWorks": {
-    "title": "Cara Kerjanya",
+    "title": "Cara Kerja",
     "subtitle": "Proses sederhana untuk merencanakan perjalanan impian Anda.",
     "steps": [
       {
@@ -118,7 +119,7 @@
       },
       {
         "title": "Persiapan Layanan",
-        "description": "Tim kami akan menyiapkan semua pengaturan perjalanan Anda dengan cermat."
+        "description": "Tim kami akan mempersiapkan semua pengaturan perjalanan Anda dengan cermat."
       },
       {
         "title": "Konfirmasi Akhir",
@@ -131,11 +132,11 @@
     ]
   },
   "otherServices": {
-    "title": "Jelajahi Layanan Kami Lainnya",
-    "subtitle": "Semua yang Anda butuhkan untuk pengalaman perjalanan yang lengkap dan fleksibel.",
+    "title": "Jelajahi Layanan Lainnya",
+    "subtitle": "Segala yang Anda butuhkan untuk pengalaman perjalanan yang lengkap dan fleksibel.",
     "packages": {
       "title": "Paket Tur",
-      "description": "Pilih dari paket perjalanan pilihan kami untuk liburan tanpa repot. Kami telah menggabungkan destinasi dan aktivitas terbaik.",
+      "description": "Pilih dari paket perjalanan pilihan kami untuk liburan tanpa repot. Kami menggabungkan destinasi dan aktivitas terbaik.",
       "button": "Lihat Detail"
     },
     "carRental": {
@@ -150,16 +151,16 @@
     }
   },
   "cta": {
-    "title": "Siap untuk Petualangan Anda Berikutnya?",
-    "subtitle": "Biarkan pakar kami membantu Anda merancang rencana perjalanan Yogyakarta yang sempurna.",
-    "button": "Rencanakan Perjalanan Anda Bersama Kami",
-    "contactText": "Atau hubungi kami langsung melalui"
+    "title": "Siap untuk Petualangan Berikutnya?",
+    "subtitle": "Biarkan ahli kami membantu Anda merancang rencana perjalanan Yogyakarta yang sempurna.",
+    "button": "Rencanakan Perjalanan Bersama Kami",
+    "contactText": "Atau hubungi kami langsung via"
   },
   "testimonials": {
-    "title": "Kata Mereka Tentang Kami"
+    "title": "Apa Kata Mereka Tentang Kami"
   },
   "footer": {
-    "description": "Mitra tepercaya Anda untuk perjalanan tak terlupakan dan sewa mobil yang andal. Jelajahi dunia dengan mudah dan nyaman!",
+    "description": "Mitra terpercaya Anda untuk perjalanan tak terlupakan dan sewa mobil yang andal. Jelajahi dunia dengan mudah dan nyaman!",
     "quickLinks": {
       "title": "Tautan Cepat",
       "destinations": "Destinasi",
@@ -173,7 +174,7 @@
       "phone": "Telepon:",
       "email": "Email:"
     },
-    "copyright": "Hak cipta dilindungi."
+    "copyright": "Hak cipta dilindungi undang-undang."
   },
   "comparison": {
     "title": "Perbandingan Layanan",
@@ -194,7 +195,7 @@
       "revision": "1 Sesi"
     },
     "exclusive": {
-      "revision": "Tidak Terbatas"
+      "revision": "Tak Terbatas"
     }
   },
   "about": {
@@ -203,9 +204,9 @@
     "section": {
       "about": {
         "label": "Tentang Travelmore",
-        "regularTitle": "Temukan Dunia bersama Travelmore",
+        "regularTitle": "Jelajahi Dunia bersama Travelmore",
         "exclusiveTitle": "Rasakan Petualangan Premium bersama Travelmore",
-        "description": "Di Travelmore, kami menggabungkan layanan profesional dengan hasrat untuk eksplorasi. Baik Anda bepergian di dalam negeri maupun luar negeri, tim kami yang berpengalaman siap merencanakan perjalanan Anda dengan cermat dan kreatif.",
+        "description": "Di Travelmore, kami menggabungkan layanan profesional dengan hasrat untuk eksplorasi. Baik Anda bepergian secara lokal maupun luar negeri, tim berpengalaman kami siap merencanakan perjalanan Anda dengan cermat dan kreatif.",
         "contactButton": "Hubungi Kami"
       },
       "skills": {
@@ -220,21 +221,21 @@
     "stats": {
       "experience": "Tahun Pengalaman",
       "trips": "Perjalanan Selesai",
-      "clients": "Klien Puas",
+      "clients": "Klien Bahagia",
       "support": "Dukungan Pelanggan"
     },
     "about_cta": {
-      "title": "Kami Siap Membawa Anda ke Destinasi Impian Anda",
+      "title": "Kami Siap Membawa Anda ke Destinasi Impian",
       "subtitle": "Biarkan kami menangani detailnya — Anda hanya perlu menikmati setiap momen.",
-      "button": "Mulai Perencanaan"
+      "button": "Mulai Rencanakan"
     }
   },
   "activities": {
     "title": "Aktivitas Kami",
-    "subtitle": "Temukan pengalaman dan petualangan yang dirancang khusus untuk Anda. Temukan perjalanan berikutnya bersama kami.",
+    "subtitle": "Temukan pengalaman dan petualangan yang dikurasi khusus untuk Anda. Temukan perjalanan Anda berikutnya bersama kami.",
     "popularActivities": "Aktivitas Populer",
-    "popularActivitiesDesc": "Jelajahi berbagai aktivitas dan petualangan paling populer di Yogyakarta.",
-    "showMore": "Tampilkan Lebih Banyak",
+    "popularActivitiesDesc": "Jelajahi aktivitas dan petualangan paling populer di Yogyakarta.",
+    "showMore": "Lihat Lainnya",
     "filters": {
       "title": "Filter",
       "price": "Rentang Harga",
@@ -246,9 +247,9 @@
       "back": "Kembali ke Semua Aktivitas"
     },
     "empty": {
-      "message": "Tidak ada aktivitas yang sesuai dengan kriteria Anda.",
+      "message": "Tidak ada aktivitas yang ditemukan sesuai kriteria Anda.",
       "loading": "Memuat aktivitas...",
-      "fetchError": "Tidak dapat memuat data aktivitas. Silakan coba lagi nanti."
+      "fetchError": "Tidak dapat memuat aktivitas. Silakan coba lagi nanti."
     },
     "status": {
       "notFound": "Aktivitas tidak ditemukan.",
@@ -273,17 +274,21 @@
       "title": "Pesan Aktivitas Anda",
       "startDate": "Pilih Tanggal",
       "total": "Total Harga",
-      "submitting": "Memproses Pemesanan...",
+      "submitting": "Memesan...",
       "confirm": "Pesan Sekarang",
       "optional": "Opsional",
-
+      "date": "Pilih Tanggal",
+      "quantity": "Jumlah",
+      "discountCode": "Kode Diskon",
+      "subtotal": "Subtotal",
+      "discountInfo": "Info Diskon",
+      "enhanceTrip": "Tingkatkan perjalanan Anda",
       "nationality": {
         "title": "Kewarganegaraan Peserta",
         "local": "Domestik (Lokal)",
         "foreign": "Mancanegara (Asing)"
       },
       "selectOption": "-- Pilih Opsi --",
-
       "fullName": {
         "title": "Nama Lengkap"
       },
@@ -296,40 +301,112 @@
       "pickupLocation": {
         "title": "Lokasi Penjemputan"
       },
-
       "pickup": {
         "title": "Lokasi Penjemputan",
         "airport": "Bandara",
         "station": "Stasiun",
-        "hotel": "Hotel"
+        "hotel": "Hotel",
+        "placeholder": "cth., Hotel, Villa atau Alamat"
+      },
+      "meetingPoint": {
+        "title": "Titik Kumpul",
+        "select": "Pilih Titik Kumpul",
+        "placeholder": "cth. Stasiun Tugu Yogyakarta",
+        "note": "*Peserta wajib berkumpul di titik ini pada waktu yang ditentukan."
       },
       "specialRequest": {
         "title": "Permintaan Khusus",
         "optional": "Opsional",
-        "placeholder": "contoh: alergi, kebutuhan makanan, penjemputan terlambat..."
+        "placeholder": "cth., alergi, kebutuhan diet, penjemputan terlambat..."
       },
-
+      "flightNumber": {
+        "title": "Nomor Penerbangan",
+        "placeholder": "cth., GA 205"
+      },
       "success": {
-        "message": "Pemesanan berhasil dibuat! Mengarahkan..."
+        "message": "Pemesanan berhasil dibuat! Mengalihkan..."
       },
       "errors": {
-        "notLoggedIn": "Anda harus masuk terlebih dahulu untuk memesan.",
+        "notLoggedIn": "Anda harus masuk untuk memesan.",
         "noDate": "Silakan pilih tanggal.",
-        "noParticipants": "Jumlah peserta minimal satu orang.",
+        "noParticipants": "Harus ada setidaknya 1 peserta.",
+        "minAdults": "Minimal 1 orang dewasa.",
+        "invalidChildren": "Jumlah anak tidak valid.",
         "noPrice": "Harga tidak dapat dihitung untuk aktivitas ini.",
         "general": "Pemesanan gagal. Silakan coba lagi.",
         "priceOrPax": "Harga atau jumlah peserta tidak valid.",
         "noNationality": "Silakan pilih kewarganegaraan.",
         "noName": "Silakan masukkan nama lengkap Anda.",
-        "noEmail": "Silakan masukkan alamat email Anda.",
-        "invalidEmail": "Silakan masukkan alamat email yang valid.",
+        "noEmail": "Silakan masukkan email Anda.",
+        "invalidEmail": "Silakan masukkan email yang valid.",
         "noPhone": "Silakan masukkan nomor telepon Anda.",
-        "noPickup": "Silakan pilih lokasi penjemputan."
+        "noPickup": "Silakan pilih lokasi penjemputan.",
+        "noMeetingPoint": "Silakan pilih titik kumpul.",
+        "validation": "Silakan periksa kembali isian Anda."
       }
     },
     "pricing": {
       "pricePerPax": "Harga per Orang"
     }
+  },
+  "OpenTripPage": {
+    "title": "Petualangan Open Trip",
+    "subtitle": "Bergabung dengan wisatawan lain, berbagi biaya, dan temukan teman baru dalam perjalanan seru.",
+    "filters": "Filter",
+    "priceRange": "Rentang Harga",
+    "upTo": "Hingga",
+    "categories": "Kategori",
+    "showFilters": "Tampilkan Filter",
+    "closeFilters": "Tutup Filter",
+    "days": "Hari",
+    "viewDetails": "Lihat Detail",
+    "noResults": "Tidak ada open trip yang sesuai filter Anda.",
+    "from": "Mulai dari",
+    "status": {
+      "loading": "Memuat open trip...",
+      "noCategories": "Tidak ada kategori ditemukan.",
+      "fetchError": "Gagal memuat open trip. Silakan coba lagi."
+    }
+  },
+  "OpenTripDetail": {
+    "back": "Kembali ke Open Trip",
+    "badge": "Open Trip",
+    "overview": "Ringkasan Perjalanan",
+    "highlights": "Sorotan",
+    "meetingPointTitle": "Titik Kumpul",
+    "pickupLocation": "Lokasi Penjemputan",
+    "pickupDesc": "Detail opsi titik kumpul tersedia saat Anda menekan tombol booking. Pastikan datang 30 menit sebelum keberangkatan.",
+    "quota": "Status Kuota",
+    "available": "Tersedia",
+    "bookNow": "Pesan Sekarang",
+    "startingFrom": "Mulai dari",
+    "priceDisclaimer": "*Harga dapat berubah tergantung tanggal & ketersediaan.",
+    "facilities": {
+      "transport": "Transportasi AC",
+      "ticket": "Tiket Masuk Wisata",
+      "doc": "Dokumentasi Trip",
+      "guide": "Pemandu Wisata"
+    },
+    "defaultDescription": "Nikmati pengalaman seru {name} bersama traveler lainnya. Paket ini dirancang untuk memberikan pengalaman terbaik dengan harga yang terjangkau. Jelajahi keindahan {location} dan ciptakan kenangan tak terlupakan."
+  },
+  "PackagesPage": {
+    "title": "Jelajahi Paket Wisata Kami",
+    "subtitle": "Temukan petualangan sempurna di Yogyakarta, dikurasi khusus untuk Anda. Sesuaikan filter untuk mencocokkan preferensi Anda.",
+    "filters": "Filter",
+    "priceRange": "Rentang Harga",
+    "upTo": "Hingga",
+    "categories": "Kategori",
+    "showFilters": "Tampilkan Filter",
+    "closeFilters": "Tutup Filter",
+    "days": "Hari",
+    "viewDetails": "Lihat Detail",
+    "noResults": "Tidak ada paket yang cocok dengan filter Anda.",
+    "status": {
+      "loading": "Memuat paket...",
+      "noCategories": "Tidak ada kategori ditemukan.",
+      "fetchError": "Gagal memuat paket. Silakan coba lagi."
+    },
+    "from": "Mulai dari"
   },
   "activityDetail": {
     "notFound": "Aktivitas tidak ditemukan.",
@@ -356,377 +433,154 @@
     "subtitle": "Inspirasi perjalanan, tips liburan, dan cerita menarik dari Travelmore.",
     "by": "oleh",
     "destinasi-jogja-2025": {
-      "title": "10 Destinasi Wisata Wajib Kunjung di Yogyakarta",
-      "excerpt": "Temukan tempat wisata terbaru dan terpopuler di Yogyakarta yang harus ada di daftar perjalanan Anda.",
+      "id": 1,
+      "title": "10 Destinasi Wisata Wajib Dikunjungi di Yogyakarta",
+      "author": "Admin Travelmore",
+      "published_at": "2025-10-30",
+      "images": [
+        "/articles-image/borobudur.webp",
+        "/articles-image/prambanan.webp",
+        "/articles-image/keraton.webp",
+        "/articles-image/malio.webp"
+      ],
+      "excerpt": "Temukan tempat wisata terbaru dan paling populer di Yogyakarta yang harus ada dalam daftar perjalanan Anda.",
       "content": [
         "### 1. Candi Borobudur",
         "![Candi Borobudur](/articles-image/borobudur.webp)",
-        "**Alasan:** Sebagai candi Buddha terbesar di dunia dan Situs Warisan Dunia UNESCO, Borobudur adalah sebuah mahakarya arsitektur dan spiritual yang wajib dilihat. Kemegahan strukturnya, relief yang menggambarkan kisah-kisah luhur, dan pemandangan matahari terbit yang magis dari puncaknya menawarkan pengalaman tak terlupakan. Ini bukan sekadar tempat wisata, tetapi sebuah perjalanan spiritual dan sejarah.",
+        "**Alasan:** Sebagai candi Buddha terbesar di dunia dan Situs Warisan Dunia UNESCO, Borobudur adalah mahakarya arsitektur dan spiritual yang wajib dilihat. Kemegahan strukturnya, relief yang menggambarkan kisah-kisah mulia, dan pemandangan matahari terbit yang magis dari puncaknya menawarkan pengalaman yang tak terlupakan. Ini bukan hanya tempat wisata, tetapi perjalanan spiritual dan sejarah.",
         "",
         "### 2. Candi Prambanan",
         "![Candi Prambanan](/articles-image/prambanan.webp)",
-        "**Alasan:** Jika Borobudur mewakili kemegahan Buddha, Prambanan adalah monumen epik Hindu. Kompleks candi ini didedikasikan untuk Trimurti (Brahma, Wisnu, Siwa) dengan arsitekturnya yang tinggi dan anggun. Alasan logis untuk berkunjung adalah untuk menyaksikan puncak keindahan arsitektur Hindu kuno di Indonesia dan memahami kisah Ramayana yang terukir indah di reliefnya. Pertunjukan Sendratari Ramayana di malam hari dengan latar Candi Prambanan adalah bonus yang spektakuler.",
+        "**Alasan:** Jika Borobudur mewakili kemegahan Buddha, Prambanan adalah monumen Hindu yang epik. Kompleks candi ini didedikasikan untuk Trimurti (Brahma, Wisnu, Siwa) dengan arsitekturnya yang tinggi dan anggun. Alasan logis untuk berkunjung adalah menyaksikan puncak keindahan arsitektur Hindu kuno di Indonesia dan memahami kisah Ramayana yang terukir indah di reliefnya. Pertunjukan Sendratari Ramayana di malam hari dengan latar belakang Candi Prambanan adalah bonus yang spektakuler.",
         "",
-        "### 3. Keraton Ngayogyakarta Hadiningrat",
+        "### 3. Keraton Yogyakarta",
         "![Keraton](/articles-image/keraton.webp)",
-        "**Alasan:** Ini adalah jantung dari budaya dan sejarah Yogyakarta. Mengunjungi Keraton memberi Anda wawasan langsung tentang kehidupan keluarga kerajaan, arsitektur Jawa yang kaya akan makna filosofis, dan tradisi yang masih hidup hingga saat ini. Keraton adalah museum hidup di mana Anda dapat merasakan denyut nadi sejati budaya Jawa.",
+        "**Alasan:** Ini adalah jantung budaya dan sejarah Yogyakarta. Mengunjungi Keraton memberikan wawasan langsung tentang kehidupan keluarga kerajaan, arsitektur Jawa yang kaya akan makna filosofis, dan tradisi yang masih hidup hingga saat ini. Keraton adalah museum hidup di mana Anda bisa merasakan denyut nadi budaya Jawa yang sesungguhnya.",
         "",
-        "### 4. Taman Sari",
+        "### 4. Taman Sari (Istana Air)",
         "![Taman Sari](/articles-image/tamansari.webp)",
-        "**Alasan:** Tidak jauh dari Keraton, Taman Sari adalah situs bersejarah dengan arsitektur unik yang memadukan gaya Jawa dan Portugis. Dulunya merupakan taman dan kompleks pemandian bagi Sultan dan selir-selirnya. Alasan utama untuk berkunjung adalah keindahan arsitekturnya yang fotogenik, terowongan bawah tanah yang misterius, dan cerita sejarah yang menarik di baliknya.",
+        "**Alasan:** Berjarak dekat dari Keraton, Taman Sari adalah situs bersejarah dengan arsitektur unik yang memadukan gaya Jawa dan Portugis. Dulunya merupakan kompleks taman dan pemandian bagi Sultan dan para selirnya. Alasan utama berkunjung adalah keindahan arsitekturnya yang fotogenik, lorong bawah tanah yang misterius, dan kisah sejarah menarik di baliknya.",
         "",
         "### 5. Jalan Malioboro",
         "![Jalan Malioboro](/articles-image/malio.webp)",
-        "**Alasan:** Malioboro adalah arteri ekonomi dan pariwisata Yogyakarta. Ini adalah tempat terbaik untuk merasakan energi kota, berbelanja oleh-oleh klasik (batik, bakpia, kerajinan tangan), dan mencicipi kuliner lesehan di malam hari. Mengunjungi Malioboro adalah cara termudah dan paling logis untuk menyelami atmosfer sejati Yogyakarta dalam satu kawasan.",
+        "**Alasan:** Malioboro adalah nadi ekonomi dan pariwisata Yogyakarta. Ini adalah tempat terbaik untuk merasakan energi kota, berbelanja oleh-oleh klasik (batik, bakpia, kerajinan tangan), dan mencicipi kuliner lesehan di malam hari. Mengunjungi Malioboro adalah cara termudah dan paling logis untuk menyelami suasana Yogyakarta yang sebenarnya dalam satu area.",
         "",
-        "### 6. Goa Pindul",
-        "![Goa Pindul](/hero-1.jpg)",
-        "**Alasan:** Menawarkan pengalaman wisata petualangan yang unik dan aman untuk hampir semua usia. Aktivitas utamanya adalah 'cave tubing', yaitu mengapung menyusuri sungai bawah tanah menggunakan ban karet sambil menikmati keindahan stalaktit dan stalagmit di dalam gua yang gelap. Ini adalah pilihan logis jika Anda mencari petualangan alam yang berbeda dari wisata candi atau kota.",
+        "### 6. Gua Pindul",
+        "![Gua Pindul](/hero-1.jpg)",
+        "**Alasan:** Menawarkan pengalaman wisata petualangan yang unik dan aman untuk hampir semua usia. Aktivitas utamanya adalah cave tubing, yaitu menyusuri sungai bawah tanah menggunakan ban karet sambil menikmati keindahan stalaktit dan stalagmit di dalam gua yang gelap. Ini adalah pilihan logis jika Anda mencari petualangan alam yang berbeda dari candi atau wisata kota.",
         "",
-        "### 7. Merapi Lava Jeep Tour",
+        "### 7. Tur Jeep Lava Merapi",
         "![Merapi](/articles-image/merapi.webp)",
-        "**Alasan:** Tur ini memberikan pengalaman yang memacu adrenalin sekaligus edukatif. Anda akan diajak berkeliling lereng Gunung Merapi dengan jip, melewati desa-desa yang terkena dampak erupsi, dan berhenti di titik-titik penting seperti Museum Sisa Hartaku dan Bunker Kaliadem. Alasan kuat untuk memilih ini adalah untuk menyaksikan secara langsung kekuatan alam dan ketangguhan masyarakat lokal, sambil menikmati pemandangan gunung yang dramatis.",
+        "**Alasan:** Tur ini memberikan pengalaman yang memacu adrenalin sekaligus edukatif. Anda akan diajak naik jeep menyusuri lereng Gunung Merapi, melewati desa-desa yang terdampak letusan, dan berhenti di titik-titik penting seperti Museum Sisa Hartaku dan Bunker Kaliadem. Alasan kuat memilih ini adalah untuk menyaksikan langsung kekuatan alam dan ketangguhan masyarakat setempat, sambil menikmati pemandangan gunung yang dramatis.",
         "",
         "### 8. Hutan Pinus Mangunan",
         "![Mangunan](/articles-image/mangunan.webp)",
-        "**Alasan:** Terletak di kawasan Dlingo, tempat ini mewakili tren wisata alam modern yang sangat populer di Yogyakarta. Hutan pinus yang rimbun dan sejuk ini dilengkapi dengan berbagai gardu pandang dan spot foto artistik. Ini adalah pilihan logis bagi mereka yang mencari ketenangan, udara segar, dan foto-foto lanskap yang menakjubkan untuk media sosial.",
+        "**Alasan:** Terletak di daerah Dlingo, tempat ini mewakili tren wisata alam modern yang sangat populer di Yogyakarta. Hutan pinus yang rimbun dan sejuk ini dilengkapi dengan berbagai gardu pandang dan spot foto artistik. Pilihan logis bagi mereka yang mencari ketenangan, udara segar, dan foto lanskap yang memukau untuk media sosial.",
         "",
         "### 9. Pantai Timang",
         "![Pantai Timang](/articles-image/timang.webp)",
-        "**Alasan:** Mewakili keindahan pantai selatan Yogyakarta (Kabupaten Gunungkidul) yang eksotis dan menantang. Pantai Timang terkenal dengan gondola tradisional dan jembatan gantungnya yang ekstrem, digunakan untuk menyeberang ke Pulau Watu Panjang. Alasan berkunjung ke sini adalah untuk merasakan petualangan yang mendebarkan dan melihat pemandangan laut yang liar dan dramatis, sangat berbeda dari pantai-pantai datar pada umumnya.",
+        "**Alasan:** Mewakili keindahan eksotis dan menantang dari pantai selatan Yogyakarta (Gunungkidul). Pantai Timang terkenal dengan gondola tradisional dan jembatan gantung yang ekstrem, digunakan untuk menyeberang ke Pulau Watu Panjang. Alasan berkunjung ke sini adalah untuk merasakan petualangan mendebarkan dan melihat pemandangan laut yang liar dan dramatis, sangat berbeda dari pantai landai pada umumnya.",
         "",
         "### 10. Museum Ullen Sentalu",
         "![Candi Prambanan](/hero-1.jpg)",
-        "**Alasan:** Sering disebut sebagai salah satu museum terbaik di Indonesia, Ullen Sentalu menyajikan budaya dan sejarah Kerajaan Mataram (Yogyakarta dan Surakarta) dengan cara yang sangat modern, elegan, dan mendalam. Dipandu oleh seorang pemandu, Anda akan diajak dalam perjalanan melintasi lorong waktu. Ini adalah pilihan yang sangat logis jika Anda ingin memahami budaya Jawa lebih dalam dengan cara yang tidak membosankan dan sangat berkesan."
+        "**Alasan:** Sering disebut sebagai salah satu museum terbaik di Indonesia, Ullen Sentalu menyajikan budaya dan sejarah Kerajaan Mataram (Yogyakarta dan Surakarta) dengan cara yang sangat modern, elegan, dan mendalam. Dipandu oleh pemandu, Anda akan diajak menelusuri lorong waktu. Ini adalah pilihan yang sangat logis jika Anda ingin memahami budaya Jawa lebih dalam dengan cara yang tidak membosankan dan sangat berkesan."
       ]
     },
     "tips-hemat-liburan-jogja": {
+      "id": 2,
       "title": "Tips Liburan Hemat di Yogyakarta",
-      "excerpt": "Nikmati perjalanan seru tanpa menguras kantong. Berikut adalah tips hemat untuk liburan Anda di Jogja.",
+      "author": "Sarah Traveler",
+      "published_at": "2025-11-02",
+      "images": [
+        "/hero-1.jpg",
+        "/hero-2.jpg"
+      ],
+      "excerpt": "Nikmati perjalanan seru tanpa menguras kantong. Berikut tips ramah anggaran untuk liburan Anda di Jogja.",
       "content": [
-        "Yogyakarta, atau akrab disapa Jogja, selalu menjadi destinasi favorit yang menawarkan kekayaan budaya, keindahan alam, dan kuliner lezat tanpa harus menguras kantong. Dengan perencanaan yang tepat, Anda bisa menikmati semua pesona Jogja dengan anggaran yang sangat terjangkau.",
-        "Berikut adalah panduan lengkap yang menggabungkan berbagai tips cerdas untuk liburan hemat di Jogja, memastikan perjalanan 'healing' Anda maksimal tanpa bujet besar.",
-        "### 1. Rencanakan Perjalanan di Waktu yang Tepat",
-        "Kunci utama liburan hemat adalah memilih waktu yang tepat. Hindari musim liburan puncak (peak season) seperti Lebaran, Natal, atau libur akhir tahun, karena harga transportasi dan akomodasi biasanya melonjak tajam pada periode tersebut. Berkunjung saat low season akan memberi Anda harga terbaik dan suasana yang lebih tenang.",
-        "### 2. Pilih Akomodasi Ramah Kantong",
-        "Jogja menawarkan banyak pilihan penginapan dengan harga terjangkau. Mulai dari homestay, guesthouse, hingga hostel backpacker, pilihannya sangat beragam. Beberapa rekomendasi dengan harga mulai dari Rp 50.000 per malam antara lain Omah Guyub, Pondok 71, atau Laura Backpackers 523. Memesan jauh-jauh hari akan membantu Anda mengamankan tarif terbaik.",
+        "Yogyakarta, atau akrab disapa Jogja, selalu menjadi destinasi favorit yang menawarkan kekayaan budaya, keindahan alam, dan kuliner lezat tanpa harus merogoh kocek terlalu dalam. Dengan perencanaan yang tepat, Anda bisa menikmati semua pesona Jogja dengan anggaran yang sangat terjangkau.",
+        "Berikut adalah panduan lengkap yang menggabungkan berbagai tips cerdas untuk liburan hemat di Jogja, memastikan perjalanan healing Anda tetap maksimal tanpa budget besar.",
+        "### 1. Rencanakan Waktu Liburan yang Tepat",
+        "Kunci utama liburan hemat adalah memilih waktu yang tepat. Hindari musim liburan puncak (peak season) seperti Lebaran, Natal, atau liburan akhir tahun, karena harga transportasi dan akomodasi biasanya melonjak tajam. Berkunjung saat low season akan memberikan Anda harga terbaik dan suasana yang lebih tenang.",
+        "### 2. Pilih Penginapan Hemat",
+        "Jogja menawarkan banyak pilihan penginapan murah. Mulai dari homestay, guest house, hingga hostel backpacker, pilihannya sangat beragam. Beberapa rekomendasi dengan harga mulai Rp 50.000 per malam antara lain Omah Guyub, Pondok 71, atau Laura Backpackers 523. Memesan jauh-jauh hari akan membantu Anda mendapatkan harga terbaik.",
         "### 3. Manfaatkan Transportasi Cerdas",
-        "**Transportasi Umum:** Untuk berkeliling kota, Trans Jogja adalah pilihan paling ekonomis dengan tarif hanya Rp 3.500 sekali jalan.",
-        "**Sewa Motor:** Jika ingin lebih fleksibel menjelajahi berbagai sudut kota, menyewa motor adalah solusi praktis dengan biaya mulai dari Rp 65.000 per hari.",
-        "**Transportasi Rombongan:** Jika Anda bepergian dalam grup, menyewa mobil atau menggunakan jasa angkutan pribadi bisa jadi lebih hemat jika biayanya dibagi rata.",
+        "**Transportasi Umum:** Untuk keliling kota, Trans Jogja adalah opsi paling ekonomis dengan tarif hanya Rp 3.500 sekali jalan.",
+        "**Sewa Motor:** Jika ingin lebih fleksibel menjelajahi berbagai sudut kota, menyewa motor adalah solusi praktis dengan biaya mulai Rp 65.000 per hari.",
+        "**Transportasi Rombongan:** Jika pergi beramai-ramai, menyewa mobil atau menggunakan jasa angkutan privat bisa lebih hemat jika biayanya dibagi rata.",
         "**Perjalanan Antar Kota:** Untuk perjalanan dari atau ke kota lain, layanan shuttle seperti Joglosemar menawarkan kenyamanan dengan harga terjangkau.",
         "### 4. Kunjungi Tempat Wisata Gratis atau Murah",
-        "Jogja dipenuhi dengan destinasi wisata yang tidak akan menguras dompet Anda. Anda bisa menikmati ikon kota seperti Tugu Jogja dan suasana malam di Alun-Alun Kidul secara gratis. Destinasi populer seperti Jalan Malioboro, Taman Sari, dan Hutan Pinus Mangunan juga memiliki tiket masuk yang sangat terjangkau.",
-        "### 5. Nikmati Surga Kuliner Lokal",
-        "Salah satu daya tarik utama Jogja adalah kulinernya yang enak dan murah. Cicipi hidangan otentik seperti Gudeg Mbok Lindu, Soto Ayam 61, atau Pecel Senggol Beringharjo. Untuk pengalaman malam hari, jangan lewatkan nasi kucing di Angkringan Lik Man dengan harga mulai dari Rp 2.500 saja. Makan di warung-warung lokal akan jauh lebih hemat daripada di restoran besar.",
-        "### 6. Berbelanja Oleh-Oleh dengan Bijak",
-        "Saat membeli oleh-oleh, lakukan sedikit riset atau tanyakan pada penduduk lokal tempat terbaik untuk berbelanja. Pasar Beringharjo bisa menjadi pilihan tepat untuk mencari batik dan suvenir lain dengan harga miring, asalkan Anda pandai menawar.",
-        "### 7. Tips Tambahan untuk Lebih Hemat",
-        "**Bawa Botol Minum dan Camilan Sendiri:** Selalu siapkan air minum sendiri dan beberapa camilan ringan untuk mengurangi pengeluaran tak terduga.",
-        "**Manfaatkan Promo dan Diskon:** Sebelum berangkat, cari promo atau diskon tiket transportasi, akomodasi, atau bahkan tiket masuk tempat wisata.",
-        "**Buat Rencana Perjalanan (Itinerary):** Dengan rencana perjalanan yang jelas, perjalanan Anda akan lebih terarah dan efisien, yang dapat membantu menekan biaya transportasi yang tidak perlu.",
-        "Dengan menerapkan tips di atas, Anda bisa merencanakan perjalanan 2 hari 1 malam ke Jogja dengan perkiraan total biaya hanya sekitar Rp 350.000 hingga Rp 400.000. Selamat merencanakan liburan yang berkesan dan hemat di Jogja!"
+        "Jogja penuh dengan destinasi wisata yang tidak akan menguras dompet. Anda bisa menikmati ikon kota seperti Tugu Jogja dan suasana malam di Alun-Alun Kidul secara gratis. Destinasi populer seperti Jalan Malioboro, Taman Sari, dan Hutan Pinus Mangunan juga memiliki tiket masuk yang sangat terjangkau.",
+        "### 5. Nikmati Surga Kuliner Murah Meriah",
+        "Salah satu daya tarik utama Jogja adalah kulinernya yang enak dan murah. Cicipi kuliner otentik seperti Gudeg Mbok Lindu, Soto Ayam 61, atau Pecel Senggol Beringharjo. Untuk pengalaman malam hari, jangan lewatkan nasi kucing di Angkringan Lik Man dengan harga mulai Rp 2.500 saja. Makan di warung lokal akan jauh lebih hemat dibandingkan di restoran besar.",
+        "### 6. Belanja Oleh-Oleh dengan Bijak",
+        "Saat membeli oleh-oleh, lakukan sedikit riset atau tanya penduduk lokal tentang tempat belanja terbaik. Pasar Beringharjo bisa menjadi pilihan tepat untuk mencari batik dan suvenir lainnya dengan harga miring, asalkan Anda pandai menawar.",
+        "### 7. Tips Tambahan Agar Lebih Hemat",
+        "**Bawa Botol Minum dan Camilan:** Selalu siapkan air minum dan camilan ringan sendiri untuk mengurangi pengeluaran tak terduga.",
+        "**Manfaatkan Promo dan Diskon:** Sebelum berangkat, cari promo atau diskon tiket transportasi, penginapan, atau bahkan tiket masuk tempat wisata.",
+        "**Buat Rencana Perjalanan (Itinerary):** Dengan itinerary yang jelas, perjalanan Anda akan lebih terarah dan efisien, sehingga bisa memangkas biaya transportasi yang tidak perlu.",
+        "Dengan menerapkan tips di atas, Anda bisa merencanakan perjalanan 2 hari 1 malam ke Jogja dengan estimasi total biaya hanya sekitar Rp 350.000 hingga Rp 400.000. Selamat merencanakan liburan hemat dan berkesan di Jogja!"
       ]
     },
     "kuliner-khas-jogja": {
+      "id": 3,
       "title": "Kuliner Khas Jogja yang Wajib Dicoba",
-      "excerpt": "Perjalanan ke Jogja tak lengkap tanpa mencicipi makanannya. Berikut rekomendasi terbaik untuk Anda.",
+      "author": "Foodie Jogja",
+      "published_at": "2025-11-05",
+      "images": [
+        "/articles-image/gudeg.webp"
+      ],
+      "excerpt": "Perjalanan ke Jogja belum lengkap tanpa mencicipi makanan lokalnya. Berikut rekomendasi terbaik untuk Anda.",
       "content": [
-        "Yogyakarta tidak hanya kaya akan budaya dan destinasi wisata, tetapi juga merupakan surga bagi para pencinta kuliner. Dari cita rasa manis yang khas hingga sensasi pedas yang menggigit, setiap sudut kota menawarkan rasa yang legendaris dan otentik. Berikut adalah daftar kuliner legendaris Jogja yang wajib masuk dalam daftar perjalanan kuliner Anda.",
-        "### Hidangan Utama yang Menggugah Selera",
+        "Yogyakarta tidak hanya kaya akan budaya dan destinasi wisata, tetapi juga surga bagi para pecinta kuliner. Dari cita rasa manis yang khas hingga pedas yang menggigit, setiap sudut kota menawarkan rasa yang legendaris dan otentik. Berikut adalah daftar kuliner legendaris Jogja yang wajib masuk dalam daftar perjalanan rasa Anda.",
+        "### Makanan Berat yang Menggugah Selera",
         "**1. Gudeg Yu Djum**",
-        "Perjalanan ke Jogja terasa kurang lengkap tanpa mencicipi gudeg. Salah satu yang paling ikonik adalah Gudeg Yu Djum. Berdiri sejak tahun 1950, tempat ini menyajikan gudeg kering dengan rasa manis gurih yang meresap sempurna, disajikan dengan krecek pedas, telur, dan ayam kampung.",
+        "Belum ke Jogja rasanya kalau belum makan gudeg. Salah satu yang paling ikonik adalah Gudeg Yu Djum. Berdiri sejak 1950, tempat ini menyajikan gudeg kering dengan rasa manis gurih yang meresap sempurna, disajikan dengan krecek pedas, telur, dan ayam kampung.",
         "**Lokasi:** Jl. Dagen No. 2C, Sosromenduran, Gedong Tengen, Yogyakarta.",
         "**2. Sate Klathak Pak Pong**",
-        "Berbeda dari sate biasa, Sate Klathak menggunakan jeruji sepeda sebagai tusukannya, yang dipercaya membuat daging kambing matang merata. Dibumbui hanya dengan garam dan merica, sate ini disajikan dengan kuah gulai yang gurih.",
+        "Berbeda dengan sate biasa, Sate Klathak menggunakan jeruji sepeda sebagai tusuknya, yang dipercaya mematangkan daging kambing secara merata. Dibumbui hanya dengan garam dan merica, sate ini disajikan dengan kuah gulai yang gurih.",
         "**Lokasi:** Jl. Sultan Agung No. 18, Jejeran II, Wonokromo, Pleret, Bantul.",
         "**3. Bakmi Jowo Mbah Gito**",
-        "Menikmati semangkuk bakmi Jawa di tempat yang otentik adalah sebuah pengalaman tersendiri. Bakmi Jowo Mbah Gito terkenal dengan proses masaknya yang masih menggunakan anglo (tungku arang), menghasilkan aroma 'smoky' yang khas. Anda bisa memilih versi rebus (bakmi godog) atau goreng (bakmi goreng).",
+        "Menikmati semangkuk bakmi Jawa di suasana yang otentik adalah pengalaman tersendiri. Bakmi Jowo Mbah Gito terkenal dengan proses masaknya yang masih menggunakan anglo (tungku arang), menghasilkan aroma *smoky* yang khas. Anda bisa memilih varian godog (rebus) atau goreng.",
         "**Lokasi:** Jl. Nyi Ageng No. 9, Rejowinangun, Kotagede, Yogyakarta.",
         "**4. Oseng Mercon Bu Narti**",
-        "Bagi pecinta pedas, Oseng Mercon Bu Narti adalah destinasi wajib. Hidangan andalannya adalah oseng-oseng yang terbuat dari tetelan, kulit, dan tulang rawan sapi yang dimasak dengan cabai rawit dalam jumlah besar, menciptakan ledakan pedas di mulut.",
+        "Bagi pecinta pedas, Oseng Mercon Bu Narti adalah destinasi wajib. Menu andalannya adalah oseng-oseng dari koyor, kulit, dan tulang muda sapi yang dimasak dengan cabai rawit dalam jumlah banyak, menciptakan ledakan pedas di mulut.",
         "**Lokasi:** Jl. KH. Ahmad Dahlan No. 107, Notoprajan, Ngampilan, Yogyakarta.",
         "**5. Soto Bathok Mbah Katro**",
-        "Nikmati sensasi makan soto yang berbeda di sini. Soto disajikan dalam mangkuk yang terbuat dari batok kelapa, memberikan nuansa pedesaan yang unik. Berlokasi di tengah sawah, tempat ini menawarkan soto daging sapi dengan kuah bening dan segar.",
+        "Nikmati sensasi makan soto yang berbeda di sini. Soto disajikan dalam mangkuk dari tempurung kelapa (bathok), memberikan nuansa pedesaan yang unik. Berlokasi di tengah persawahan, tempat ini menawarkan soto daging sapi dengan kuah bening yang segar.",
         "**Lokasi:** Sambisari, Desa Purwomartani, Kalasan, Sleman.",
         "**6. Mi Lethek Mbah Mendes**",
-        "Mi Lethek adalah mi tradisional dari Bantul yang terbuat dari tepung tapioka dan singkong. Warnanya yang keruh (lethek) menjadi ciri khasnya. Di tangan Mbah Mendes, mi ini diolah menjadi hidangan lezat dengan bumbu tradisional yang kaya rasa.",
+        "Mi Lethek adalah mi tradisional khas Bantul yang terbuat dari tepung tapioka dan singkong. Warnanya yang keruh (lethek) menjadi ciri khasnya. Di tangan Mbah Mendes, mi ini diolah menjadi hidangan lezat dengan bumbu rempah yang kaya.",
         "**Lokasi:** Meguwo, Maguwoharjo, Depok, Sleman.",
         "### Jajanan dan Oleh-Oleh Legendaris",
         "**7. Bakpia Pathok 25**",
-        "Sebagai oleh-oleh khas Jogja, Bakpia Pathok 25 adalah salah satu merek paling terkenal. Menawarkan berbagai varian rasa dari kacang hijau, keju, hingga cokelat, bakpia ini memiliki kulit yang renyah dan isian yang lembut.",
+        "Sebagai oleh-oleh khas Jogja, Bakpia Pathok 25 adalah salah satu merek yang paling terkenal. Menawarkan berbagai varian rasa mulai dari kacang hijau, keju, hingga cokelat, bakpia ini memiliki kulit yang renyah dan isian yang lembut.",
         "**Lokasi:** Kawasan Ngampilan, Yogyakarta.",
         "**8. Yangko Pak Prapto**",
-        "Yangko adalah kue mirip mochi khas Jogja yang terbuat dari tepung ketan dengan isian kacang cincang yang manis. Rasanya yang kenyal dan manis membuat Yangko Pak Prapto menjadi oleh-oleh favorit wisatawan sejak lama.",
+        "Yangko adalah kue moci ala Jogja yang terbuat dari tepung ketan dengan isian kacang cincang manis. Rasanya yang kenyal dan manis membuat Yangko Pak Prapto menjadi favorit wisatawan sejak lama.",
         "**Lokasi:** Jl. Pramuka No. 82, Giwangan, Umbulharjo, Yogyakarta.",
         "**9. Kipo Bu Djito**",
-        "Kipo adalah jajanan tradisional langka dari Kotagede. Terbuat dari adonan tepung ketan yang diisi dengan campuran kelapa parut dan gula Jawa (entho-entho), yang kemudian dipanggang. Nama 'kipo' berasal dari pertanyaan dalam bahasa Jawa 'Iki opo?' (Ini apa?).",
+        "Kipo adalah jajanan tradisional langka dari Kotagede. Terbuat dari adonan tepung ketan yang diisi unti kelapa dan gula jawa, lalu dipanggang. Nama kipo berasal dari pertanyaan 'Iki opo?' (Ini apa?).",
         "**Lokasi:** Jl. Mondorakan No. 27, Prenggan, Kotagede, Yogyakarta.",
         "**10. Geplak Mbok Tumpuk**",
-        "Geplak adalah oleh-oleh manis lainnya yang berasal dari Bantul. Terbuat dari parutan kelapa dan gula, geplak memiliki warna-warni cerah yang menarik dan rasa yang dominan manis. Geplak Mbok Tumpuk adalah salah satu produsen geplak tertua yang masih mempertahankan resep aslinya.",
+        "Geplak adalah makanan manis lain dari Bantul. Terbuat dari parutan kelapa dan gula, geplak memiliki warna-warni yang menarik dan rasa yang dominan manis. Geplak Mbok Tumpuk adalah salah satu produsen geplak tertua yang masih mempertahankan resep aslinya.",
         "**Lokasi:** Jl. KH. A. Wahid Hasyim No. 104, Taskombang, Bantul."
       ]
-    }
-  },
-  "blogDetail": {
-    "back": "Kembali ke Blog",
-    "notFound": "Artikel tidak ditemukan.",
-    "by": "oleh"
-  },
-  "booking": {
-    "title": "Formulir Pemesanan",
-    "subtitle": "Lengkapi detail di bawah ini untuk menyelesaikan pemesanan Anda.",
-    "orderDetails": "Detail Pesanan",
-    "contactInfo": "Informasi Kontak",
-    "fields": {
-      "activity": "Aktivitas yang Dipesan",
-      "date": "Tanggal Aktivitas",
-      "participants": "Jumlah Peserta",
-      "name": "Nama Lengkap",
-      "email": "Alamat Email",
-      "phone": "Nomor Telepon (WhatsApp)",
-      "address": "Alamat Rumah"
-    },
-    "placeholders": {
-      "participants": "cth: 2 dewasa, 1 anak",
-      "address": "cth: Jakarta, Indonesia"
-    },
-    "button": "Kirim Pemesanan",
-    "alert": "Permintaan pemesanan Anda telah terkirim! Kami akan segera menghubungi Anda."
-  },
-  "carDetail": {
-    "notFound": "Mobil tidak ditemukan.",
-    "alert": "Pemesanan untuk {car} pada {date} telah dikirim.",
-    "service": {
-      "title": "Layanan yang Tersedia",
-      "area": "Area Layanan: Yogyakarta & Jawa Tengah",
-      "driver": "Termasuk Sopir",
-      "fuel": "Termasuk BBM"
-    },
-    "form": {
-      "title": "Pesan Mobil Ini",
-      "name": "Nama Lengkap",
-      "email": "Alamat Email",
-      "phone": "Nomor Telepon",
-      "pickup": "Lokasi Penjemputan",
-      "button": "Pesan Sekarang",
-      "pickupTime": "Pick Up Time"
-    },
-    "details": {
-      "title": "Detail Mobil",
-      "type": "Tipe",
-      "transmission": "Transmisi",
-      "fuel": "Jenis BBM",
-      "capacity": "Kapasitas",
-      "seats": "kursi",
-      "trunk": "Ukuran Bagasi",
-      "bags": "tas",
-      "features": "Fitur"
-    }
-  },
-  "carRental": {
-    "title": "Sewa Mobil Dalam Kota",
-    "subtitle": "Temukan kendaraan yang sempurna untuk perjalanan Anda di Yogyakarta. Mudah, andal, dan siap jalan.",
-    "pricePerDay": "/hari",
-    "card": {
-      "priceLabel": "Mulai dari"
-    }
-  },
-  "packages": {
-    "tabs": {
-      "overview": "Gambaran Umum",
-      "itinerary": "Rencana Perjalanan",
-      "cost": "Biaya",
-      "faqs": "FAQs",
-      "map": "Peta",
-      "pricing": "Harga"
-    },
-    "trip": {
-      "about": "Tentang Perjalanan Ini",
-      "days": "Hari",
-      "info": "Info Perjalanan",
-      "from": "Mulai dari",
-      "person": "Orang",
-      "adult": "Dewasa",
-      "child": "Anak",
-      "people": "Orang",
-      "participants": "Peserta / Kuantitas"
-    },
-    "cost": {
-      "facilitiesIncluded": "Fasilitas Termasuk",
-      "facilitiesExcluded": "Fasilitas Tidak Termasuk",
-      "noIncludedItems": "Tidak ada daftar fasilitas termasuk.",
-      "noExcludedItems": "Tidak ada daftar fasilitas tidak termasuk."
-    },
-    "booking": {
-      "checkAvailability": "CEK KETERSEDIAAN",
-      "needHelp": "Butuh bantuan memesan?",
-      "sendMessage": "Kirim Pesan",
-      "loginToBook": "Silakan Login terlebih dahulu untuk memesan",
-      "title": "Pesan Aktivitas Anda",
-      "startDate": "Pilih Tanggal",
-      "selectOption": "-- Pilih Opsi --",
-      "nationality": {
-        "title": "Kebangsaan Peserta",
-        "local": "Domestik (Lokal)",
-        "foreign": "Mancanegara (Asing)"
-      },
-      "fullName": "Nama Lengkap",
-      "email": "Email",
-      "phone": "Nomor Telepon (WA)",
-      "pickupLocation": "Lokasi Penjemputan",
-      "pickup": {
-        "airport": "Bandara (Airport)",
-        "station": "Stasiun (Train Station)",
-        "hotel": "Hotel"
-      },
-      "flightNumber": {
-        "title": "Nomor Penerbangan",
-        "placeholder": "cth: GA 205"
-      },
-      "specialRequest": {
-        "title": "Permintaan Khusus",
-        "placeholder": "cth: alergi, kebutuhan diet, jemput terlambat..."
-      },
-      "optional": "Opsional",
-      "total": "Total Harga",
-      "submitting": "Memesan...",
-      "confirm": "Pesan Sekarang",
-      "discountCode": "Kode Diskon",
-      "subtotal": "Subtotal",
-      "discountInfo": "Info Diskon",
-      "success": {
-        "message": "Pemesanan berhasil! Mengalihkan..."
-      },
-      "errors": {
-        "notLoggedIn": "Anda harus login untuk memesan.",
-        "noDate": "Silakan pilih tanggal.",
-        "noParticipants": "Harus ada minimal 1 peserta.",
-        "noNationality": "Silakan pilih kebangsaan.",
-        "noName": "Silakan masukkan nama lengkap Anda.",
-        "noEmail": "Silakan masukkan email Anda.",
-        "invalidEmail": "Silakan masukkan email yang valid.",
-        "noPhone": "Silakan masukkan nomor telepon Anda.",
-        "noPickup": "Silakan pilih lokasi penjemputan.",
-        "noPrice": "Harga tidak dapat dihitung untuk aktivitas ini.",
-        "general": "Pemesanan gagal. Silakan coba lagi."
-      }
-    },
-    "pricing": {
-      "pax": "Peserta",
-      "pricePerPax": "Harga per Peserta"
-    },
-    "status": {
-      "loading": "Memuat detail paket...",
-      "noCategories": "Tidak ada kategori yang ditemukan.",
-      "fetchError": "Gagal memuat data paket. Silakan coba lagi.",
-      "notFound": "Paket tidak ditemukan.",
-      "noItinerary": "Tidak ada detail rencana perjalanan.",
-      "noFaqs": "Tidak ada pertanyaan yang sering diajukan.",
-      "noMap": "Lokasi peta tidak tersedia.",
-      "noPricing": "Tidak ada detail harga yang tersedia."
-    },
-    "gallery": {
-      "noImage": "Tidak ada gambar yang tersedia untuk paket ini."
-    },
-    "buttons": {
-      "back": "Kembali ke Paket"
-    }
-  },
-  "PackagesPage": {
-    "title": "Jelajahi Paket Tur Kami",
-    "subtitle": "Temukan petualangan sempurna di Yogyakarta, yang dikurasi khusus untuk Anda. Sesuaikan filter agar sesuai dengan preferensi Anda.",
-    "filters": "Filter",
-    "priceRange": "Rentang Harga",
-    "upTo": "Hingga",
-    "categories": "Kategori",
-    "showFilters": "Tampilkan Filter",
-    "closeFilters": "Tutup Filter",
-    "days": "Hari",
-    "viewDetails": "Lihat Detail",
-    "noResults": "Tidak ada paket yang sesuai dengan filter Anda.",
-    "status": {
-      "loading": "Memuat paket...",
-      "noCategories": "Tidak ada kategori ditemukan.",
-      "fetchError": "Gagal memuat paket. Silakan coba lagi."
-    },
-    "from": "dari"
-  },
-  "PlannerPage": {
-    "regular": {
-      "title": "Konsultasi Perencana Perjalanan",
-      "description": "Biarkan tim kami membantu menyusun rencana perjalanan sesuai anggaran, minat, dan gaya liburan Anda. Solusi tepat untuk perjalanan yang efisien dan berkesan.",
-      "features": {
-        "f1": "Rencana perjalanan yang dipersonalisasi",
-        "f2": "Rekomendasi akomodasi & aktivitas",
-        "f3": "Optimalisasi anggaran perjalanan"
-      },
-      "price": "Rp 250.000 / paket",
-      "terms": {
-        "t1": "1x revisi rencana perjalanan",
-        "t2": "Durasi layanan konsultasi: 7 hari",
-        "t3": "Tidak termasuk biaya tiket, hotel, atau aktivitas"
-      },
-      "ctaText": "Pesan Konsultasi"
-    },
-    "exclusive": {
-      "title": "Konsultasi Perencana Perjalanan Eksklusif",
-      "description": "Nikmati pengalaman perjalanan premium dengan rencana perjalanan yang dibuat khusus oleh desainer perjalanan senior kami. Dapatkan akses eksklusif dan layanan prioritas sepanjang perjalanan Anda.",
-      "features": {
-        "f1": "Revisi rencana perjalanan tanpa batas",
-        "f2": "Pemesanan end-to-end (penerbangan, akomodasi premium, transportasi)",
-        "f3": "Desainer perjalanan senior khusus",
-        "f4": "Layanan pramutamu 24/7 selama perjalanan",
-        "f5": "Akses eksklusif & pengalaman lokal unik"
-      },
-      "price": "Rp 500.000 / paket",
-      "terms": {
-        "t1": "Durasi layanan konsultasi: 30 hari",
-        "t2": "Layanan premium & prioritas",
-        "t3": "Tidak termasuk biaya tiket, hotel, atau aktivitas (dibayar terpisah)"
-      },
-      "ctaText": "Pesan Konsultasi Eksklusif"
-    },
-    "termsTitle": "Ketentuan:",
-    "backButton": "← Kembali ke Detail Layanan",
-    "workflowTitle": "Cara Kerja Layanan Konsultasi Kami",
-    "workflow": {
-      "s1": {
-        "title": "Isi Formulir",
-        "description": "Beri tahu kami kebutuhan perjalanan Anda melalui formulir singkat kami."
-      },
-      "s2": {
-        "title": "Diskusi Awal",
-        "description": "Tim perencana kami akan menghubungi Anda untuk diskusi lebih lanjut."
-      },
-      "s3": {
-        "title": "Penyusunan Rencana Perjalanan",
-        "description": "Kami akan menyusun draf rencana perjalanan berdasarkan diskusi kita."
-      },
-      "s4": {
-        "title": "Revisi & Finalisasi",
-        "description": "Anda dapat memberikan masukan untuk menyempurnakan rencana perjalanan."
-      },
-      "s5": {
-        "title": "Nikmati Liburan Anda!",
-        "description": "Dengan rencana perjalanan akhir di tangan, nikmati perjalanan Anda!"
-      }
     }
   },
   "PlannerForm": {
     "sidebar": {
       "planYourTrip": "RENCANAKAN PERJALANAN ANDA",
-      "title": "Beri tahu kami preferensi perjalanan Anda",
-      "description": "Formulir multi-langkah kami memudahkan untuk memberikan semua detail yang diperlukan agar kami dapat merancang perjalanan sempurna Anda.",
+      "title": "Beritahu kami preferensi perjalanan Anda",
+      "description": "Formulir multi-langkah kami memudahkan Anda memberikan semua detail yang diperlukan agar kami dapat menyusun perjalanan sempurna Anda.",
       "needHelp": "Butuh Bantuan?",
       "contactUs": "Hubungi kami di",
       "summary": {
         "summaryTitle": "RINGKASAN",
         "reviewTitle": "Tinjau Pilihan Anda",
-        "reviewDescription": "Harap tinjau pilihan Anda di bawah ini sebelum mengirim.",
-        "contactPerson": "Narahubung",
-        "tripType": "Tipe Perjalanan",
-        "destination": "Destinasi",
+        "reviewDescription": "Silakan tinjau pilihan Anda di bawah ini sebelum mengirim.",
+        "contactPerson": "Orang yang Dapat Dihubungi",
+        "tripType": "Jenis Perjalanan",
+        "destination": "Tujuan",
         "participants": "Peserta",
         "participantsValue": "{adults} Dewasa, {kids} Anak, {teens} Remaja, {seniors} Lansia",
         "departure": "Keberangkatan",
@@ -739,13 +593,13 @@
     "title": "Perencana Perjalanan",
     "stepProgress": "Langkah {step} dari {totalSteps}",
     "backButton": " Kembali",
-    "continueButton": "Lanjutkan",
-    "submitButton": "Kirim & Dapatkan Rekomendasi Rencana Perjalanan",
+    "continueButton": "Lanjut",
+    "submitButton": "Kirim & Dapatkan Rekomendasi Rencana",
     "selectPlaceholder": "Pilih opsi",
-    "submissionAlert": "Permintaan konsultasi Anda telah terkirim!",
-    "step1_title": "Pilih Tipe Anda",
+    "submissionAlert": "Permintaan konsultasi Anda telah dikirim!",
+    "step1_title": "Pilih Jenis Anda",
     "step1_personal_title": "Pribadi",
-    "step1_personal_desc": "Untuk perorangan atau grup kecil",
+    "step1_personal_desc": "Untuk individu atau kelompok kecil",
     "step1_company_title": "Perusahaan",
     "step1_company_desc": "Untuk acara atau perjalanan perusahaan",
     "step2_title": "Informasi Kontak",
@@ -754,21 +608,21 @@
     "step2_whatsapp": "Nomor WhatsApp",
     "step2_companyName": "Nama Perusahaan",
     "step2_brandName": "Nama Merek (opsional)",
-    "step3_title": "Tipe Perjalanan Anda",
+    "step3_title": "Kewarganegaraan Anda",
     "step3_domestic_title": "Domestik",
-    "step3_domestic_desc": "Di dalam negeri",
-    "step3_foreign_title": "Luar Negeri",
-    "step3_foreign_desc": "Di luar negeri",
-    "step4_title": "Tempat Keberangkatan",
+    "step3_domestic_desc": "Dalam negeri",
+    "step3_foreign_title": "Asing",
+    "step3_foreign_desc": "Luar negeri",
+    "step4_title": "Alamat Tempat Tinggal",
     "step4_province": "Provinsi",
     "step4_city": "Kota/Kabupaten",
     "step4_address": "Alamat",
     "step4_postalCode": "Kode Pos",
     "step4_country": "Negara",
     "step4_cityState": "Kota/Negara Bagian/Provinsi",
-    "step5_title": "Tipe Perjalanan & Peserta",
-    "step5_travelType": "Tipe Perjalanan",
-    "step5_travelType_desc": "Pilih tipe perjalanan berdasarkan siapa yang akan ikut (keluarga, pasangan, solo, atau grup).",
+    "step5_title": "Jenis Perjalanan & Peserta",
+    "step5_travelType": "Jenis Perjalanan",
+    "step5_travelType_desc": "Pilih jenis perjalanan berdasarkan siapa yang akan ikut (keluarga, pasangan, solo, atau grup).",
     "step5_paxTitle": "Jumlah Peserta (Berdasarkan Kelompok Usia)",
     "step5_paxKids": "Anak-anak (0-12)",
     "step5_paxTeens": "Remaja (13-17)",
@@ -777,57 +631,57 @@
     "step6_title": "Waktu & Durasi",
     "step6_departureDate": "Tanggal Keberangkatan",
     "step6_duration": "Durasi Perjalanan",
-    "step6_duration_placeholder": "cth: 3 Hari 2 Malam",
-    "step7_title": "Pilihan Anggaran",
+    "step6_duration_placeholder": "cth., 3 Hari 2 Malam",
+    "step7_title": "Opsi Anggaran",
     "step7_addonTitle": "Tambahan (Dokumentasi)",
     "step8_title": "Prioritas & Gaya Perjalanan",
     "step8_budgetPriorityTitle": "Prioritas Anggaran",
-    "step8_budgetPriorityDesc": "Harap atur prioritas Anda menggunakan fitur seret & lepas.",
+    "step8_budgetPriorityDesc": "Silakan atur prioritas Anda menggunakan fitur seret & lepas.",
     "step8_dragDropPlaceholder": "Fitur Seret & Lepas (Placeholder)",
     "step8_travelStyleTitle": "Gaya Perjalanan",
     "step8_travelStyleDesc": "Pilih gaya liburan yang paling sesuai dengan preferensi Anda.",
     "step8_selectStylePlaceholder": "Pilih gaya perjalanan Anda",
-    "step8_otherTravelStyleTitle": "Gaya Perjalanan Lainnya (Opsional)",
-    "step8_otherTravelStylePlaceholder": "cth: Backpacking, Digital Nomad",
+    "step8_otherTravelStyleTitle": "Gaya Perjalanan Lain (Opsional)",
+    "step8_otherTravelStylePlaceholder": "cth., Backpacking, Digital Nomad",
     "step8_personalityTitle": "Kepribadian Anda",
     "step8_personalityDesc": "Pilih kepribadian yang paling menggambarkan cara Anda bepergian.",
     "step8_selectPersonalityPlaceholder": "Pilih kepribadian perjalanan Anda",
-    "step8_otherPersonalityTitle": "Kepribadian Lainnya (Opsional)",
-    "step8_otherPersonalityPlaceholder": "cth: Si Sejarawan, Si Pencari Sensasi",
+    "step8_otherPersonalityTitle": "Kepribadian Lain (Opsional)",
+    "step8_otherPersonalityPlaceholder": "cth., Sejarawan, Pencari Sensasi",
     "step8_activityLevelTitle": "Tingkat Aktivitas Harian",
     "step8_activityLevelPlaceholder": "Pilih tingkat",
     "step9_title": "Preferensi Tambahan",
-    "step9_mustVisit": "Tempat Wajib Kunjung",
-    "step9_mustVisit_placeholder": "cth: Borobudur, Malioboro",
+    "step9_mustVisit": "Tempat Wajib Dikunjungi",
+    "step9_mustVisit_placeholder": "cth., Borobudur, Malioboro",
     "step9_attractionPreference": "Preferensi Atraksi",
-    "step9_attractionPreference_placeholder": "cth: Museum, Pantai, Situs Sejarah",
+    "step9_attractionPreference_placeholder": "cth., Museum, Pantai, Situs Sejarah",
     "step9_foodPreference": "Preferensi Makanan",
-    "step9_otherFoodPreferenceTitle": "Preferensi Makanan Lainnya (Opsional)",
-    "step9_otherFoodPreferencePlaceholder": "cth: Bebas gluten, tidak ada makanan laut",
+    "step9_otherFoodPreferenceTitle": "Preferensi Makanan Lain (Opsional)",
+    "step9_otherFoodPreferencePlaceholder": "cth., Bebas gluten, tanpa makanan laut",
     "step9_accommodationPreference": "Preferensi Akomodasi",
-    "step9_accommodationPreference_placeholder": "cth: Glamping di alam, Villa di pantai",
+    "step9_accommodationPreference_placeholder": "cth., Glamping di alam, Villa di pantai",
     "step10_title": "Persetujuan & Info Tambahan",
-    "step10_consent": "Saya setuju menerima rekomendasi rencana perjalanan dan harga melalui WhatsApp.",
+    "step10_consent": "Saya setuju untuk menerima rekomendasi rencana perjalanan dan harga melalui WhatsApp.",
     "step10_frequentTraveler": "Apakah Anda sering bepergian?",
     "options": {
       "travelTypes": {
         "t1": "Perjalanan Keluarga",
         "t2": "Pasangan/Bulan Madu",
-        "t3": "Wisatawan Tunggal",
+        "t3": "Wisatawan Solo",
         "t4": "Grup"
       },
       "budgetPacks": {
         "Backpacker": {
           "title": "Paket Backpacker",
-          "description": "Sempurna untuk mereka yang suka menjelajah dengan sederhana, efisien, dan hemat. Semua kebutuhan dasar perjalanan terpenuhi tanpa menguras kantong. Fokusnya adalah pengalaman, bukan kemewahan."
+          "description": "Sempurna bagi mereka yang suka menjelajah dengan sederhana, efisien, dan hemat. Semua kebutuhan perjalanan dasar terpenuhi tanpa menguras kantong. Fokusnya adalah pada pengalaman, bukan kemewahan."
         },
         "Traveler": {
-          "title": "Paket Wisatawan",
+          "title": "Paket Traveler",
           "description": "Pilihan paling seimbang bagi mereka yang menginginkan kenyamanan tanpa repot, sambil tetap sesuai anggaran. Aktivitas, akomodasi, dan pengalaman dirancang untuk wisatawan yang ingin menikmati sepenuhnya."
         },
         "Exclusive": {
           "title": "Paket Eksklusif",
-          "description": "Bagi mereka yang menginginkan liburan dengan kualitas terbaik dan layanan tanpa kompromi. Setiap detail adalah premium, dari transportasi dan akomodasi hingga pengalaman eksklusif yang tidak semua orang bisa dapatkan."
+          "description": "Bagi mereka yang menginginkan liburan dengan kualitas terbaik dan layanan tanpa kompromi. Setiap detailnya premium, mulai dari transportasi dan akomodasi hingga pengalaman eksklusif yang tidak bisa didapatkan semua orang."
         }
       },
       "addons": {
@@ -840,32 +694,32 @@
         "s2": "Budaya & Warisan",
         "s3": "Kuliner & Gaya Hidup",
         "s4": "Kesehatan & Penyembuhan",
-        "s5": "Kehidupan Kota & Urban",
+        "s5": "Kota & Kehidupan Urban",
         "s6": "Fotografi & Instagrammable",
-        "s7": "Perjalanan Religi/Spiritual",
-        "s8": "Desa Lokal & Perjalanan Hijau",
+        "s7": "Wisata Religi/Spiritual",
+        "s8": "Desa Lokal & Wisata Hijau",
         "s9": "Festival & Acara",
         "s10": "Olahraga & Luar Ruangan"
       },
       "travelPersonalities": {
         "p1": {
-          "value": "Si Penjelajah",
-          "label": "Si Penjelajah"
+          "value": "The Explorer",
+          "label": "Sang Penjelajah"
         },
         "p2": {
-          "value": "Si Pencari Budaya",
-          "label": "Si Pencari Budaya"
+          "value": "The Culture Seeker",
+          "label": "Pencari Budaya"
         },
         "p3": {
-          "value": "Pecinta Makanan",
-          "label": "Pecinta Makanan"
+          "value": "Food Lovers",
+          "label": "Pecinta Kuliner"
         },
         "p4": {
-          "value": "Santai dan Sembuh",
-          "label": "Santai dan Sembuh"
+          "value": "Chill and Heal",
+          "label": "Santai dan Pemulihan"
         },
         "p5": {
-          "value": "Si Sosial",
+          "value": "The Social",
           "label": "Si Sosial"
         }
       },
@@ -893,63 +747,93 @@
       },
       "foodPreferences": {
         "f1": {
-        "label": "Halal",
-        "description": "Makanan yang disiapkan sesuai dengan syariat Islam."
+          "label": "Halal",
+          "description": "Makanan disiapkan sesuai dengan syariat Islam."
         },
         "f2": {
           "label": "Vegan",
-          "description": "Tanpa produk hewani (daging, susu, telur, madu, dll)."
+          "description": "Tanpa produk hewani (daging, susu, telur, madu, dll.)."
         },
         "f3": {
           "label": "Pedas",
-          "description": "Menyukai makanan dengan cita rasa cabai yang kuat."
+          "description": "Menyukai makanan dengan rasa cabai yang kuat."
         },
         "f4": {
           "label": "Lokal",
-          "description": "Prioritas utama adalah mencoba masakan khas daerah setempat."
+          "description": "Prioritas utama adalah mencoba masakan lokal."
         },
         "f5": {
           "label": "Barat",
-          "description": "Lebih menyukai masakan Western (burger, pasta, steak, dll)."
+          "description": "Lebih suka masakan Barat (burger, pasta, steak, dll.)."
         }
       },
       "travelerRoutines": {
         "r1": {
-          "value": "Wisatawan Kasual",
+          "value": "Casual Traveler",
           "label": "Kasual (1-2 kali per tahun)"
         },
         "r2": {
-          "value": "Wisatawan Sering",
-          "label": "Rutin (3+ kali per tahun)"
+          "value": "Frequent Traveler",
+          "label": "Reguler (3+ kali per tahun)"
         }
       }
     }
   },
   "ServicesPage": {
     "header_title": "Layanan Kami",
-    "header_subtitle": "Dari konsultasi perjalanan pribadi hingga paket siap pakai, kami menyediakan semua yang Anda butuhkan untuk petualangan tak terlupakan di Yogyakarta.",
+    "header_subtitle": "Dari konsultasi perjalanan pribadi hingga paket siap pakai, kami menyediakan segala yang Anda butuhkan untuk petualangan tak terlupakan di Yogyakarta.",
     "planner": {
       "regular_title": "Konsultasi Perencana Perjalanan",
-      "regular_desc": "Biarkan pakar lokal kami merancang rencana perjalanan yang dipersonalisasi berdasarkan anggaran, minat, dan gaya perjalanan Anda.",
-      "regular_f1": "Rencana perjalanan pribadi",
+      "regular_desc": "Biarkan ahli lokal kami merancang rencana perjalanan pribadi berdasarkan anggaran, minat, dan gaya perjalanan Anda.",
+      "regular_f1": "Rencana perjalanan personal",
       "regular_f2": "Rekomendasi akomodasi & aktivitas",
       "regular_f3": "Optimalisasi anggaran perjalanan",
       "regular_cta": "Mulai Konsultasi",
       "exclusive_title": "Perencana Perjalanan Eksklusif",
-      "exclusive_desc": "Nikmati layanan premium dengan rencana perjalanan yang dirancang khusus oleh desainer perjalanan senior kami untuk pengalaman tak tertandingi.",
-      "exclusive_f1": "Revisi rencana perjalanan tanpa batas",
-      "exclusive_f2": "Pemesanan premium end-to-end",
-      "exclusive_f3": "Dukungan pramutamu 24/7",
+      "exclusive_desc": "Nikmati layanan premium dengan rencana perjalanan yang dirancang khusus oleh desainer perjalanan senior kami untuk pengalaman yang tak tertandingi.",
+      "exclusive_f1": "Revisi rencana perjalanan tak terbatas",
+      "exclusive_f2": "Pemesanan premium menyeluruh",
+      "exclusive_f3": "Dukungan concierge 24/7",
       "exclusive_cta": "Mulai Konsultasi Eksklusif"
     },
     "card_cta": "Lihat Detail",
     "otherServices": {
       "packages_title": "Paket Tur",
-      "packages_desc": "Pilih dari paket tur pilihan kami untuk liburan tanpa repot. Kami telah menggabungkan destinasi dan aktivitas terbaik.",
+      "packages_desc": "Pilih dari paket tur pilihan kami untuk liburan tanpa repot. Kami menggabungkan destinasi dan aktivitas terbaik.",
       "rental_title": "Sewa Kendaraan",
       "rental_desc": "Jelajahi Yogyakarta dengan bebas menggunakan armada kami yang terawat, tersedia dengan atau tanpa sopir.",
       "activities_title": "Aktivitas Harian",
-      "activities_desc": "Sudah punya rencana? Pesan aktivitas harian atau tur secara terpisah, dari kelas memasak hingga jip gunung berapi."
+      "activities_desc": "Sudah punya rencana? Pesan aktivitas harian atau tur secara terpisah, dari kelas memasak hingga jeep gunung berapi."
+    }
+  },
+  "carDetail": {
+    "notFound": "Mobil tidak ditemukan.",
+    "alert": "Pemesanan untuk {car} pada {date} telah dikirim.",
+    "service": {
+      "title": "Layanan Tersedia",
+      "area": "Area Layanan: Yogyakarta & Jawa Tengah",
+      "driver": "Termasuk Sopir",
+      "fuel": "Termasuk BBM"
+    },
+    "form": {
+      "title": "Pesan Mobil Ini",
+      "name": "Nama Lengkap",
+      "email": "Alamat Email",
+      "phone": "Nomor Telepon",
+      "pickup": "Lokasi Penjemputan",
+      "button": "Pesan Sekarang",
+      "pickupTime": "Waktu Penjemputan"
+    },
+    "details": {
+      "title": "Detail Mobil",
+      "type": "Tipe",
+      "transmission": "Transmisi",
+      "fuel": "Jenis BBM",
+      "capacity": "Kapasitas",
+      "seats": "kursi",
+      "trunk": "Ukuran Bagasi",
+      "bags": "tas",
+      "features": "Fitur"
     }
   }
 }
