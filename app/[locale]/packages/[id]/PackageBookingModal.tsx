@@ -536,8 +536,11 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
 
           {/* 7. Pickup */}
           <div>
-            <label htmlFor="pickupLocation" className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.pickupLocation")}</label>
-            <select
+            <label htmlFor="pickupLocation" className={`block text-sm font-medium ${mutedTextColor}`}>
+              {t("booking.pickupLocation")}
+            </label>
+            <input
+              type="text"
               id="pickupLocation"
               value={pickupLocation}
               onChange={(e) => {
@@ -545,14 +548,12 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
                 if (errors.pickup_location) setErrors((p) => ({ ...p, pickup_location: undefined }));
               }}
               required
+              placeholder={t("booking.pickupLocation")} /* Opsional: biar ada tulisan bayangan */
               className={`${baseInputClass} ${errors.pickup_location ? errorBorderClass : inputBorderClass}`}
-            >
-              <option value="">{t("booking.selectOption")}</option>
-              <option value="bandara">{t("booking.pickup.airport")}</option>
-              <option value="stasiun">{t("booking.pickup.station")}</option>
-              <option value="hotel">{t("booking.pickup.hotel")}</option>
-            </select>
-            {errors.pickup_location && <p className="text-red-600 text-sm mt-1">{errors.pickup_location}</p>}
+            />
+            {errors.pickup_location && (
+              <p className="text-red-600 text-sm mt-1">{errors.pickup_location}</p>
+            )}
           </div>
 
           {/* 8. Flight (Optional) */}
