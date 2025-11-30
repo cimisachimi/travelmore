@@ -31,6 +31,10 @@ export interface Package {
     answer: string;
   }[];
   mapUrl: string; // URL for an embedded Google Map
+  addons?: { 
+    name: string; 
+    price: number; 
+  }[];
 }
 
 export const packages: Package[] = [
@@ -78,7 +82,22 @@ export const packages: Package[] = [
       { question: "Is there a dress code for the temples?", answer: "Yes, visitors are required to dress modestly. Sarongs will be provided at the entrance if your clothing is deemed inappropriate." },
       { question: "How early do we need to start for the Borobudur sunrise?", answer: "We typically depart from the hotel around 3:30 AM to ensure we arrive in time to find a good spot before the sun rises." },
     ],
-    mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d252963.0211473138!2d110.2615798906972!3d-7.874229796030372!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5787bd5b6bc5%3A0x21723fd4d3684f71!2sYogyakarta%2C%20Yogyakarta%20City%2C%20Special%20Region%20of%20Yogyakarta!5e0!3m2!1sen!2sid!4v1695442800000!5m2!1sen!2sid"
+    mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d252963.0211473138!2d110.2615798906972!3d-7.874229796030372!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5787bd5b6bc5%3A0x21723fd4d3684f71!2sYogyakarta%2C%20Yogyakarta%20City%2C%20Special%20Region%20of%20Yogyakarta!5e0!3m2!1sen!2sid!4v1695442800000!5m2!1sen!2sid",
+    
+    addons: [
+      {
+        name: "Professional Photographer",
+        price: 750000
+      },
+      {
+        name: "Extra Night (4-Star Hotel)",
+        price: 1200000
+      },
+      {
+        name: "Romantic Dinner Setup",
+        price: 500000
+      }
+    ]
   },
   {
     id: "yogyakarta-adventure",
