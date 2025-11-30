@@ -8,13 +8,12 @@ import { useTranslations } from "next-intl";
 import { useTheme } from "@/components/ThemeProvider";
 import { 
   Clock, MapPin, Star, ArrowLeft, CheckCircle2, Users, 
-  Camera, Info, Map as MapIcon, DollarSign, HelpCircle, CalendarDays 
+  Camera, Info, Map as MapIcon, DollarSign, HelpCircle, CalendarDays, XCircle 
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext"; 
 
-// Import Data Dummy
-import { openTripsData } from "@/data/trips"; 
-// Import Modal Booking
+// Import Data Dummy & Interface
+import { openTripsData, OpenTripListItem } from "@/data/trips"; 
 import OpenTripBookingModal from "./OpenTripBookingModal"; 
 
 export default function OpenTripDetail() {
@@ -26,14 +25,13 @@ export default function OpenTripDetail() {
   const tBooking = useTranslations("booking");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [trip, setTrip] = useState<any>(null);
+  const [trip, setTrip] = useState<OpenTripListItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
 
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  // Styling Variables
-  const isDark = theme === "dark";
+  const isDark = (theme as unknown as string) === "dark";
   const mainBgClass = isDark ? "bg-black" : "bg-gray-50";
   const contentBgClass = isDark ? "bg-gray-900" : "bg-white";
   const textClass = isDark ? "text-white" : "text-gray-900"; 
@@ -46,15 +44,12 @@ export default function OpenTripDetail() {
       const foundTrip = openTripsData.find((item) => item.id === id);
       
       if (foundTrip) {
-        if (!foundTrip.images) {
-            foundTrip.images = [
-                foundTrip.thumbnail_url, 
-                foundTrip.thumbnail_url, 
-                foundTrip.thumbnail_url,
-                foundTrip.thumbnail_url
-            ];
+        const tripData = { ...foundTrip };
+        if (!tripData.images || tripData.images.length === 0) {
+            const thumb = tripData.thumbnail_url || "/placeholder.jpg";
+            tripData.images = [thumb, thumb, thumb, thumb];
         }
-        setTrip(foundTrip);
+        setTrip(tripData);
       }
       setLoading(false);
     }
@@ -82,7 +77,7 @@ export default function OpenTripDetail() {
   return (
     <div className={`min-h-screen pb-20 ${mainBgClass}`}>
       
-      {/* --- HEADER SECTION --- */}
+      {/* HEADER SECTION */}
       <div className={`${contentBgClass} border-b ${borderClass} pt-6 pb-6`}>
         <div className="container mx-auto px-4 lg:px-8">
             <Link 
@@ -118,14 +113,12 @@ export default function OpenTripDetail() {
 
       <div className="container mx-auto px-4 lg:px-8 py-6 md:py-8">
         
-        {/* --- GALLERY SECTION (Slider on Mobile, Grid on Desktop) --- */}
+        {/* GALLERY SECTION */}
         <div className="mb-8 md:mb-10 rounded-2xl overflow-hidden shadow-sm">
-            
-            {/* MOBILE: Horizontal Slider */}
             <div 
                 ref={sliderRef}
                 className="md:hidden flex overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 px-4 gap-2 h-[300px]"
-                style={{ scrollbarWidth: 'none' }} // Hide scrollbar Firefox
+                style={{ scrollbarWidth: 'none' }} 
             >
                 {trip.images?.map((img: string, index: number) => (
                     <div key={index} className="flex-shrink-0 w-[85%] snap-center relative rounded-xl overflow-hidden shadow-md">
@@ -134,19 +127,18 @@ export default function OpenTripDetail() {
                 ))}
             </div>
 
-            {/* DESKTOP: Grid Layout */}
             <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-3 h-[500px]">
                 <div className="col-span-2 row-span-2 relative group cursor-pointer">
                     <Image src={trip.images?.[0] || "/placeholder.jpg"} alt={trip.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" priority />
                 </div>
                 <div className="col-span-2 row-span-1 relative group cursor-pointer">
-                    <Image src={trip.images?.[1] || trip.thumbnail_url} alt="Gallery 2" fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <Image src={trip.images?.[1] || trip.thumbnail_url || "/placeholder.jpg"} alt="Gallery 2" fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                 </div>
                 <div className="col-span-1 row-span-1 relative group cursor-pointer">
-                    <Image src={trip.images?.[2] || trip.thumbnail_url} alt="Gallery 3" fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <Image src={trip.images?.[2] || trip.thumbnail_url || "/placeholder.jpg"} alt="Gallery 3" fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                 </div>
                 <div className="col-span-1 row-span-1 relative group cursor-pointer">
-                    <Image src={trip.images?.[3] || trip.thumbnail_url} alt="Gallery 4" fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <Image src={trip.images?.[3] || trip.thumbnail_url || "/placeholder.jpg"} alt="Gallery 4" fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center hover:bg-black/40 transition-colors">
                         <div className="text-white flex flex-col items-center">
                             <Camera size={24} />
@@ -183,7 +175,9 @@ export default function OpenTripDetail() {
                 </div>
             </div>
 
-            {/* Tab Content */}
+            {/* --- TAB CONTENT LOGIC --- */}
+            
+            {/* 1. OVERVIEW */}
             {activeTab === "overview" && (
                 <div className="space-y-8 animate-fadeIn">
                     <div className={`${contentBgClass} rounded-2xl p-6 md:p-8 border ${borderClass}`}>
@@ -208,15 +202,95 @@ export default function OpenTripDetail() {
                 </div>
             )}
 
-             {activeTab !== "overview" && (
-                <div className={`${contentBgClass} rounded-2xl p-10 border ${borderClass} text-center`}>
-                    <p className={textMutedClass}>Information for <strong>{activeTab}</strong> will be available soon.</p>
+            {/* 2. ITINERARY (NEW) */}
+            {activeTab === "itinerary" && (
+                <div className={`${contentBgClass} rounded-2xl p-6 md:p-8 border ${borderClass} animate-fadeIn`}>
+                    <h3 className={`text-xl font-bold ${textClass} mb-6`}>Trip Itinerary</h3>
+                    {trip.itinerary_details ? (
+                        <div className="relative border-l-2 border-gray-200 dark:border-gray-700 ml-3 space-y-8">
+                            {trip.itinerary_details.map((item: any, idx: number) => (
+                                <div key={idx} className="relative pl-6">
+                                    <span className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-white dark:border-gray-900"></span>
+                                    <h4 className={`text-lg font-bold ${textClass} mb-2`}>Day {item.day}: {item.title}</h4>
+                                    <ul className="space-y-2">
+                                        {item.activities.map((act: string, i: number) => (
+                                            <li key={i} className={`text-sm ${textMutedClass} flex items-start gap-2`}>
+                                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0"/>
+                                                <span>{act}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className={textMutedClass}>No itinerary details available.</p>
+                    )}
                 </div>
-             )}
+            )}
+
+            {/* 3. PRICING (NEW) */}
+            {activeTab === "pricing" && (
+                <div className={`${contentBgClass} rounded-2xl p-6 md:p-8 border ${borderClass} animate-fadeIn`}>
+                    <h3 className={`text-xl font-bold ${textClass} mb-6`}>Pricing Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Includes */}
+                        <div>
+                            <h4 className="font-bold text-green-600 mb-4 flex items-center gap-2">
+                                <CheckCircle2 size={20} /> {t("included") || "What's Included"}
+                            </h4>
+                            <ul className="space-y-3">
+                                {trip.includes?.map((inc: string, i: number) => (
+                                    <li key={i} className={`text-sm ${textMutedClass} flex items-start gap-2`}>
+                                        <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0"/>
+                                        {inc}
+                                    </li>
+                                )) || <p className={`text-sm ${textMutedClass}`}>-</p>}
+                            </ul>
+                        </div>
+                        
+                        {/* Excludes */}
+                        <div>
+                            <h4 className="font-bold text-red-500 mb-4 flex items-center gap-2">
+                                <XCircle size={20} /> {t("excluded") || "What's Not Included"}
+                            </h4>
+                            <ul className="space-y-3">
+                                {trip.excludes?.map((exc: string, i: number) => (
+                                    <li key={i} className={`text-sm ${textMutedClass} flex items-start gap-2`}>
+                                        <XCircle size={16} className="text-red-400 mt-0.5 shrink-0"/>
+                                        {exc}
+                                    </li>
+                                )) || <p className={`text-sm ${textMutedClass}`}>-</p>}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 4. MAP (NEW) */}
+            {activeTab === "map" && (
+                <div className={`${contentBgClass} rounded-2xl p-2 border ${borderClass} animate-fadeIn overflow-hidden`}>
+                    {trip.map_url ? (
+                        <iframe 
+                            src={trip.map_url} 
+                            width="100%" 
+                            height="450" 
+                            style={{ border: 0, borderRadius: '1rem' }} 
+                            allowFullScreen 
+                            loading="lazy" 
+                            referrerPolicy="no-referrer-when-downgrade"
+                        />
+                    ) : (
+                        <div className="h-64 flex items-center justify-center text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                            <p>Map data not available.</p>
+                        </div>
+                    )}
+                </div>
+            )}
 
           </div>
 
-          {/* --- RIGHT: BOOKING CARD --- */}
+          {/* --- RIGHT: BOOKING CARD (Sticky) --- */}
           <div className="lg:col-span-1">
             <div className={`lg:sticky lg:top-28 ${contentBgClass} rounded-3xl p-6 shadow-xl border ${borderClass}`}>
               
@@ -252,13 +326,11 @@ export default function OpenTripDetail() {
                 {t("bookNow")}
               </button>
 
-              {/* 🔥 FIX: MEETING POINT TEXT COLOR */}
               <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
                  <h4 className={`text-sm font-bold ${textClass} mb-2 flex items-center gap-2`}>
                     <MapPin size={16} className="text-primary" /> {t("meetingPointTitle")}
                  </h4>
-                 {/* Menggunakan bg-gray-100 dengan text-gray-600 agar kontras di mode terang & gelap */}
-                 <p className="text-xs leading-relaxed bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 p-3 rounded-lg">
+                 <p className={`text-xs leading-relaxed bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 p-3 rounded-lg`}>
                     {t("pickupDesc")}
                  </p>
               </div>
@@ -276,13 +348,15 @@ export default function OpenTripDetail() {
       </div>
 
       {/* --- MODAL BOOKING --- */}
-      <OpenTripBookingModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        pkg={trip}
-        user={user}
-        t={tBooking}
-      />
+      {trip && (
+          <OpenTripBookingModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            pkg={trip}
+            user={user}
+            t={tBooking}
+          />
+      )}
 
     </div>
   );
