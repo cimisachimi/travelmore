@@ -8,10 +8,13 @@ import { Toaster } from "sonner";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { ThemeProvider } from "@/components/ThemeProvider"; // Importing your custom provider
+import { ThemeProvider } from "@/components/ThemeProvider"; 
 import ClientBreadcrumbsWrapper from "@/components/ui/ClientBreadcrumbsWrapper";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { routing } from "@/i18n/routing";
+
+// ✅ 1. Import Komponen Floating Contact
+import FloatingContact from "@/components/FloatingContact"; 
 
 // --- Font Configurations ---
 const fontPoppins = Poppins({
@@ -82,6 +85,9 @@ export default async function RootLayout({
                 <Footer />
               </div>
               
+              {/* ✅ 2. Pasang Floating Contact di sini agar muncul di semua halaman */}
+              <FloatingContact />
+
               {/* Toast Notification */}
               <Toaster richColors closeButton position="top-right" />
             </ThemeProvider>
