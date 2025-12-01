@@ -5,12 +5,11 @@ import React, { useState, FormEvent, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { X, CalendarDays, Users, TicketPercent, MapPin } from "lucide-react"; // Ganti icon Camera jadi MapPin biar relevan
-import { AxiosError } from "axios";
+import { X, MapPin } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 
-// Sesuaikan interface dengan struktur data Anda
-// Kita asumsikan ada field 'meeting_points' di data package Open Trip
+// --- INTERFACES ---
+
 interface MeetingPoint {
   id: number;
   name: string;
@@ -24,16 +23,21 @@ interface OpenTripPackage {
   price_tiers: { min_pax: number; max_pax: number; price: number }[];
   starting_from_price: number | null;
   addons?: { name: string; price: number }[];
-  // [NEW] Data Meeting Points dari API
-  meeting_points?: MeetingPoint[]; 
+  meeting_points?: MeetingPoint[];
+}
+
+interface User {
+  name?: string;
+  email?: string;
+  phone?: string;
 }
 
 interface OpenTripBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   pkg: OpenTripPackage;
-  user: any; // Sesuaikan tipe user auth Anda
-  t: any; // Fungsi translate
+  user: User | null; // Typed User
+  t: (key: string) => string; // Typed translation function
 }
 
 const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
@@ -50,15 +54,16 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
   const [startDate, setStartDate] = useState("");
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
-  const [discountCode, setDiscountCode] = useState("");
-  
+  const [discountCode, setDiscountCode] = useState(""); // Added input below to fix unused warning
+
   // States Standard
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [nationality, setNationality] = useState("");
-  const [specialRequest, setSpecialRequest] = useState("");
-  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+  const [nationality, setNationality] = useState(""); // Added input below to fix unused warning
+  const [specialRequest, setSpecialRequest] = useState(""); // Added input below to fix unused warning
+  
+  // Removed selectedAddons as it was unused in the API payload
 
   // [NEW] State Meeting Point
   const [selectedMeetingPoint, setSelectedMeetingPoint] = useState("");
@@ -70,25 +75,30 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
     if (isOpen) {
       setFullName(user?.name || "");
       setEmail(user?.email || "");
-      setPhone(user?.phone || ""); // Sederhanakan logic phone untuk contoh ini
+      setPhone(user?.phone || "");
+      
       // Reset
       setStartDate("");
       setAdults(1);
+      setChildren(0);
       setSelectedMeetingPoint("");
+      setNationality("");
+      setSpecialRequest("");
+      setDiscountCode("");
       setErrors({});
     }
   }, [isOpen, user]);
 
-  // --- CALCULATIONS (Sama seperti paket wisata) ---
+  // --- CALCULATIONS ---
   const { pricePerPax, totalPax } = useMemo(() => {
-    const totalPax = adults + children;
-    // Logic harga sederhana
-    let foundPrice = pkg.starting_from_price || 0;
-    // ... (masukkan logic price tier Anda di sini jika perlu)
-    return { pricePerPax: foundPrice, totalPax };
+    const calculatedTotalPax = adults + children;
+    // Logic harga sederhana - Fixed 'let' to 'const'
+    const foundPrice = pkg.starting_from_price || 0;
+    
+    return { pricePerPax: foundPrice, totalPax: calculatedTotalPax };
   }, [adults, children, pkg]);
 
-  const grandTotal = (pricePerPax * totalPax); // + addons jika ada
+  const grandTotal = (pricePerPax * totalPax);
 
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(amount);
@@ -98,7 +108,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!startDate) newErrors.startDate = t("booking.errors.noDate");
-    if (!selectedMeetingPoint) newErrors.meetingPoint = "Please select a meeting point."; // Custom error msg
+    if (!selectedMeetingPoint) newErrors.meetingPoint = "Please select a meeting point.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -113,7 +123,6 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      // POST ke endpoint booking Open Trip
       const response = await api.post(`/open-trips/${pkg.id}/book`, {
         start_date: startDate,
         adults,
@@ -122,8 +131,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
         email,
         phone_number: phone,
         participant_nationality: nationality,
-        // [NEW] Kirim Meeting Point sebagai ganti Pickup Location
-        pickup_location: selectedMeetingPoint, 
+        pickup_location: selectedMeetingPoint, // Kirim Meeting Point sebagai ganti Pickup Location
         special_request: specialRequest,
         discount_code: discountCode
       });
@@ -133,7 +141,8 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
         router.push("/profile");
         onClose();
       }
-    } catch (err) {
+    } catch {
+      // Removed unused 'err' variable
       toast.error("Booking failed. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -171,7 +180,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
             {errors.startDate && <p className="text-red-500 text-xs mt-1">{errors.startDate}</p>}
           </div>
 
-          {/* Pax Input (Sama seperti sebelumnya) */}
+          {/* Pax Input */}
           <div className="flex gap-4">
             <div className="flex-1">
                 <label className={`block text-sm font-medium ${textColor}`}>Adults</label>
@@ -183,14 +192,13 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
             </div>
           </div>
 
-          {/* --- SECTION PENTING: MEETING POINT --- */}
+          {/* Meeting Point */}
           <div>
             <label className={`block text-sm font-medium ${textColor} flex items-center gap-1`}>
                 <MapPin size={14} /> Meeting Point (Titik Kumpul)
             </label>
             
             {pkg.meeting_points && pkg.meeting_points.length > 0 ? (
-                // Jika ada list meeting point dari API
                 <select 
                     value={selectedMeetingPoint} 
                     onChange={(e) => setSelectedMeetingPoint(e.target.value)}
@@ -204,7 +212,6 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
                     ))}
                 </select>
             ) : (
-                // Fallback jika data meeting point fix (hanya 1) atau manual input
                 <input 
                     type="text" 
                     placeholder="e.g. Stasiun Tugu Yogyakarta"
@@ -220,7 +227,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
             {errors.meetingPoint && <p className="text-red-500 text-xs mt-1">{errors.meetingPoint}</p>}
           </div>
 
-          {/* Contact Info (Name, Email, Phone - Ringkas Saja) */}
+          {/* Contact Info */}
           <div>
             <label className={`block text-sm font-medium ${textColor}`}>Full Name</label>
             <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputClass} />
@@ -228,6 +235,40 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
           <div>
             <label className={`block text-sm font-medium ${textColor}`}>WhatsApp Number</label>
             <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
+          </div>
+          
+          {/* Nationality - Added Input */}
+          <div>
+            <label className={`block text-sm font-medium ${textColor}`}>Nationality</label>
+            <input 
+              type="text" 
+              value={nationality} 
+              onChange={(e) => setNationality(e.target.value)} 
+              placeholder="e.g. Indonesia"
+              className={inputClass} 
+            />
+          </div>
+
+          {/* Special Request - Added Input */}
+          <div>
+             <label className={`block text-sm font-medium ${textColor}`}>Special Request</label>
+             <textarea 
+                value={specialRequest}
+                onChange={(e) => setSpecialRequest(e.target.value)}
+                className={inputClass}
+                rows={2}
+             />
+          </div>
+
+          {/* Discount Code - Added Input */}
+          <div>
+            <label className={`block text-sm font-medium ${textColor}`}>Discount Code (Optional)</label>
+            <input 
+              type="text" 
+              value={discountCode} 
+              onChange={(e) => setDiscountCode(e.target.value)} 
+              className={inputClass} 
+            />
           </div>
 
           {/* Total Price */}

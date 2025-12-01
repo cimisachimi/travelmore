@@ -16,6 +16,24 @@ import { useAuth } from "@/contexts/AuthContext";
 import { openTripsData, OpenTripListItem } from "@/data/trips"; 
 import OpenTripBookingModal from "./OpenTripBookingModal"; 
 
+// --- [FIX] Defined Interfaces to replace 'any' ---
+interface ItineraryItem {
+  day: number;
+  title: string;
+  activities: string[];
+}
+
+// Extend the imported type to ensure specific fields are typed correctly
+// inside this component, overriding generic types if they exist in the original.
+interface TripDetail extends OpenTripListItem {
+  itinerary_details?: ItineraryItem[];
+  images?: string[];
+  includes?: string[];
+  excludes?: string[];
+  map_url?: string;
+  starting_from_price: number | null;
+}
+
 export default function OpenTripDetail() {
   const params = useParams();
   const { theme } = useTheme();
@@ -25,7 +43,8 @@ export default function OpenTripDetail() {
   const tBooking = useTranslations("booking");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [trip, setTrip] = useState<OpenTripListItem | null>(null);
+  // [FIX] Use the stricter TripDetail type
+  const [trip, setTrip] = useState<TripDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -44,7 +63,10 @@ export default function OpenTripDetail() {
       const foundTrip = openTripsData.find((item) => item.id === id);
       
       if (foundTrip) {
-        const tripData = { ...foundTrip };
+        // [FIX] Explicitly cast to TripDetail to satisfy the state type
+        const tripData: TripDetail = { ...foundTrip };
+        
+        // Handle images fallback logic safely
         if (!tripData.images || tripData.images.length === 0) {
             const thumb = tripData.thumbnail_url || "/placeholder.jpg";
             tripData.images = [thumb, thumb, thumb, thumb];
@@ -208,7 +230,8 @@ export default function OpenTripDetail() {
                     <h3 className={`text-xl font-bold ${textClass} mb-6`}>Trip Itinerary</h3>
                     {trip.itinerary_details ? (
                         <div className="relative border-l-2 border-gray-200 dark:border-gray-700 ml-3 space-y-8">
-                            {trip.itinerary_details.map((item: any, idx: number) => (
+                            {/* [FIX] Typed 'item' with ItineraryItem instead of 'any' */}
+                            {trip.itinerary_details.map((item: ItineraryItem, idx: number) => (
                                 <div key={idx} className="relative pl-6">
                                     <span className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-white dark:border-gray-900"></span>
                                     <h4 className={`text-lg font-bold ${textClass} mb-2`}>Day {item.day}: {item.title}</h4>
