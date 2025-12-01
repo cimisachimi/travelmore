@@ -72,18 +72,21 @@ function DropdownLink({
   return (
     <div
       className="relative group md:cursor-pointer"
+      // Toggle on click for mobile, or if user prefers clicking on desktop
       onClick={() => setIsOpen(!isOpen)}
+      // Keep menu open when mouse enters the parent group
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
     >
-      <button className="inline-flex items-center space-x-1 text-foreground font-medium w-full justify-between md:w-auto">
+      <button className="inline-flex items-center space-x-1 text-foreground font-medium w-full justify-between md:w-auto outline-none">
         <span>{title}</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
+          // Rotate icon on state open OR on CSS group hover
           className={`h-5 w-5 transform transition-transform duration-300 ${
-            isOpen ? "rotate-180" : ""
+            isOpen ? "rotate-180" : "group-hover:rotate-180"
           }`}
         >
           <path
@@ -93,24 +96,38 @@ function DropdownLink({
           />
         </svg>
       </button>
+
+      {/* FIX APPLIED:
+         1. md:top-full -> Anchors menu strictly to the bottom of the text.
+         2. md:pt-6 -> Creates a generous invisible safe zone (bridge) for the mouse.
+         3. z-[999] -> Ensures dropdown is always on top.
+      */}
       <div
-        className={`md:absolute md:left-0 md:mt-2 md:w-48 rounded-md md:shadow-lg bg-background transition-all duration-200 overflow-hidden ${
-          isOpen
-            ? "opacity-100 visible scale-100 max-h-96"
-            : "opacity-0 invisible scale-95 max-h-0 md:group-hover:opacity-100 md:group-hover:visible md:group-hover:scale-100 md:max-h-96"
-        } ${isOpen ? "block" : "hidden"} md:block`}
+        className={`
+          md:absolute md:left-0 md:top-full md:pt-6 md:w-48 z-[999]
+          transition-all duration-300 ease-in-out
+          ${
+            isOpen
+              ? "opacity-100 visible scale-100 translate-y-0"
+              : "opacity-0 invisible scale-95 -translate-y-2 md:group-hover:opacity-100 md:group-hover:visible md:group-hover:scale-100 md:group-hover:translate-y-0"
+          }
+          ${isOpen ? "block" : "hidden"} md:block
+        `}
       >
-        <div className="py-1 md:py-2" role="menu" aria-orientation="vertical">
-          {items.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="block px-4 py-2 text-sm text-foreground hover:bg-card transition-colors"
-              role="menuitem"
-            >
-              {item.name}
-            </Link>
-          ))}
+        {/* Inner Visual Container */}
+        <div className="bg-background rounded-md shadow-lg overflow-hidden border border-border">
+          <div className="py-1 md:py-2" role="menu" aria-orientation="vertical">
+            {items.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition-colors"
+                role="menuitem"
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -300,7 +317,8 @@ export default function Navbar() {
       : "/navbar/logo-exclusive.png";
 
   return (
-    <nav className="bg-background/80 dark:bg-card/80 backdrop-blur-lg shadow-md sticky top-0 z-50 border-b border-border transition-colors duration-500">
+    // FIX APPLIED HERE: Changed z-50 to z-[999] to ensure navbar is always on top
+    <nav className="bg-background/80 dark:bg-card/80 backdrop-blur-lg shadow-md sticky top-0 z-[999] border-b border-border transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center h-24 gap-6">
           {/* Logo */}
