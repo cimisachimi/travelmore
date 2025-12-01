@@ -1,8 +1,34 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useMidtransSnap } from "@/hooks/useMidtransSnap";
+import api from "@/lib/api";
+
+// 🔹 1. Define the specific interface for the Midtrans Result
+interface SnapResult {
+  order_id: string;
+  status_code: string;
+  transaction_status: string;
+  [key: string]: unknown;
+}
+
+// 🔹 2. Define a standalone interface (DO NOT extend Window)
+// This avoids the "incorrectly extends interface 'Window'" error.
+interface SnapWindow {
+  snap: {
+    pay: (
+      token: string,
+      options: {
+        onSuccess: (result: SnapResult) => void;
+        onPending: (result: SnapResult) => void;
+        onError: (result: SnapResult) => void;
+        onClose: () => void;
+      }
+    ) => void;
+  };
+}
 
 // 🔹 Reusable Form Input Component
 const FormInput: React.FC<{
@@ -25,10 +51,7 @@ const FormInput: React.FC<{
   readOnly = false,
 }) => (
   <div>
-    <label
-      htmlFor={name}
-      className="block text-sm font-medium text-gray-700 mb-1"
-    >
+    <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
       {label}
     </label>
     {as === "textarea" ? (
@@ -61,8 +84,13 @@ const FormInput: React.FC<{
 const BookingForm = () => {
   const t = useTranslations("booking");
   const searchParams = useSearchParams();
+  const router = useRouter();
   const activityTitle = searchParams.get("activity") || "";
+  
+  // Load Midtrans Snap Script
+  useMidtransSnap(); 
 
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     activityName: "",
     date: "",
@@ -86,20 +114,57 @@ const BookingForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert(t("alert"));
-    console.log(formData);
+    setIsLoading(true);
+
+    try {
+      const response = await api.post("/bookings", {
+        ...formData,
+      });
+
+      const { snap_token } = response.data; 
+
+      if (!snap_token) {
+        throw new Error("Failed to get payment token");
+      }
+
+      // 🔹 FIX: Cast window to 'unknown' first, then to our standalone 'SnapWindow' interface.
+      // This completely bypasses the conflict with the global Window type.
+      const snapWindow = window as unknown as SnapWindow;
+
+      snapWindow.snap.pay(snap_token, {
+        onSuccess: function (result: SnapResult) {
+          console.log("Payment success", result);
+          router.push(`/payment/success?order_id=${result.order_id}`);
+        },
+        onPending: function (result: SnapResult) {
+          console.log("Payment pending", result);
+          router.push(`/payment/pending?order_id=${result.order_id}`);
+        },
+        onError: function (result: SnapResult) {
+          console.log("Payment error", result);
+          router.push(`/payment/failed?order_id=${result.order_id}`);
+        },
+        onClose: function () {
+          alert("You closed the popup without finishing the payment");
+          setIsLoading(false);
+        },
+      });
+
+    } catch (error) {
+      console.error("Booking Error:", error);
+      alert("Something went wrong. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (
     <main>
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 py-16 min-h-screen">
         <div className="max-w-2xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-black mb-2">
-              {t("title")}
-            </h2>
+            <h2 className="text-3xl font-bold text-black mb-2">{t("title")}</h2>
             <p className="text-gray-600">{t("subtitle")}</p>
           </div>
 
@@ -171,9 +236,10 @@ const BookingForm = () => {
 
               <button
                 type="submit"
-                className="w-full px-8 py-3 rounded-lg bg-blue-600 text-white font-bold hover:brightness-90 transition-all transform hover:scale-105"
+                disabled={isLoading}
+                className="w-full px-8 py-3 rounded-lg bg-blue-600 text-white font-bold hover:brightness-90 transition-all transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {t("button")}
+                {isLoading ? "Processing..." : t("button")}
               </button>
             </form>
           </div>
@@ -183,7 +249,6 @@ const BookingForm = () => {
   );
 };
 
-// 🔹 Wrapper for Suspense (recommended for useSearchParams)
 export default function BookingPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
