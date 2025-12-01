@@ -39,7 +39,7 @@ export interface Package {
 
 export const packages: Package[] = [
   {
-    id: "borobudur-prambanan",
+    id: "1",
     title: "2 Days: Borobudur & Prambanan",
     description: "Witness the majestic sunrise at Borobudur and explore the grand Prambanan temple complex in this compact cultural journey.",
     regularPrice: 3500000,
@@ -100,7 +100,7 @@ export const packages: Package[] = [
     ]
   },
   {
-    id: "yogyakarta-adventure",
+    id: "2",
     title: "3 Days: Yogyakarta Adventure",
     description: "Experience the thrill of Jomblang Cave's 'Heavenly Light', the adrenaline rush at Timang Beach, and an off-road journey on the slopes of Merapi Volcano.",
     regularPrice: 5000000,
@@ -144,10 +144,25 @@ export const packages: Package[] = [
       { question: "Are the adventure activities safe?", answer: "Yes, safety is our top priority. All activities are handled by certified professionals with international standard safety equipment." },
       { question: "What should I wear for Jomblang Cave?", answer: "Wear comfortable clothes you don't mind getting muddy. We provide boots, but you should bring a change of clothes and socks." },
     ],
-    mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d252963.0211473138!2d110.2615798906972!3d-7.874229796030372!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5787bd5b6bc5%3A0x21723fd4d3684f71!2sYogyakarta%2C%20Yogyakarta%20City%2C%20Special%20Region%20of%20Yogyakarta!5e0!3m2!1sen!2sid!4v1695442800000!5m2!1sen!2sid"
+    mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d252963.0211473138!2d110.2615798906972!3d-7.874229796030372!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5787bd5b6bc5%3A0x21723fd4d3684f71!2sYogyakarta%2C%20Yogyakarta%20City%2C%20Special%20Region%20of%20Yogyakarta!5e0!3m2!1sen!2sid!4v1695442800000!5m2!1sen!2sid",
+    
+    addons: [
+      {
+        name: "Professional Photographer",
+        price: 750000
+      },
+      {
+        name: "Extra Night (4-Star Hotel)",
+        price: 1200000
+      },
+      {
+        name: "Romantic Dinner Setup",
+        price: 500000
+      }
+    ]
   },
   {
-    id: "cultural-immersion",
+    id: "3",
     title: "4 Days: Cultural Immersion",
     description: "Dive deep into Jogja's rich culture with visits to the Sultan's Palace, Taman Sari water castle, and get hands-on experience in a traditional batik workshop.",
     regularPrice: 5800000,
@@ -192,6 +207,84 @@ export const packages: Package[] = [
       { question: "Do I get to keep the batik I create?", answer: "Absolutely! Your handmade batik is a wonderful and personal souvenir to take home." },
       { question: "Is this tour physically demanding?", answer: "Not at all. This tour is designed for a relaxed pace with a focus on cultural experiences and is suitable for all fitness levels." },
     ],
-    mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d252963.0211473138!2d110.2615798906972!3d-7.874229796030372!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5787bd5b6bc5%3A0x21723fd4d3684f71!2sYogyakarta%2C%20Yogyakarta%20City%2C%20Special%20Region%20of%20Yogyakarta!5e0!3m2!1sen!2sid!4v1695442800000!5m2!1sen!2sid"
+    mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d252963.0211473138!2d110.2615798906972!3d-7.874229796030372!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5787bd5b6bc5%3A0x21723fd4d3684f71!2sYogyakarta%2C%20Yogyakarta%20City%2C%20Special%20Region%20of%20Yogyakarta!5e0!3m2!1sen!2sid!4v1695442800000!5m2!1sen!2sid",
+    
+    addons: [
+      {
+        name: "Professional Photographer",
+        price: 750000
+      },
+      {
+        name: "Extra Night (4-Star Hotel)",
+        price: 1200000
+      },
+      {
+        name: "Romantic Dinner Setup",
+        price: 500000
+      }
+    ]
+  },
+  {
+    id: "4",
+    title: "4 Days: Cultural Immersion",
+    description: "Dive deep into Jogja's rich culture with visits to the Sultan's Palace, Taman Sari water castle, and get hands-on experience in a traditional batik workshop.",
+    regularPrice: 5800000,
+    exclusivePrice: 4200000,
+    childPrice: 2100000,
+    duration: 4,
+    images: [
+      "/hero-3.jpg",
+      "/packages/kraton-palace.jpg",
+      "/packages/taman-sari.jpg",
+      "/packages/kotagede-silver.jpg",
+    ],
+    category: "Culture",
+    tripInfo: [
+      { label: 'Accomodation', value: 'Heritage Hotel', icon: '🏨' },
+      { label: 'Departure City', value: 'Yogyakarta', icon: '🛫' },
+      { label: 'Arrival City', 'value': 'Yogyakarta', icon: '🛬' },
+      { label: 'Best Season', value: 'All Year', icon: '🍂' },
+      { label: 'Guide', value: 'Cultural Expert', icon: '🧍' },
+      { label: 'Language', value: 'English, Dutch', icon: '🗣️' },
+      { label: 'Meals', value: 'Breakfast & Lunch', icon: '🍽️' },
+      { label: 'Tour Availability', value: 'Mon - Sat', icon: '🗓️' },
+      { label: 'Transportation', value: 'Private Car, Becak', icon: '🚌' },
+      { label: 'Walking Hours', value: '2-3 Hours/Day', icon: '🕔' },
+      { label: 'Minimum Age', value: '8', icon: '🧒' },
+      { label: 'Maximum Age', value: 'N/A', icon: '🧑' },
+      { label: 'Destinations', value: 'Sultan Palace, Batik Village', icon: '📍' },
+      { label: 'Activities', value: 'Workshop, Historical Tour', icon: '🧗' },
+      { label: 'Trip Type', value: 'Leisure, Educational', icon: '🏷️' },
+    ],
+    itinerary: [
+      { day: 1, title: "Royal Palaces & Water Castle", description: "Arrive in Yogyakarta and check into your unique heritage hotel. We'll spend the day exploring the Sultan's Palace (Kraton) and the enchanting Taman Sari Water Castle." },
+      { day: 2, title: "Artisan Workshops: Batik & Silver", description: "Discover your artistic side with a hands-on Batik making workshop. In the afternoon, we visit the historical district of Kotagede, renowned for its intricate silver craftsmanship." },
+      { day: 3, title: "Javanese Village Life", description: "Journey to a traditional village outside the city. Interact with locals, learn about their daily life and farming practices, and enjoy an authentic, home-cooked Javanese lunch." },
+      { day: 4, title: "Shopping & Departure", description: "Enjoy a final Javanese breakfast before some free time for souvenir hunting at the famous Malioboro Street. We will then transfer you to the airport for your departure." },
+    ],
+    cost: {
+      included: ["Heritage Hotel (3 Nights)", "All Workshop Fees and Materials", "Private Transportation", "Cultural Expert Guide", "Entrance Fees", "Daily Breakfast and Lunch"],
+      excluded: ["Flights", "Dinners", "Personal Shopping", "Travel Insurance", "Tips for Guide and Artisans"],
+    },
+    faqs: [
+      { question: "Do I get to keep the batik I create?", answer: "Absolutely! Your handmade batik is a wonderful and personal souvenir to take home." },
+      { question: "Is this tour physically demanding?", answer: "Not at all. This tour is designed for a relaxed pace with a focus on cultural experiences and is suitable for all fitness levels." },
+    ],
+    mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d252963.0211473138!2d110.2615798906972!3d-7.874229796030372!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5787bd5b6bc5%3A0x21723fd4d3684f71!2sYogyakarta%2C%20Yogyakarta%20City%2C%20Special%20Region%20of%20Yogyakarta!5e0!3m2!1sen!2sid!4v1695442800000!5m2!1sen!2sid",
+    
+    addons: [
+      {
+        name: "Professional Photographer",
+        price: 750000
+      },
+      {
+        name: "Extra Night (4-Star Hotel)",
+        price: 1200000
+      },
+      {
+        name: "Romantic Dinner Setup",
+        price: 500000
+      }
+    ]
   },
 ];

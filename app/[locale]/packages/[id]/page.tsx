@@ -14,6 +14,7 @@ import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import { packages as localPackages } from "@/data/packages";
 
 // Import Modal
 import PackageBookingModal from "./PackageBookingModal";
@@ -128,18 +129,31 @@ export default function PackageDetailPage() {
     if (!id) return;
 
     const fetchPackage = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await api.get(`/public/packages/${id}`);
-        setPkg(response.data as HolidayPackage);
-      } catch (err) {
-        console.error("Failed to fetch package:", err);
-        setError(t("status.fetchError"));
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // 1. Ambil data utama dari API (Laravel)
+      const response = await api.get(`/public/packages/${id}`);
+      const apiData = response.data as HolidayPackage;
+
+      // 2. Ambil data Addons dari file lokal (data/packages.ts)
+      // Pastikan ID di data/packages.ts SAMA PERSIS dengan ID di URL/Database
+      const localData = localPackages.find(p => p.id === id || p.id === apiData.id.toString());
+      
+      // 3. Gabungkan datanya
+      setPkg({
+        ...apiData,
+        addons: localData?.addons || [] // Pakai addons lokal jika ada
+      });
+
+    } catch (err) {
+      console.error("Failed to fetch package:", err);
+      setError(t("status.fetchError"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
     fetchPackage();
   }, [id, t]);
