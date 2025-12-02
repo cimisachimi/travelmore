@@ -530,6 +530,8 @@
     "quota": "Quota Status",
     "available": "Available",
     "bookNow": "Book Now",
+    "included":"What's Included",
+    "excluded":"What's Not Included",
     "startingFrom": "Starting from",
     "priceDisclaimer": "*Price subject to change based on date & availability.",
     "facilities": {

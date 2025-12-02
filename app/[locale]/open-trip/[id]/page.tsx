@@ -11,11 +11,11 @@ import {
   Camera, Info, Map as MapIcon, DollarSign, HelpCircle, CalendarDays, XCircle 
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext"; 
-import api from "@/lib/api"; // ✅ Import API
+import api from "@/lib/api"; 
 
 import OpenTripBookingModal from "./OpenTripBookingModal"; 
 
-// --- INTERFACES MATCHING BACKEND ---
+// --- INTERFACES ---
 interface ItineraryItem {
   day: number;
   title: string;
@@ -44,8 +44,6 @@ export interface TripDetail {
   thumbnail_url?: string | null;
   images?: string[];
   starting_from_price: number | null;
-  
-  // JSON Fields from Backend
   price_tiers: PriceTier[];
   itinerary_details?: ItineraryItem[];
   includes?: string[];
@@ -76,7 +74,7 @@ export default function OpenTripDetail() {
   const textMutedClass = isDark ? "text-gray-400" : "text-gray-600";
   const borderClass = isDark ? "border-gray-700" : "border-gray-200";
 
-  // ✅ Fetch Data from API
+  // ✅ Fetch Data
   useEffect(() => {
     if (params?.id) {
       const fetchTrip = async () => {
@@ -84,7 +82,6 @@ export default function OpenTripDetail() {
           const response = await api.get(`/open-trips/${params.id}`);
           const tripData: TripDetail = response.data;
           
-          // Fallback if images array is empty
           if (!tripData.images || tripData.images.length === 0) {
              const thumb = tripData.thumbnail_url || "/placeholder.jpg";
              tripData.images = [thumb, thumb, thumb, thumb];
@@ -123,7 +120,8 @@ export default function OpenTripDetail() {
   ];
 
   return (
-    <div className={`min-h-screen pb-20 ${mainBgClass}`}>
+    // FIX #1: Added pt-24 to push content down below fixed navbar
+    <div className={`min-h-screen pb-20 pt-24 ${mainBgClass}`}>
       
       {/* HEADER SECTION */}
       <div className={`${contentBgClass} border-b ${borderClass} pt-6 pb-6`}>
@@ -182,7 +180,6 @@ export default function OpenTripDetail() {
             </div>
 
             <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-3 h-[500px]">
-                {/* Helper to get safe image URL */}
                 {[0, 1, 2, 3].map((idx) => {
                     const imgUrl = trip.images?.[idx] || trip.thumbnail_url || "/placeholder.jpg";
                     const safeUrl = imgUrl.startsWith('http') ? imgUrl : `/storage/${imgUrl}`;
@@ -217,7 +214,7 @@ export default function OpenTripDetail() {
           <div className="lg:col-span-2 space-y-8">
             
             {/* Tab Navigation */}
-            <div className="sticky top-0 z-10 bg-inherit pt-2 pb-2 -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="sticky top-20 lg:top-24 z-10 bg-inherit pt-2 pb-2 -mx-4 px-4 md:mx-0 md:px-0 transition-all">
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
                     {tabs.map((tab) => (
                         <button
@@ -227,7 +224,7 @@ export default function OpenTripDetail() {
                                 flex items-center gap-2 px-4 py-2.5 md:px-5 md:py-3 rounded-full text-sm font-bold transition-all whitespace-nowrap border
                                 ${activeTab === tab.id 
                                     ? "bg-primary text-white border-primary shadow-md shadow-primary/30" 
-                                    : `bg-white text-gray-600 border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700`}
+                                    : `bg-white text-gray-700 border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700`}
                             `}
                         >
                             <tab.icon size={16} />
@@ -291,36 +288,44 @@ export default function OpenTripDetail() {
                 </div>
             )}
 
-            {/* 3. PRICING - UPDATED TO SHOW TIERS */}
+            {/* 3. PRICING - FIX #2: IMPROVED CONTRAST & READABILITY */}
             {activeTab === "pricing" && (
                 <div className={`${contentBgClass} rounded-2xl p-6 md:p-8 border ${borderClass} animate-fadeIn`}>
                     
                     {/* Price Tiers Table */}
                     <div className="mb-8">
-                        <h3 className={`text-xl font-bold ${textClass} mb-4`}>Price Tiers</h3>
-                        <div className="overflow-x-auto">
+                        <div className="flex items-center gap-2 mb-4">
+                            <DollarSign className="text-primary" size={24} />
+                            <h3 className={`text-xl font-bold ${textClass}`}>Price Tier Applied</h3>
+                        </div>
+                        
+                        <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                             <table className="w-full text-sm text-left">
-                                <thead className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 uppercase font-bold">
+                                <thead className="bg-slate-100 dark:bg-slate-800">
                                     <tr>
-                                        <th className="px-4 py-3 rounded-l-lg">Pax (People)</th>
-                                        <th className="px-4 py-3 rounded-r-lg text-right">Price per Pax</th>
+                                        <th className="px-6 py-4 text-slate-700 dark:text-slate-200 font-bold uppercase tracking-wider text-xs">
+                                            Pax (Participants)
+                                        </th>
+                                        <th className="px-6 py-4 text-slate-700 dark:text-slate-200 font-bold uppercase tracking-wider text-xs text-right">
+                                            Price per Pax
+                                        </th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
                                     {trip.price_tiers && trip.price_tiers.length > 0 ? (
                                         trip.price_tiers.sort((a,b) => a.min_pax - b.min_pax).map((tier, idx) => (
-                                            <tr key={idx} className="border-b border-gray-100 dark:border-gray-800">
-                                                <td className={`px-4 py-3 font-medium ${textClass}`}>
+                                            <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                                <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                                                     {tier.min_pax} {tier.max_pax ? `- ${tier.max_pax}` : "+"} Pax
                                                 </td>
-                                                <td className="px-4 py-3 text-right font-bold text-primary">
+                                                <td className="px-6 py-4 text-right font-bold text-primary text-base">
                                                     {formatCurrency(tier.price)}
                                                 </td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={2} className="px-4 py-3 text-center text-gray-500">
+                                            <td colSpan={2} className="px-6 py-4 text-center text-gray-500 italic">
                                                 Standard Price: {formatCurrency(trip.starting_from_price || 0)}
                                             </td>
                                         </tr>
@@ -341,7 +346,7 @@ export default function OpenTripDetail() {
                                 {trip.includes && trip.includes.length > 0 ? trip.includes.map((inc: string, i: number) => (
                                     <li key={i} className={`text-sm ${textMutedClass} flex items-start gap-2`}>
                                         <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0"/>
-                                        {inc}
+                                        <span className={textMutedClass}>{inc}</span>
                                     </li>
                                 )) : <p className={`text-sm ${textMutedClass}`}>-</p>}
                             </ul>
@@ -356,7 +361,7 @@ export default function OpenTripDetail() {
                                 {trip.excludes && trip.excludes.length > 0 ? trip.excludes.map((exc: string, i: number) => (
                                     <li key={i} className={`text-sm ${textMutedClass} flex items-start gap-2`}>
                                         <XCircle size={16} className="text-red-400 mt-0.5 shrink-0"/>
-                                        {exc}
+                                        <span className={textMutedClass}>{exc}</span>
                                     </li>
                                 )) : <p className={`text-sm ${textMutedClass}`}>-</p>}
                             </ul>
@@ -452,7 +457,7 @@ export default function OpenTripDetail() {
           <OpenTripBookingModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-            pkg={trip} // ✅ Passing Real Backend Data
+            pkg={trip}
             user={user}
             t={tBooking}
           />

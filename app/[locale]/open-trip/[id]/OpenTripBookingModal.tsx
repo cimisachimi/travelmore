@@ -6,7 +6,7 @@ import api from "@/lib/api";
 import { toast } from "sonner";
 import { X, MapPin, AlertCircle } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
-import { AxiosError } from "axios"; // ✅ Added Import
+import { AxiosError } from "axios";
 
 // --- INTERFACES ---
 interface MeetingPoint {
@@ -86,7 +86,16 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
       setSpecialRequest("");
       setDiscountCode("");
       setErrors({});
+      
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen, user]);
 
   // --- DYNAMIC PRICE CALCULATION ---
@@ -166,10 +175,9 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
         router.push("/profile");
         onClose();
       }
-    } catch (error: unknown) { // ✅ Fixed: Changed 'any' to 'unknown'
+    } catch (error: unknown) {
       console.error(error);
       
-      // ✅ Fixed: Check if error is an AxiosError before accessing response
       if (error instanceof AxiosError && error.response?.status === 422) {
         const serverErrors = error.response.data.errors;
         
@@ -196,151 +204,162 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
   const inputClass = `w-full p-2 rounded border ${theme === "regular" ? "bg-gray-50 border-gray-300" : "bg-gray-700 border-gray-600 text-white"}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className={`${modalBg} rounded-xl shadow-xl p-6 w-full max-w-lg relative max-h-[90vh] overflow-y-auto`}>
-        <button onClick={onClose} className="absolute top-4 right-4"><X /></button>
+    // FIX: Menggunakan fixed inset-0 dengan overflow-y-auto pada parent,
+    // dan menghapus overflow/max-height pada child card agar scroll lebih natural.
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm">
+      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-6">
         
-        <h2 className={`text-2xl font-bold mb-1 ${textColor}`}>{t("booking.title")}</h2>
-        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">OPEN TRIP</span>
-        <p className="text-sm text-gray-500 mb-6">{pkg.name}</p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {/* Date Picker */}
-          <div>
-            <label className={`block text-sm font-medium ${textColor}`}>Select Date</label>
-            <input 
-                type="date" 
-                value={startDate} 
-                onChange={(e) => setStartDate(e.target.value)} 
-                className={inputClass} 
-                min={new Date().toISOString().split("T")[0]}
-            />
-            {errors.startDate && <p className="text-red-500 text-xs mt-1">{errors.startDate}</p>}
-          </div>
-
-          {/* Pax Input */}
-          <div className="flex gap-4">
-            <div className="flex-1">
-                <label className={`block text-sm font-medium ${textColor}`}>Adults</label>
-                <input type="number" min={1} value={adults} onChange={(e) => setAdults(Number(e.target.value))} className={inputClass} />
-            </div>
-            <div className="flex-1">
-                <label className={`block text-sm font-medium ${textColor}`}>Children</label>
-                <input type="number" min={0} value={children} onChange={(e) => setChildren(Number(e.target.value))} className={inputClass} />
-            </div>
-          </div>
-
-          {/* Price Tier Info Bubble */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
-             <AlertCircle size={16} className="mt-0.5 shrink-0" />
-             <div>
-                <p className="font-bold">Price Tier Applied:</p>
-                {activeTier ? (
-                   <p>For {totalPax} pax: {formatPrice(pricePerPax)}/pax</p>
-                ) : (
-                   <p>Base price: {formatPrice(pricePerPax)}/pax</p>
-                )}
-             </div>
-          </div>
-
-          {/* Meeting Point */}
-          <div>
-            <label className={`block text-sm font-medium ${textColor} flex items-center gap-1`}>
-                <MapPin size={14} /> Meeting Point (Titik Kumpul)
-            </label>
+        <div className={`${modalBg} w-full max-w-lg transform rounded-xl shadow-xl p-6 text-left align-middle transition-all relative`}>
             
-            {pkg.meeting_points && pkg.meeting_points.length > 0 ? (
-                <select 
-                    value={selectedMeetingPoint} 
-                    onChange={(e) => setSelectedMeetingPoint(e.target.value)}
-                    className={inputClass}
-                >
-                    <option value="">-- Select Meeting Point --</option>
-                    {pkg.meeting_points.map((mp, idx) => (
-                        <option key={idx} value={`${mp.name} (${mp.time || ''})`}>
-                            {mp.name} {mp.time ? `- ${mp.time}` : ""}
-                        </option>
-                    ))}
-                </select>
-            ) : (
+            <button 
+                onClick={onClose} 
+                className={`absolute top-4 right-4 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition ${textColor}`}
+            >
+                <X size={20} />
+            </button>
+            
+            <h2 className={`text-2xl font-bold mb-1 ${textColor}`}>{t("booking.title")}</h2>
+            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">OPEN TRIP</span>
+            <p className="text-sm text-gray-500 mb-6">{pkg.name}</p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+            
+            {/* Date Picker */}
+            <div>
+                <label className={`block text-sm font-medium ${textColor}`}>Select Date</label>
                 <input 
-                    type="text" 
-                    placeholder="e.g. Stasiun Tugu Yogyakarta"
-                    value={selectedMeetingPoint}
-                    onChange={(e) => setSelectedMeetingPoint(e.target.value)}
-                    className={inputClass}
+                    type="date" 
+                    value={startDate} 
+                    onChange={(e) => setStartDate(e.target.value)} 
+                    className={inputClass} 
+                    min={new Date().toISOString().split("T")[0]}
                 />
-            )}
-            
-            <p className="text-xs text-gray-500 mt-1">
-                *Peserta wajib berkumpul di titik ini sesuai jam yang ditentukan.
-            </p>
-            {errors.meetingPoint && <p className="text-red-500 text-xs mt-1">{errors.meetingPoint}</p>}
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <label className={`block text-sm font-medium ${textColor}`}>Full Name</label>
-            <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputClass} />
-          </div>
-          <div>
-            <label className={`block text-sm font-medium ${textColor}`}>WhatsApp Number</label>
-            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
-          </div>
-          
-          {/* Nationality */}
-          <div>
-            <label className={`block text-sm font-medium ${textColor}`}>Nationality</label>
-            <input 
-              type="text" 
-              value={nationality} 
-              onChange={(e) => setNationality(e.target.value)} 
-              placeholder="e.g. Indonesia"
-              className={inputClass} 
-            />
-          </div>
-
-          {/* Special Request */}
-          <div>
-             <label className={`block text-sm font-medium ${textColor}`}>Special Request</label>
-             <textarea 
-                value={specialRequest}
-                onChange={(e) => setSpecialRequest(e.target.value)}
-                className={inputClass}
-                rows={2}
-             />
-          </div>
-
-          {/* Discount Code */}
-          <div>
-            <label className={`block text-sm font-medium ${textColor}`}>Discount Code (Optional)</label>
-            <input 
-              type="text" 
-              value={discountCode} 
-              onChange={(e) => setDiscountCode(e.target.value)} 
-              className={inputClass} 
-            />
-          </div>
-
-          {/* Total Price */}
-          <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex justify-between items-center">
-            <span className="font-semibold text-gray-700 dark:text-gray-200">Total Price</span>
-            <div className="text-right">
-                <span className="text-xl font-bold text-primary block">{formatPrice(grandTotal)}</span>
-                <span className="text-xs text-gray-500">({totalPax} pax x {formatPrice(pricePerPax)})</span>
+                {errors.startDate && <p className="text-red-500 text-xs mt-1">{errors.startDate}</p>}
             </div>
-          </div>
 
-          <button 
-            type="submit" 
-            disabled={isSubmitting}
-            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-lg transition"
-          >
-            {isSubmitting ? "Booking..." : "Join Open Trip"}
-          </button>
+            {/* Pax Input */}
+            <div className="flex gap-4">
+                <div className="flex-1">
+                    <label className={`block text-sm font-medium ${textColor}`}>Adults</label>
+                    <input type="number" min={1} value={adults} onChange={(e) => setAdults(Number(e.target.value))} className={inputClass} />
+                </div>
+                <div className="flex-1">
+                    <label className={`block text-sm font-medium ${textColor}`}>Children</label>
+                    <input type="number" min={0} value={children} onChange={(e) => setChildren(Number(e.target.value))} className={inputClass} />
+                </div>
+            </div>
 
-        </form>
+            {/* Price Tier Info Bubble */}
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
+                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                <div>
+                    <p className="font-bold">Price Tier Applied:</p>
+                    {activeTier ? (
+                    <p>For {totalPax} pax: {formatPrice(pricePerPax)}/pax</p>
+                    ) : (
+                    <p>Base price: {formatPrice(pricePerPax)}/pax</p>
+                    )}
+                </div>
+            </div>
+
+            {/* Meeting Point */}
+            <div>
+                <label className={`block text-sm font-medium ${textColor} flex items-center gap-1`}>
+                    <MapPin size={14} /> Meeting Point (Titik Kumpul)
+                </label>
+                
+                {pkg.meeting_points && pkg.meeting_points.length > 0 ? (
+                    <select 
+                        value={selectedMeetingPoint} 
+                        onChange={(e) => setSelectedMeetingPoint(e.target.value)}
+                        className={inputClass}
+                    >
+                        <option value="">-- Select Meeting Point --</option>
+                        {pkg.meeting_points.map((mp, idx) => (
+                            <option key={idx} value={`${mp.name} (${mp.time || ''})`}>
+                                {mp.name} {mp.time ? `- ${mp.time}` : ""}
+                            </option>
+                        ))}
+                    </select>
+                ) : (
+                    <input 
+                        type="text" 
+                        placeholder="e.g. Stasiun Tugu Yogyakarta"
+                        value={selectedMeetingPoint}
+                        onChange={(e) => setSelectedMeetingPoint(e.target.value)}
+                        className={inputClass}
+                    />
+                )}
+                
+                <p className="text-xs text-gray-500 mt-1">
+                    *Peserta wajib berkumpul di titik ini sesuai jam yang ditentukan.
+                </p>
+                {errors.meetingPoint && <p className="text-red-500 text-xs mt-1">{errors.meetingPoint}</p>}
+            </div>
+
+            {/* Contact Info */}
+            <div>
+                <label className={`block text-sm font-medium ${textColor}`}>Full Name</label>
+                <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputClass} />
+            </div>
+            <div>
+                <label className={`block text-sm font-medium ${textColor}`}>WhatsApp Number</label>
+                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
+            </div>
+            
+            {/* Nationality */}
+            <div>
+                <label className={`block text-sm font-medium ${textColor}`}>Nationality</label>
+                <input 
+                type="text" 
+                value={nationality} 
+                onChange={(e) => setNationality(e.target.value)} 
+                placeholder="e.g. Indonesia"
+                className={inputClass} 
+                />
+            </div>
+
+            {/* Special Request */}
+            <div>
+                <label className={`block text-sm font-medium ${textColor}`}>Special Request</label>
+                <textarea 
+                    value={specialRequest}
+                    onChange={(e) => setSpecialRequest(e.target.value)}
+                    className={inputClass}
+                    rows={2}
+                />
+            </div>
+
+            {/* Discount Code */}
+            <div>
+                <label className={`block text-sm font-medium ${textColor}`}>Discount Code (Optional)</label>
+                <input 
+                type="text" 
+                value={discountCode} 
+                onChange={(e) => setDiscountCode(e.target.value)} 
+                className={inputClass} 
+                />
+            </div>
+
+            {/* Total Price */}
+            <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex justify-between items-center sticky bottom-0 z-10">
+                <span className="font-semibold text-gray-700 dark:text-gray-200">Total Price</span>
+                <div className="text-right">
+                    <span className="text-xl font-bold text-primary block">{formatPrice(grandTotal)}</span>
+                    <span className="text-xs text-gray-500">({totalPax} pax x {formatPrice(pricePerPax)})</span>
+                </div>
+            </div>
+
+            <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-lg transition"
+            >
+                {isSubmitting ? "Booking..." : "Join Open Trip"}
+            </button>
+
+            </form>
+        </div>
       </div>
     </div>
   );

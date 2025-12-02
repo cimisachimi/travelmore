@@ -289,18 +289,10 @@
         "foreign": "Mancanegara (Asing)"
       },
       "selectOption": "-- Pilih Opsi --",
-      "fullName": {
-        "title": "Nama Lengkap"
-      },
-      "email": {
-        "title": "Email"
-      },
-      "phone": {
-        "title": "Nomor Telepon (WA)"
-      },
-      "pickupLocation": {
-        "title": "Lokasi Penjemputan"
-      },
+      "fullName": "Nama Lengkap",
+      "email": "Email",
+      "phone": "Nomor Telepon (WA)",
+      "pickupLocation": "Lokasi Penjemputan",
       "pickup": {
         "title": "Lokasi Penjemputan",
         "airport": "Bandara",
@@ -378,6 +370,8 @@
     "pickupDesc": "Detail opsi titik kumpul tersedia saat Anda menekan tombol booking. Pastikan datang 30 menit sebelum keberangkatan.",
     "quota": "Status Kuota",
     "available": "Tersedia",
+    "included": "Termasuk",
+    "excluded": "Tidak Termasuk",
     "bookNow": "Pesan Sekarang",
     "startingFrom": "Mulai dari",
     "priceDisclaimer": "*Harga dapat berubah tergantung tanggal & ketersediaan.",
@@ -834,6 +828,198 @@
       "trunk": "Ukuran Bagasi",
       "bags": "tas",
       "features": "Fitur"
+    }
+  },
+  "carRental": {
+    "title": "Sewa City Car",
+    "subtitle": "Temukan kendaraan yang sempurna untuk perjalanan Anda di Yogyakarta. Mudah, andal, dan siap jalan.",
+    "pricePerDay": "/hari",
+    "card": {
+      "priceLabel": "Mulai dari"
+    }
+  },
+  "booking": {
+    "title": "Formulir Pemesanan",
+    "subtitle": "Lengkapi detail di bawah ini untuk menyelesaikan pemesanan Anda.",
+    "orderDetails": "Detail Pesanan",
+    "contactInfo": "Informasi Kontak",
+    "fields": {
+      "activity": "Aktivitas yang Dipesan",
+      "date": "Tanggal Aktivitas",
+      "participants": "Jumlah Peserta",
+      "name": "Nama Lengkap",
+      "email": "Alamat Email",
+      "phone": "Nomor Telepon (WhatsApp)",
+      "address": "Alamat Rumah"
+    },
+    "placeholders": {
+      "participants": "cth., 2 dewasa, 1 anak",
+      "address": "cth., Jakarta, Indonesia"
+    },
+    "button": "Kirim Pemesanan",
+    "alert": "Permintaan pemesanan Anda telah dikirim! Kami akan segera menghubungi Anda."
+  },
+  "packages": {
+    "tabs": {
+      "overview": "Ikhtisar",
+      "itinerary": "Rencana Perjalanan",
+      "cost": "Biaya",
+      "faqs": "FAQ",
+      "map": "Peta",
+      "pricing": "Harga"
+    },
+    "trip": {
+      "about": "Tentang Perjalanan Ini",
+      "days": "Hari",
+      "info": "Info Perjalanan",
+      "from": "Dari",
+      "person": "Orang",
+      "adult": "Dewasa",
+      "child": "Anak",
+      "people": "Orang",
+      "participants": "Peserta / Jumlah"
+    },
+    "cost": {
+      "facilitiesIncluded": "Termasuk",
+      "facilitiesExcluded": "Tidak Termasuk",
+      "noIncludedItems": "Tidak ada item termasuk yang terdaftar.",
+      "noExcludedItems": "Tidak ada item tidak termasuk yang terdaftar."
+    },
+    "booking": {
+      "checkAvailability": "CEK KETERSEDIAAN",
+      "needHelp": "Butuh bantuan pemesanan?",
+      "sendMessage": "Kirim Pesan Kepada Kami",
+      "loginToBook": "Silakan Login terlebih dahulu untuk memesan",
+      "title": "Pesan Aktivitas Anda",
+      "startDate": "Pilih Tanggal",
+      "selectOption": "-- Pilih Opsi --",
+      "date": "Pilih Tanggal",
+      "nationality": {
+        "title": "Kewarganegaraan Peserta",
+        "local": "Domestik (Lokal)",
+        "foreign": "Mancanegara (Asing)"
+      },
+      "fullName": "Nama Lengkap",
+      "email": "Email",
+      "phone": "Nomor Telepon (WA)",
+      "pickupLocation": "Lokasi Penjemputan",
+      "pickup": {
+        "airport": "Bandara",
+        "station": "Stasiun",
+        "hotel": "Hotel"
+      },
+      "flightNumber": {
+        "title": "Nomor Penerbangan",
+        "placeholder": "cth., GA 205"
+      },
+      "specialRequest": {
+        "title": "Permintaan Khusus",
+        "placeholder": "cth., alergi, kebutuhan diet, penjemputan terlambat..."
+      },
+      "optional": "Opsional",
+      "total": "Total Harga",
+      "submitting": "Memesan...",
+      "confirm": "Pesan Sekarang",
+      "discountCode": "Kode Diskon",
+      "subtotal": "Subtotal",
+      "discountInfo": "Info Diskon",
+      "success": {
+        "message": "Pemesanan berhasil dibuat! Mengalihkan..."
+      },
+      "errors": {
+        "notLoggedIn": "Anda harus masuk untuk memesan.",
+        "noDate": "Silakan pilih tanggal.",
+        "noParticipants": "Harus ada setidaknya 1 peserta.",
+        "noNationality": "Silakan pilih kewarganegaraan.",
+        "noName": "Silakan masukkan nama lengkap Anda.",
+        "noEmail": "Silakan masukkan email Anda.",
+        "invalidEmail": "Silakan masukkan email yang valid.",
+        "noPhone": "Silakan masukkan nomor telepon Anda.",
+        "noPickup": "Silakan pilih lokasi penjemputan.",
+        "noPrice": "Harga tidak dapat dihitung untuk aktivitas ini.",
+        "general": "Pemesanan gagal. Silakan coba lagi."
+      }
+    },
+    "pricing": {
+      "pax": "Peserta",
+      "pricePerPax": "Harga per Orang"
+    },
+    "status": {
+      "loading": "Memuat detail paket...",
+      "noCategories": "Tidak ada kategori ditemukan.",
+      "fetchError": "Gagal memuat data paket. Silakan coba lagi.",
+      "notFound": "Paket tidak ditemukan.",
+      "noItinerary": "Detail rencana perjalanan tidak tersedia.",
+      "noFaqs": "Pertanyaan umum tidak tersedia.",
+      "noMap": "Lokasi peta tidak tersedia.",
+      "noPricing": "Detail harga tidak tersedia."
+    },
+    "gallery": {
+      "noImage": "Tidak ada gambar tersedia untuk paket ini."
+    },
+    "buttons": {
+      "back": "Kembali ke Paket"
+    }
+  },
+  "PlannerPage": {
+    "regular": {
+      "title": "Konsultasi Perencana Perjalanan",
+      "description": "Biarkan tim kami membantu menyusun rencana perjalanan sesuai anggaran, minat, dan gaya liburan Anda. Solusi tepat untuk perjalanan efisien dan berkesan.",
+      "features": {
+        "f1": "Rencana perjalanan personal",
+        "f2": "Rekomendasi akomodasi & aktivitas",
+        "f3": "Optimalisasi anggaran perjalanan"
+      },
+      "price": "IDR 250.000 / paket",
+      "terms": {
+        "t1": "1x revisi rencana perjalanan",
+        "t2": "Durasi layanan konsultasi: 7 hari",
+        "t3": "Tidak termasuk biaya tiket, hotel, atau aktivitas"
+      },
+      "ctaText": "Pesan Konsultasi"
+    },
+    "exclusive": {
+      "title": "Konsultasi Perencana Perjalanan Eksklusif",
+      "description": "Nikmati pengalaman perjalanan premium dengan rencana perjalanan custom-made oleh desainer perjalanan senior kami. Dapatkan akses eksklusif dan layanan prioritas selama perjalanan.",
+      "features": {
+        "f1": "Revisi rencana perjalanan tak terbatas",
+        "f2": "Pemesanan menyeluruh (penerbangan, akomodasi premium, transportasi)",
+        "f3": "Desainer perjalanan senior khusus",
+        "f4": "Layanan concierge 24/7 selama perjalanan",
+        "f5": "Akses eksklusif & pengalaman lokal unik"
+      },
+      "price": "IDR 500.000 / paket",
+      "terms": {
+        "t1": "Durasi layanan konsultasi: 30 hari",
+        "t2": "Layanan premium & prioritas",
+        "t3": "Tidak termasuk biaya tiket, hotel, atau aktivitas (dibayar terpisah)"
+      },
+      "ctaText": "Pesan Konsultasi Eksklusif"
+    },
+    "termsTitle": "Ketentuan:",
+    "backButton": "← Kembali ke Detail Layanan",
+    "workflowTitle": "Cara Kerja Layanan Konsultasi Kami",
+    "workflow": {
+      "s1": {
+        "title": "Isi Formulir",
+        "description": "Beritahu kami kebutuhan perjalanan Anda melalui formulir singkat kami."
+      },
+      "s2": {
+        "title": "Diskusi Awal",
+        "description": "Tim perencana kami akan menghubungi Anda untuk diskusi lebih lanjut."
+      },
+      "s3": {
+        "title": "Penyusunan Rencana",
+        "description": "Kami akan menyusun draf rencana perjalanan berdasarkan diskusi kita."
+      },
+      "s4": {
+        "title": "Revisi & Finalisasi",
+        "description": "Anda dapat memberikan masukan untuk menyempurnakan rencana perjalanan."
+      },
+      "s5": {
+        "title": "Nikmati Liburan Anda!",
+        "description": "Dengan rencana perjalanan final di tangan, nikmati perjalanan Anda!"
+      }
     }
   }
 }
