@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from './ui/Button';
 import { useTranslations } from 'next-intl';
@@ -12,14 +11,15 @@ const CTASection: React.FC = () => {
         <h2 className="text-3xl font-bold text-black font-serif">{t('title')}</h2>
         <p className="text-gray-800 mt-2 mb-6">{t('subtitle')}</p>
 
-        <Button href="/contact" className="text-lg px-10 py-4">
+        {/* Updated link to point to the Trip Planner page */}
+        <Button href="/planner" className="text-lg px-10 py-4">
           {t('button')}
         </Button>
 
         <p className="text-sm text-gray-700 mt-4">
           {t('contactText')}{' '}
           <a
-            href="https://wa.me/6281234567890"
+            href="https://wa.me/6282224291148"
             target="_blank"
             rel="noopener noreferrer"
             className="font-bold underline hover:text-black"
@@ -33,4 +33,3 @@ const CTASection: React.FC = () => {
 };
 
 export default CTASection;
-
