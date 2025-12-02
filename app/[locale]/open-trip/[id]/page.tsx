@@ -11,27 +11,47 @@ import {
   Camera, Info, Map as MapIcon, DollarSign, HelpCircle, CalendarDays, XCircle 
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext"; 
+import api from "@/lib/api"; // ✅ Import API
 
-// Import Data Dummy & Interface
-import { openTripsData, OpenTripListItem } from "@/data/trips"; 
 import OpenTripBookingModal from "./OpenTripBookingModal"; 
 
-// --- [FIX] Defined Interfaces to replace 'any' ---
+// --- INTERFACES MATCHING BACKEND ---
 interface ItineraryItem {
   day: number;
   title: string;
   activities: string[];
 }
 
-// Extend the imported type to ensure specific fields are typed correctly
-// inside this component, overriding generic types if they exist in the original.
-interface TripDetail extends OpenTripListItem {
-  itinerary_details?: ItineraryItem[];
+interface MeetingPoint {
+  id: number;
+  name: string;
+  time?: string;
+}
+
+interface PriceTier {
+  min_pax: number;
+  max_pax: number | null;
+  price: number;
+}
+
+export interface TripDetail {
+  id: number;
+  name: string;
+  description?: string;
+  location?: string;
+  duration: number;
+  rating?: number;
+  thumbnail_url?: string | null;
   images?: string[];
+  starting_from_price: number | null;
+  
+  // JSON Fields from Backend
+  price_tiers: PriceTier[];
+  itinerary_details?: ItineraryItem[];
   includes?: string[];
   excludes?: string[];
+  meeting_points?: MeetingPoint[];
   map_url?: string;
-  starting_from_price: number | null;
 }
 
 export default function OpenTripDetail() {
@@ -43,7 +63,6 @@ export default function OpenTripDetail() {
   const tBooking = useTranslations("booking");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // [FIX] Use the stricter TripDetail type
   const [trip, setTrip] = useState<TripDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
@@ -57,23 +76,30 @@ export default function OpenTripDetail() {
   const textMutedClass = isDark ? "text-gray-400" : "text-gray-600";
   const borderClass = isDark ? "border-gray-700" : "border-gray-200";
 
+  // ✅ Fetch Data from API
   useEffect(() => {
     if (params?.id) {
-      const id = Number(params.id);
-      const foundTrip = openTripsData.find((item) => item.id === id);
-      
-      if (foundTrip) {
-        // [FIX] Explicitly cast to TripDetail to satisfy the state type
-        const tripData: TripDetail = { ...foundTrip };
-        
-        // Handle images fallback logic safely
-        if (!tripData.images || tripData.images.length === 0) {
-            const thumb = tripData.thumbnail_url || "/placeholder.jpg";
-            tripData.images = [thumb, thumb, thumb, thumb];
+      const fetchTrip = async () => {
+        try {
+          const response = await api.get(`/open-trips/${params.id}`);
+          const tripData: TripDetail = response.data;
+          
+          // Fallback if images array is empty
+          if (!tripData.images || tripData.images.length === 0) {
+             const thumb = tripData.thumbnail_url || "/placeholder.jpg";
+             tripData.images = [thumb, thumb, thumb, thumb];
+          }
+
+          setTrip(tripData);
+        } catch (error) {
+          console.error("Error fetching trip:", error);
+          setTrip(null);
+        } finally {
+          setLoading(false);
         }
-        setTrip(tripData);
-      }
-      setLoading(false);
+      };
+      
+      fetchTrip();
     }
   }, [params]);
 
@@ -144,30 +170,44 @@ export default function OpenTripDetail() {
             >
                 {trip.images?.map((img: string, index: number) => (
                     <div key={index} className="flex-shrink-0 w-[85%] snap-center relative rounded-xl overflow-hidden shadow-md">
-                        <Image src={img || "/placeholder.jpg"} alt={`${trip.name} ${index + 1}`} fill className="object-cover" />
+                        <Image 
+                            src={img.startsWith('http') ? img : `/storage/${img}`} 
+                            alt={`${trip.name} ${index + 1}`} 
+                            fill 
+                            className="object-cover"
+                            unoptimized={img.startsWith('http')}
+                        />
                     </div>
                 ))}
             </div>
 
             <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-3 h-[500px]">
-                <div className="col-span-2 row-span-2 relative group cursor-pointer">
-                    <Image src={trip.images?.[0] || "/placeholder.jpg"} alt={trip.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" priority />
-                </div>
-                <div className="col-span-2 row-span-1 relative group cursor-pointer">
-                    <Image src={trip.images?.[1] || trip.thumbnail_url || "/placeholder.jpg"} alt="Gallery 2" fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
-                </div>
-                <div className="col-span-1 row-span-1 relative group cursor-pointer">
-                    <Image src={trip.images?.[2] || trip.thumbnail_url || "/placeholder.jpg"} alt="Gallery 3" fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
-                </div>
-                <div className="col-span-1 row-span-1 relative group cursor-pointer">
-                    <Image src={trip.images?.[3] || trip.thumbnail_url || "/placeholder.jpg"} alt="Gallery 4" fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center hover:bg-black/40 transition-colors">
-                        <div className="text-white flex flex-col items-center">
-                            <Camera size={24} />
-                            <span className="text-xs font-bold mt-1">View All Photos</span>
+                {/* Helper to get safe image URL */}
+                {[0, 1, 2, 3].map((idx) => {
+                    const imgUrl = trip.images?.[idx] || trip.thumbnail_url || "/placeholder.jpg";
+                    const safeUrl = imgUrl.startsWith('http') ? imgUrl : `/storage/${imgUrl}`;
+                    const isMain = idx === 0;
+                    
+                    return (
+                        <div key={idx} className={`${isMain ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1'} relative group cursor-pointer ${idx === 1 ? 'col-span-2 row-span-1' : ''}`}>
+                             <Image 
+                                src={safeUrl} 
+                                alt={`Gallery ${idx}`} 
+                                fill 
+                                className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                                unoptimized={imgUrl.startsWith('http')}
+                             />
+                             {idx === 3 && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center hover:bg-black/40 transition-colors">
+                                    <div className="text-white flex flex-col items-center">
+                                        <Camera size={24} />
+                                        <span className="text-xs font-bold mt-1">View All Photos</span>
+                                    </div>
+                                </div>
+                             )}
                         </div>
-                    </div>
-                </div>
+                    );
+                })}
             </div>
         </div>
 
@@ -207,8 +247,8 @@ export default function OpenTripDetail() {
                             <Info className="text-primary" size={20} />
                             <h3 className={`text-xl md:text-2xl font-bold ${textClass}`}>About This Trip</h3>
                         </div>
-                        <p className={`${textMutedClass} leading-relaxed text-base md:text-lg`}>
-                            {t("defaultDescription", { name: trip.name, location: trip.location || "Indonesia" })}
+                        <p className={`${textMutedClass} leading-relaxed text-base md:text-lg whitespace-pre-line`}>
+                            {trip.description || t("defaultDescription", { name: trip.name, location: trip.location || "Indonesia" })}
                         </p>
                     </div>
 
@@ -224,13 +264,12 @@ export default function OpenTripDetail() {
                 </div>
             )}
 
-            {/* 2. ITINERARY (NEW) */}
+            {/* 2. ITINERARY */}
             {activeTab === "itinerary" && (
                 <div className={`${contentBgClass} rounded-2xl p-6 md:p-8 border ${borderClass} animate-fadeIn`}>
                     <h3 className={`text-xl font-bold ${textClass} mb-6`}>Trip Itinerary</h3>
-                    {trip.itinerary_details ? (
+                    {trip.itinerary_details && trip.itinerary_details.length > 0 ? (
                         <div className="relative border-l-2 border-gray-200 dark:border-gray-700 ml-3 space-y-8">
-                            {/* [FIX] Typed 'item' with ItineraryItem instead of 'any' */}
                             {trip.itinerary_details.map((item: ItineraryItem, idx: number) => (
                                 <div key={idx} className="relative pl-6">
                                     <span className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-white dark:border-gray-900"></span>
@@ -252,10 +291,46 @@ export default function OpenTripDetail() {
                 </div>
             )}
 
-            {/* 3. PRICING (NEW) */}
+            {/* 3. PRICING - UPDATED TO SHOW TIERS */}
             {activeTab === "pricing" && (
                 <div className={`${contentBgClass} rounded-2xl p-6 md:p-8 border ${borderClass} animate-fadeIn`}>
-                    <h3 className={`text-xl font-bold ${textClass} mb-6`}>Pricing Details</h3>
+                    
+                    {/* Price Tiers Table */}
+                    <div className="mb-8">
+                        <h3 className={`text-xl font-bold ${textClass} mb-4`}>Price Tiers</h3>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 uppercase font-bold">
+                                    <tr>
+                                        <th className="px-4 py-3 rounded-l-lg">Pax (People)</th>
+                                        <th className="px-4 py-3 rounded-r-lg text-right">Price per Pax</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {trip.price_tiers && trip.price_tiers.length > 0 ? (
+                                        trip.price_tiers.sort((a,b) => a.min_pax - b.min_pax).map((tier, idx) => (
+                                            <tr key={idx} className="border-b border-gray-100 dark:border-gray-800">
+                                                <td className={`px-4 py-3 font-medium ${textClass}`}>
+                                                    {tier.min_pax} {tier.max_pax ? `- ${tier.max_pax}` : "+"} Pax
+                                                </td>
+                                                <td className="px-4 py-3 text-right font-bold text-primary">
+                                                    {formatCurrency(tier.price)}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={2} className="px-4 py-3 text-center text-gray-500">
+                                                Standard Price: {formatCurrency(trip.starting_from_price || 0)}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <h3 className={`text-xl font-bold ${textClass} mb-6`}>Inclusions & Exclusions</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Includes */}
                         <div>
@@ -263,12 +338,12 @@ export default function OpenTripDetail() {
                                 <CheckCircle2 size={20} /> {t("included") || "What's Included"}
                             </h4>
                             <ul className="space-y-3">
-                                {trip.includes?.map((inc: string, i: number) => (
+                                {trip.includes && trip.includes.length > 0 ? trip.includes.map((inc: string, i: number) => (
                                     <li key={i} className={`text-sm ${textMutedClass} flex items-start gap-2`}>
                                         <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0"/>
                                         {inc}
                                     </li>
-                                )) || <p className={`text-sm ${textMutedClass}`}>-</p>}
+                                )) : <p className={`text-sm ${textMutedClass}`}>-</p>}
                             </ul>
                         </div>
                         
@@ -278,19 +353,19 @@ export default function OpenTripDetail() {
                                 <XCircle size={20} /> {t("excluded") || "What's Not Included"}
                             </h4>
                             <ul className="space-y-3">
-                                {trip.excludes?.map((exc: string, i: number) => (
+                                {trip.excludes && trip.excludes.length > 0 ? trip.excludes.map((exc: string, i: number) => (
                                     <li key={i} className={`text-sm ${textMutedClass} flex items-start gap-2`}>
                                         <XCircle size={16} className="text-red-400 mt-0.5 shrink-0"/>
                                         {exc}
                                     </li>
-                                )) || <p className={`text-sm ${textMutedClass}`}>-</p>}
+                                )) : <p className={`text-sm ${textMutedClass}`}>-</p>}
                             </ul>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* 4. MAP (NEW) */}
+            {/* 4. MAP */}
             {activeTab === "map" && (
                 <div className={`${contentBgClass} rounded-2xl p-2 border ${borderClass} animate-fadeIn overflow-hidden`}>
                     {trip.map_url ? (
@@ -354,7 +429,9 @@ export default function OpenTripDetail() {
                     <MapPin size={16} className="text-primary" /> {t("meetingPointTitle")}
                  </h4>
                  <p className={`text-xs leading-relaxed bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 p-3 rounded-lg`}>
-                    {t("pickupDesc")}
+                    {trip.meeting_points && trip.meeting_points.length > 0 
+                        ? trip.meeting_points.map(mp => mp.name).join(', ') 
+                        : t("pickupDesc")}
                  </p>
               </div>
 
@@ -375,7 +452,7 @@ export default function OpenTripDetail() {
           <OpenTripBookingModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-            pkg={trip}
+            pkg={trip} // ✅ Passing Real Backend Data
             user={user}
             t={tBooking}
           />

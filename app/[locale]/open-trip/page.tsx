@@ -7,9 +7,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import { useTranslations } from "next-intl";
+import api from "@/lib/api"; // ✅ Import API Helper
 
-// Import Data Dummy
-import { openTripsData, OpenTripListItem } from "@/data/trips"; 
+// Import Types only (Removed openTripsData)
+import { OpenTripListItem } from "@/data/trips"; 
 
 // Icon Filter (Opsional untuk mobile)
 const FilterIcon = () => (
@@ -27,9 +28,9 @@ export default function OpenTripPage() {
   
   // --- States untuk Filter ---
   const [maxPrice, setMaxPrice] = useState<number>(0);
-  const [priceSliderMax, setPriceSliderMax] = useState<number>(10000000);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]); // ✅ State Kategori
-  const [isFilterOpen, setIsFilterOpen] = useState(false); // ✅ Untuk Mobile Toggle
+  const [priceSliderMax, setPriceSliderMax] = useState<number>(10000000); // Default fallback
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]); 
+  const [isFilterOpen, setIsFilterOpen] = useState(false); 
 
   // Styles
   const mainBgClass = theme === "regular" ? "bg-gray-50" : "bg-black";
@@ -38,25 +39,39 @@ export default function OpenTripPage() {
   const textMutedClass = theme === "regular" ? "text-gray-600" : "text-gray-300";
   const borderClass = theme === "regular" ? "border-gray-200" : "border-gray-700";
 
-  // 1. Load Data
+  // 1. Fetch Data from Backend
   useEffect(() => {
-    const loadData = async () => {
+    const fetchOpenTrips = async () => {
       setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulasi loading
-      const data = openTripsData;
-      setApiPackages(data);
+      try {
+        // ✅ Call the API
+        // Adjust endpoint if your route is named differently (e.g., /open-trips or /public/open-trips)
+        const response = await api.get('/open-trips'); 
+        
+        // Handle Laravel Pagination (response.data.data) or Standard List (response.data)
+        const data: OpenTripListItem[] = Array.isArray(response.data) 
+            ? response.data 
+            : response.data.data || [];
 
-      if (data.length > 0) {
-        const allPrices = data.map((p) => p.starting_from_price).filter((p): p is number => typeof p === 'number');
-        if (allPrices.length > 0) {
-          const max = Math.max(...allPrices);
-          setPriceSliderMax(max);
-          setMaxPrice(max);
+        setApiPackages(data);
+
+        // Calculate Max Price dynamically from real data
+        if (data.length > 0) {
+          const allPrices = data.map((p) => p.starting_from_price).filter((p): p is number => typeof p === 'number');
+          if (allPrices.length > 0) {
+            const max = Math.max(...allPrices);
+            setPriceSliderMax(max);
+            setMaxPrice(max);
+          }
         }
+      } catch (error) {
+        console.error("Failed to fetch open trips:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-    loadData();
+
+    fetchOpenTrips();
   }, []);
 
   // 2. Ambil List Kategori Unik dari Data
@@ -193,11 +208,13 @@ export default function OpenTripPage() {
                           <div className={`${cardBgClass} rounded-2xl shadow-lg border ${borderClass} overflow-hidden flex flex-col h-full hover:shadow-2xl transition duration-300 transform hover:-translate-y-1`}>
                               {/* Gambar */}
                               <div className="relative h-56 w-full overflow-hidden">
+                                  {/* Handle External URL vs Internal Images */}
                                   <Image
-                                      src={pkg.thumbnail_url || "/placeholder.jpg"}
+                                      src={pkg.thumbnail_url?.startsWith('http') ? pkg.thumbnail_url : (pkg.thumbnail_url ? `/storage/${pkg.thumbnail_url}` : "/placeholder.jpg")}
                                       alt={pkg.name}
                                       fill
                                       className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                      unoptimized={pkg.thumbnail_url?.startsWith('http')}
                                   />
                                   {/* Badge Duration */}
                                   <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white py-1 px-3 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">

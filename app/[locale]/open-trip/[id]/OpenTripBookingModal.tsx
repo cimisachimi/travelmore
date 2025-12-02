@@ -1,15 +1,14 @@
-// app/[locale]/open-trip/[id]/OpenTripBookingModal.tsx
 "use client";
 
 import React, { useState, FormEvent, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { X, MapPin } from "lucide-react";
+import { X, MapPin, AlertCircle } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
+import { AxiosError } from "axios"; // ✅ Added Import
 
 // --- INTERFACES ---
-
 interface MeetingPoint {
   id: number;
   name: string;
@@ -17,12 +16,17 @@ interface MeetingPoint {
   notes?: string;
 }
 
-interface OpenTripPackage {
+interface PriceTier {
+  min_pax: number;
+  max_pax: number | null;
+  price: number;
+}
+
+interface TripDetail {
   id: number;
   name: string;
-  price_tiers: { min_pax: number; max_pax: number; price: number }[];
   starting_from_price: number | null;
-  addons?: { name: string; price: number }[];
+  price_tiers?: PriceTier[];
   meeting_points?: MeetingPoint[];
 }
 
@@ -35,9 +39,9 @@ interface User {
 interface OpenTripBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  pkg: OpenTripPackage;
-  user: User | null; // Typed User
-  t: (key: string) => string; // Typed translation function
+  pkg: TripDetail;
+  user: User | null; 
+  t: (key: string) => string; 
 }
 
 const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
@@ -54,18 +58,14 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
   const [startDate, setStartDate] = useState("");
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
-  const [discountCode, setDiscountCode] = useState(""); // Added input below to fix unused warning
+  const [discountCode, setDiscountCode] = useState("");
 
-  // States Standard
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [nationality, setNationality] = useState(""); // Added input below to fix unused warning
-  const [specialRequest, setSpecialRequest] = useState(""); // Added input below to fix unused warning
+  const [nationality, setNationality] = useState("");
+  const [specialRequest, setSpecialRequest] = useState("");
   
-  // Removed selectedAddons as it was unused in the API payload
-
-  // [NEW] State Meeting Point
   const [selectedMeetingPoint, setSelectedMeetingPoint] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,13 +89,36 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
     }
   }, [isOpen, user]);
 
-  // --- CALCULATIONS ---
-  const { pricePerPax, totalPax } = useMemo(() => {
-    const calculatedTotalPax = adults + children;
-    // Logic harga sederhana - Fixed 'let' to 'const'
-    const foundPrice = pkg.starting_from_price || 0;
+  // --- DYNAMIC PRICE CALCULATION ---
+  const { pricePerPax, totalPax, activeTier } = useMemo(() => {
+    const count = adults + children;
     
-    return { pricePerPax: foundPrice, totalPax: calculatedTotalPax };
+    // Default fallback
+    let finalPrice = pkg.starting_from_price || 0;
+    let foundTier = null;
+
+    if (pkg.price_tiers && pkg.price_tiers.length > 0) {
+        const sortedTiers = [...pkg.price_tiers].sort((a, b) => a.min_pax - b.min_pax);
+
+        foundTier = sortedTiers.find(tier => {
+            const min = Number(tier.min_pax);
+            const max = tier.max_pax ? Number(tier.max_pax) : Infinity;
+            return count >= min && count <= max;
+        });
+
+        if (!foundTier && count > 0) {
+             const lastTier = sortedTiers[sortedTiers.length - 1];
+             if (count > Number(lastTier.max_pax)) {
+                foundTier = lastTier;
+             }
+        }
+
+        if (foundTier) {
+            finalPrice = Number(foundTier.price);
+        }
+    }
+
+    return { pricePerPax: finalPrice, totalPax: count, activeTier: foundTier };
   }, [adults, children, pkg]);
 
   const grandTotal = (pricePerPax * totalPax);
@@ -123,27 +146,43 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      const response = await api.post(`/open-trips/${pkg.id}/book`, {
+      const payload = {
         start_date: startDate,
         adults,
-        children,
+        children: children || 0,
         full_name: fullName,
         email,
         phone_number: phone,
         participant_nationality: nationality,
-        pickup_location: selectedMeetingPoint, // Kirim Meeting Point sebagai ganti Pickup Location
-        special_request: specialRequest,
-        discount_code: discountCode
-      });
+        pickup_location: selectedMeetingPoint, 
+        special_request: specialRequest || null,
+        discount_code: discountCode.trim() === "" ? null : discountCode,
+      };
 
-      if (response.status === 201) {
+      const response = await api.post(`/open-trips/${pkg.id}/book`, payload);
+
+      if (response.status === 201 || response.status === 200) {
         toast.success(t("booking.success.message"));
         router.push("/profile");
         onClose();
       }
-    } catch {
-      // Removed unused 'err' variable
-      toast.error("Booking failed. Please try again.");
+    } catch (error: unknown) { // ✅ Fixed: Changed 'any' to 'unknown'
+      console.error(error);
+      
+      // ✅ Fixed: Check if error is an AxiosError before accessing response
+      if (error instanceof AxiosError && error.response?.status === 422) {
+        const serverErrors = error.response.data.errors;
+        
+        if (serverErrors.discount_code) {
+           toast.error(serverErrors.discount_code[0]);
+        } else if (serverErrors.start_date) {
+           toast.error(serverErrors.start_date[0]);
+        } else {
+           toast.error("Please check your input details.");
+        }
+      } else {
+        toast.error("Booking failed. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -192,6 +231,19 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
             </div>
           </div>
 
+          {/* Price Tier Info Bubble */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
+             <AlertCircle size={16} className="mt-0.5 shrink-0" />
+             <div>
+                <p className="font-bold">Price Tier Applied:</p>
+                {activeTier ? (
+                   <p>For {totalPax} pax: {formatPrice(pricePerPax)}/pax</p>
+                ) : (
+                   <p>Base price: {formatPrice(pricePerPax)}/pax</p>
+                )}
+             </div>
+          </div>
+
           {/* Meeting Point */}
           <div>
             <label className={`block text-sm font-medium ${textColor} flex items-center gap-1`}>
@@ -205,8 +257,8 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
                     className={inputClass}
                 >
                     <option value="">-- Select Meeting Point --</option>
-                    {pkg.meeting_points.map((mp) => (
-                        <option key={mp.id} value={`${mp.name} (${mp.time || ''})`}>
+                    {pkg.meeting_points.map((mp, idx) => (
+                        <option key={idx} value={`${mp.name} (${mp.time || ''})`}>
                             {mp.name} {mp.time ? `- ${mp.time}` : ""}
                         </option>
                     ))}
@@ -237,7 +289,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
             <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
           </div>
           
-          {/* Nationality - Added Input */}
+          {/* Nationality */}
           <div>
             <label className={`block text-sm font-medium ${textColor}`}>Nationality</label>
             <input 
@@ -249,7 +301,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
             />
           </div>
 
-          {/* Special Request - Added Input */}
+          {/* Special Request */}
           <div>
              <label className={`block text-sm font-medium ${textColor}`}>Special Request</label>
              <textarea 
@@ -260,7 +312,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
              />
           </div>
 
-          {/* Discount Code - Added Input */}
+          {/* Discount Code */}
           <div>
             <label className={`block text-sm font-medium ${textColor}`}>Discount Code (Optional)</label>
             <input 
@@ -274,7 +326,10 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
           {/* Total Price */}
           <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex justify-between items-center">
             <span className="font-semibold text-gray-700 dark:text-gray-200">Total Price</span>
-            <span className="text-xl font-bold text-primary">{formatPrice(grandTotal)}</span>
+            <div className="text-right">
+                <span className="text-xl font-bold text-primary block">{formatPrice(grandTotal)}</span>
+                <span className="text-xs text-gray-500">({totalPax} pax x {formatPrice(pricePerPax)})</span>
+            </div>
           </div>
 
           <button 
