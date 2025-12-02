@@ -1,3 +1,4 @@
+// app/[locale]/page.tsx
 import React from "react";
 import HeroSlider from "@/components/HeroSlider";
 import ActivitySlider from "@/components/ActivitySlider";
@@ -51,7 +52,7 @@ export default function Home() {
       {/* 9. Blog Terbaru */}
       <BlogSection />
       
-      {/* <Testimonials /> */}
+      
     </main>
   );
 }
