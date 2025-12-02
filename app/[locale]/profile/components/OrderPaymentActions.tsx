@@ -2,6 +2,7 @@
 
 import { Order } from "../types";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { AlertCircle } from "lucide-react";
 
 interface OrderPaymentActionsProps {
   order: Order;
@@ -22,9 +23,15 @@ export default function OrderPaymentActions({
 
     if (isDeadlinePast) {
       return (
-        <p className="text-sm text-red-500 mt-2">
-          The payment deadline for this order has passed.
-        </p>
+        <div className="mt-4 p-3 bg-red-50 border border-red-100 rounded-lg flex items-start gap-3">
+           <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+           <div className="space-y-1">
+              <p className="text-sm font-semibold text-red-700">Payment Deadline Passed</p>
+              <p className="text-xs text-red-600/80">
+                This order has passed its payment deadline and may be cancelled automatically. Please contact support if you need assistance.
+              </p>
+           </div>
+        </div>
       );
     }
 

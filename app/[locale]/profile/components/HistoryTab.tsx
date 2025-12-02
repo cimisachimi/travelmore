@@ -341,6 +341,15 @@ const TripPlannerDetails = ({ details }: { details: BookingDetails }) => {
   );
 };
 
+const DetailItem = ({ label, value, icon: Icon }: { label: string, value: React.ReactNode, icon?: any }) => (
+  <div className="flex flex-col gap-1">
+    <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5">
+      {Icon && <Icon size={12} />} {label}
+    </span>
+    <span className="font-medium text-sm text-foreground">{value}</span>
+  </div>
+);
+
 // --- 3. Detail untuk Holiday Package ---
 const HolidayPackageDetails = ({ details }: { details: BookingDetails }) => {
   const adults = details.adults || 0;
@@ -348,74 +357,87 @@ const HolidayPackageDetails = ({ details }: { details: BookingDetails }) => {
   const totalPax = details.total_pax || (adults + children);
 
   return (
-    <div className="space-y-4 text-sm animate-fadeIn">
-      <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
-        <Luggage size={16} /> Holiday Package Details
+    <div className="animate-fadeIn space-y-5">
+      {/* Header Section */}
+      <div className="flex items-center gap-2 pb-3 border-b border-border/60">
+        <div className="p-1.5 bg-emerald-100 text-emerald-700 rounded-md">
+          <Luggage size={18} />
+        </div>
+        <span className="font-bold text-base text-foreground">Holiday Package Details</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Kolom Kiri: Tamu & Peserta */}
-        <div className="space-y-3">
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Lead Guest</span>
-            <span className="font-medium">{details.full_name || "-"}</span>
-            <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-              <Flag size={10} /> {details.participant_nationality || "-"}
-            </span>
-          </div>
-
-          <div className="flex flex-col">
-             <span className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                <Users size={12}/> Participants ({totalPax})
-             </span>
-             <div className="flex gap-2">
-                <span className="bg-background px-2 py-1 rounded border border-border text-xs">
-                  Adults: {adults}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+        {/* Kolom Kiri */}
+        <div className="space-y-5">
+          <DetailItem 
+            label="Lead Guest" 
+            icon={User}
+            value={
+              <div className="flex flex-col">
+                <span>{details.full_name || "-"}</span>
+                <span className="text-xs text-muted-foreground font-normal bg-muted/50 px-1.5 py-0.5 rounded w-fit mt-1">
+                  {details.participant_nationality || "Nationality N/A"}
                 </span>
-                {children > 0 && (
-                  <span className="bg-background px-2 py-1 rounded border border-border text-xs flex items-center gap-1">
-                    <Baby size={12}/> Children: {children}
-                  </span>
-                )}
-             </div>
-          </div>
+              </div>
+            } 
+          />
+
+          <DetailItem 
+            label="Participants" 
+            icon={Users}
+            value={
+              <div className="flex items-center gap-3 text-sm">
+                <span className="font-semibold">{totalPax} Pax Total</span>
+                <span className="text-muted-foreground text-xs border-l pl-3 border-border">
+                  {adults} Adults, {children} Children
+                </span>
+              </div>
+            } 
+          />
         </div>
 
-        {/* Kolom Kanan: Logistik */}
-        <div className="space-y-3">
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Pickup Location</span>
-            <span className="font-medium flex items-center gap-1">
-              <MapPin size={12} /> {details.pickup_location || "-"}
-            </span>
-          </div>
+        {/* Kolom Kanan */}
+        <div className="space-y-5">
+          <DetailItem 
+            label="Meeting Point / Pickup" 
+            icon={MapPin}
+            value={details.pickup_location || "-"} 
+          />
 
           {details.flight_number && (
-            <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground">Flight Information</span>
-              <span className="font-medium flex items-center gap-1">
-                <Plane size={12} /> {details.flight_number}
-              </span>
-            </div>
+             <DetailItem 
+              label="Flight Info" 
+              icon={Plane}
+              value={details.flight_number} 
+            />
           )}
         </div>
       </div>
 
-      {/* Footer: Kontak & Request */}
-      <div className="bg-muted/30 p-3 rounded-lg border border-border mt-2 space-y-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-          <div className="flex items-center gap-2">
-             <Mail size={12} className="text-muted-foreground"/> {details.email}
-          </div>
-          <div className="flex items-center gap-2">
-             <Phone size={12} className="text-muted-foreground"/> {details.phone_number}
-          </div>
+      {/* Footer Info Box (Contact & Special Request) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+        {/* Contact Info - Dibuat lebih clean */}
+        <div className="bg-gray-50/80 border border-gray-200 rounded-lg p-3 space-y-2">
+           <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Contact Info</div>
+           <div className="flex items-center gap-2 text-sm text-foreground/80">
+              <Mail size={14} className="text-muted-foreground"/> 
+              <span className="truncate">{details.email}</span>
+           </div>
+           <div className="flex items-center gap-2 text-sm text-foreground/80">
+              <Phone size={14} className="text-muted-foreground"/> 
+              <span>{details.phone_number}</span>
+           </div>
         </div>
 
+        {/* Special Request - Dibuat jadi Alert Box agar terlihat penting */}
         {details.special_request && (
-          <div className="pt-2 border-t border-dashed border-border">
-             <span className="text-xs text-muted-foreground block mb-0.5">Special Request:</span>
-             <span className="text-sm italic">&quot;{details.special_request}&quot;</span>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+             <div className="text-[10px] font-bold text-amber-700 uppercase mb-1 flex items-center gap-1">
+                Special Request
+             </div>
+             <p className="text-sm italic text-amber-900 leading-relaxed">
+               &quot;{details.special_request}&quot;
+             </p>
           </div>
         )}
       </div>
