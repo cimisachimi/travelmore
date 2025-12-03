@@ -3,104 +3,12 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { 
-  Clock, 
-  MapPin, 
-  CheckCircle2, 
-  CalendarDays, 
-  Users, 
-  Utensils, 
-  Camera,
-  ArrowLeft,
-  Compass, 
-  Heart    
+  Clock, MapPin, CheckCircle2, CalendarDays, Users, 
+  Utensils, Camera, ArrowLeft, Compass, Heart    
 } from "lucide-react";
-
-interface ItineraryDay {
-  day: number;
-  title: string;
-  activities: string[];
-}
-
-interface Itinerary {
-  title: string;
-  tagline: string;
-  description: string;
-  image: string;
-  duration: string;
-  price: string;
-  highlights: string[];
-  styles: string[];
-  personalities: string[];
-  timeline: ItineraryDay[];
-}
-
-const itinerariesData: Record<string, Itinerary> = {
-  "3d2n-explorer": {
-    title: "3D2N Yogyakarta Explorer",
-    tagline: "The Perfect Introduction to Java's Soul",
-    description:
-      "Rasakan magisnya Yogyakarta dalam 3 hari. Mulai dari kemegahan Candi kuno hingga hiruk pikuk jalanan Malioboro.",
-    image: "/jogja-1.WEBP",
-    duration: "3 Days 2 Nights",
-    price: "Start from Rp 1.850.000 /pax",
-    highlights: ["Sunrise Borobudur", "Sunset Prambanan", "Merapi Lava Tour", "Malioboro Street Food"],
-    styles: ["Culture & Heritage", "City & Urban Life", "Culinary & Lifestyle"],
-    personalities: ["History Buff", "Foodie", "City Explorer"],
-    timeline: [
-      {
-        day: 1,
-        title: "Arrival & Temple Run",
-        activities: ["Penjemputan di YIA", "Makan Siang Sate Klathak", "Check-in Hotel", "Sunset Prambanan", "Makan Malam Gudeg"],
-      },
-      {
-        day: 2,
-        title: "Merapi Adventure & Heritage",
-        activities: ["Sunrise Punthuk Setumbu", "Explore Borobudur", "Merapi Lava Tour", "Makan Siang Kopi Klotok", "Malioboro"],
-      },
-      {
-        day: 3,
-        title: "City Tour & Departure",
-        activities: ["Sarapan & Checkout", "Tamansari & Keraton", "Oleh-oleh", "Drop Airport"],
-      },
-    ],
-  },
-
-  "4d3n-culture": {
-    title: "4D3N Culture + Nature Trip",
-    tagline: "Deep Dive into Javanese Culture & Scenic Nature",
-    description:
-      "Paket lengkap untuk pecinta budaya dan alam. Jelajahi museum terbaik dan hutan pinus yang asri.",
-    image: "/jogja-2.WEBP",
-    duration: "4 Days 3 Nights",
-    price: "Start from Rp 2.500.000 /pax",
-    highlights: ["Ullen Sentalu", "Timang Beach", "HeHa Sky View", "Keraton"],
-    styles: ["Culture & Heritage", "Nature & Adventure", "Photography & Instagrammable"],
-    personalities: ["Nature Lover", "History Buff", "Photographer"],
-    timeline: [
-      { day: 1, title: "Highlands", activities: ["Ullen Sentalu", "Bhumi Merapi", "HeHa Sky View"] },
-      { day: 2, title: "Gunung Kidul", activities: ["Gondola Timang", "Indrayanti Beach", "Pinus Pengger"] },
-      { day: 3, title: "Heritage", activities: ["Keraton", "Kotagede Silver", "Warungboto", "Alun-alun Kidul"] },
-      { day: 4, title: "Departure", activities: ["Manding Leather", "Bakpia", "Airport Transfer"] },
-    ],
-  },
-
-  "2d1n-culinary": {
-    title: "2D1N Culinary + Hidden Gems",
-    tagline: "Short Escape for Foodies",
-    description: "Liburan singkat namun kenyang! Fokus mencicipi kuliner legendaris Jogja.",
-    image: "/jogja-3.WEBP",
-    duration: "2 Days 1 Night",
-    price: "Start from Rp 1.200.000 /pax",
-    highlights: ["Kopi Klotok", "Mangut Lele", "Gumuk Pasir", "Obelix Hills"],
-    styles: ["Culinary & Lifestyle", "Wellness & Healing"],
-    personalities: ["Foodie", "Relaxed Traveler"],
-    timeline: [
-      { day: 1, title: "Authentic Flavors", activities: ["Mangut Lele", "Gumuk Pasir", "Obelix Hills", "Bakmi Jowo"] },
-      { day: 2, title: "Morning Vibes", activities: ["Kopi Klotok", "Sawah Kaliurang", "Tempo Gelato", "Transfer Out"] },
-    ],
-  },
-};
+import { itinerariesData, ItineraryDay } from "@/data/itineraries";
 
 const getDaysFromDuration = (durationStr: string) => {
   const match = durationStr.match(/(\d+)\s*Days?/i);
@@ -110,27 +18,36 @@ const getDaysFromDuration = (durationStr: string) => {
 export default async function ItineraryDetailPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
+  
+  // Ambil penerjemah bahasa (UI labels)
+  const t = await getTranslations("Itinerary");
+  const tData = await getTranslations("ItineraryData");
 
-  const data = itinerariesData[slug];
+  // Ambil data konten dari file terpisah
+  const rawData = itinerariesData[slug];
 
-  if (!data) {
+  if (!rawData) {
     notFound();
   }
 
-  const daysValue = getDaysFromDuration(data.duration);
-  const styleParams = data.styles.join(",");
-  const personalityParams = data.personalities.join(",");
+  // Tentukan bahasa konten (id atau en)
+  const currentLang = (locale === "id" ? "id" : "en") as keyof typeof rawData.content;
+  const content = rawData.content[currentLang];
+
+  const daysValue = getDaysFromDuration(rawData.duration);
+  const styleParams = rawData.styles.join(",");
+  const personalityParams = rawData.personalities.join(",");
 
   return (
     <div className="bg-white min-h-screen pb-20">
       {/* HEADER IMAGE */}
       <div className="relative h-[60vh] w-full">
         <Image
-          src={data.image}
-          alt={data.title}
+          src={rawData.image}
+          alt={content.title}
           fill
           className="object-cover"
           priority
@@ -142,7 +59,7 @@ export default async function ItineraryDetailPage({
             href="/"
             className="text-white/80 hover:text-white flex items-center gap-2 mb-6 w-fit transition-colors"
           >
-            <ArrowLeft size={20} /> Back to Home
+            <ArrowLeft size={20} /> {t("backHome")}
           </Link>
 
           <span className="text-primary font-bold tracking-wider uppercase mb-2 bg-primary/20 backdrop-blur-sm w-fit px-3 py-1 rounded-full text-xs">
@@ -150,11 +67,11 @@ export default async function ItineraryDetailPage({
           </span>
 
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-2 leading-tight">
-            {data.title}
+            {content.title}
           </h1>
 
           <p className="text-xl text-white/90 font-serif italic max-w-2xl">
-            &quot;{data.tagline}&quot;
+            &quot;{content.tagline}&quot;
           </p>
         </div>
       </div>
@@ -172,10 +89,10 @@ export default async function ItineraryDetailPage({
                   <div className="flex items-center gap-2 text-blue-600 mb-1">
                     <Clock size={18} />
                     <span className="text-xs font-bold uppercase text-gray-400">
-                      Duration
+                      {t("duration")}
                     </span>
                   </div>
-                  <p className="font-semibold text-gray-900">{data.duration}</p>
+                  <p className="font-semibold text-gray-900">{rawData.duration}</p>
                 </div>
 
                 {/* Region */}
@@ -183,7 +100,7 @@ export default async function ItineraryDetailPage({
                   <div className="flex items-center gap-2 text-green-600 mb-1">
                     <MapPin size={18} />
                     <span className="text-xs font-bold uppercase text-gray-400">
-                      Region
+                      {t("region")}
                     </span>
                   </div>
                   <p className="font-semibold text-gray-900">Yogyakarta</p>
@@ -194,11 +111,11 @@ export default async function ItineraryDetailPage({
                   <div className="flex items-center gap-2 text-purple-600 mb-1">
                     <Compass size={18} />
                     <span className="text-xs font-bold uppercase text-gray-400">
-                      Genre
+                      {t("genre")}
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {data.styles.slice(0, 2).map((s) => (
+                    {rawData.styles.slice(0, 2).map((s) => (
                       <span
                         key={s}
                         className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full"
@@ -214,11 +131,11 @@ export default async function ItineraryDetailPage({
                   <div className="flex items-center gap-2 text-red-500 mb-1">
                     <Heart size={18} />
                     <span className="text-xs font-bold uppercase text-gray-400">
-                      Vibe
+                      {t("vibe")}
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {data.personalities.slice(0, 2).map((p) => (
+                    {rawData.personalities.slice(0, 2).map((p) => (
                       <span
                         key={p}
                         className="text-xs bg-red-50 text-red-700 px-2 py-0.5 rounded-full"
@@ -232,17 +149,17 @@ export default async function ItineraryDetailPage({
 
               {/* Description */}
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                Tour Overview
+                {t("overview")}
               </h3>
 
               <p className="text-gray-600 leading-relaxed mb-6">
-                {data.description}
+                {content.description}
               </p>
 
               {/* Highlights */}
-              <h4 className="font-bold text-gray-900 mb-3">Highlights:</h4>
+              <h4 className="font-bold text-gray-900 mb-3">{t("highlights")}:</h4>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {data.highlights.map((highlight, idx) => (
+                {content.highlights.map((highlight, idx) => (
                   <li
                     key={idx}
                     className="flex items-center gap-2 text-gray-700"
@@ -261,11 +178,11 @@ export default async function ItineraryDetailPage({
             <div>
               <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                 <CalendarDays className="text-primary" />
-                Itinerary Schedule
+                {t("schedule")}
               </h3>
 
               <div className="space-y-6">
-                {data.timeline.map((day: ItineraryDay) => (
+                {content.timeline.map((day: ItineraryDay) => (
                   <div key={day.day} className="flex gap-4 sm:gap-6">
                     <div className="flex flex-col items-center">
                       <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg shadow-lg z-10 shrink-0">
@@ -276,16 +193,16 @@ export default async function ItineraryDetailPage({
 
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex-grow hover:shadow-md transition-shadow pb-8">
                       <h4 className="text-xl font-bold text-gray-900 mb-4">
-                        Day {day.day}: {day.title}
+                        {t("day")} {day.day}: {day.title}
                       </h4>
 
                       <ul className="space-y-4">
                         {day.activities.map((act, i) => (
                           <li key={i} className="flex items-start gap-3">
                             <div className="mt-1 p-1.5 bg-gray-100 rounded-full text-gray-500">
-                              {act.toLowerCase().includes("makan") ? (
+                              {act.toLowerCase().includes("makan") || act.toLowerCase().includes("lunch") || act.toLowerCase().includes("dinner") ? (
                                 <Utensils size={14} />
-                              ) : act.toLowerCase().includes("foto") ? (
+                              ) : act.toLowerCase().includes("foto") || act.toLowerCase().includes("photo") ? (
                                 <Camera size={14} />
                               ) : (
                                 <div className="w-3.5 h-3.5 rounded-full bg-gray-400" />
@@ -309,12 +226,12 @@ export default async function ItineraryDetailPage({
             <div className="sticky top-24">
               <div className="bg-white rounded-2xl p-6 shadow-2xl border border-gray-100">
                 <div className="text-center mb-6">
-                  <p className="text-gray-500 text-sm mb-1">Estimated Price</p>
+                  <p className="text-gray-500 text-sm mb-1">{t("estimatedPrice")}</p>
                   <h3 className="text-3xl font-bold text-primary">
-                    {data.price}
+                    {rawData.price}
                   </h3>
                   <p className="text-xs text-gray-400 mt-2">
-                    *Price depends on pax & season
+                    {t("priceNote")}
                   </p>
                 </div>
 
@@ -323,36 +240,35 @@ export default async function ItineraryDetailPage({
                     href={`/planner?dest=Yogyakarta&days=${daysValue}&base=${slug}&style=${styleParams}&personality=${personalityParams}&mode=custom`}
                     className="block w-full py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl text-center transition-all shadow-lg shadow-primary/30 transform hover:scale-[1.02]"
                   >
-                    Customize This Plan
+                    {t("customizeBtn")}
                   </Link>
 
                   <p className="text-xs text-center text-gray-500 mt-2">
-                    Adjust destinations, hotels, or activities based on this
-                    template.
+                    {t("customizeDesc")}
                   </p>
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-gray-100">
                   <h5 className="font-bold text-gray-900 text-sm mb-3">
-                    Includes:
+                    {t("includes")}
                   </h5>
 
                   <ul className="space-y-2 text-sm text-gray-600">
                     <li className="flex items-center gap-2">
                       <CheckCircle2 size={16} className="text-green-500" />
-                      Private AC Transport
+                      {tData("facilities.transport")}
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 size={16} className="text-green-500" />
-                      Hotel Accommodation
+                      {tData("facilities.hotel")}
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 size={16} className="text-green-500" />
-                      Driver & BBM
+                      {tData("facilities.driver")}
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 size={16} className="text-green-500" />
-                      All Entrance Tickets
+                      {tData("facilities.tickets")}
                     </li>
                   </ul>
                 </div>
@@ -366,10 +282,10 @@ export default async function ItineraryDetailPage({
 
                 <div>
                   <h5 className="font-bold text-blue-900 text-sm">
-                    Need Help?
+                    {t("needHelp")}
                   </h5>
                   <p className="text-xs text-blue-700 mt-1">
-                    Chat with our Jogja expert to tailor this itinerary.
+                    {t("chatExpert")}
                   </p>
                 </div>
               </div>

@@ -535,8 +535,8 @@
     "quota": "Quota Status",
     "available": "Available",
     "bookNow": "Book Now",
-    "included":"What's Included",
-    "excluded":"What's Not Included",
+    "included": "What's Included",
+    "excluded": "What's Not Included",
     "startingFrom": "Starting from",
     "priceDisclaimer": "*Price subject to change based on date & availability.",
     "facilities": {
@@ -1092,6 +1092,34 @@
       "rental_desc": "Explore Yogyakarta freely with our well-maintained fleet, available with or without a driver.",
       "activities_title": "Daily Activities",
       "activities_desc": "Already have plans? Book daily activities or tours separately, from cooking classes to volcano jeeps."
+    }
+  },
+  "Itinerary": {
+    "backHome": "Back to Home",
+    "duration": "Duration",
+    "region": "Region",
+    "genre": "Genre",
+    "vibe": "Vibe",
+    "overview": "Tour Overview",
+    "highlights": "Highlights",
+    "schedule": "Itinerary Schedule",
+    "day": "Day",
+    "estimatedPrice": "Estimated Price",
+    "priceNote": "*Price depends on pax & season",
+    "customizeBtn": "Customize This Plan",
+    "customizeDesc": "Adjust destinations, hotels, or activities based on this template.",
+    "includes": "Includes:",
+    "needHelp": "Need Help?",
+    "chatExpert": "Chat with our Jogja expert to tailor this itinerary.",
+    "preview": "Preview Itinerary",
+    "previewShort": "Preview"
+  },
+  "ItineraryData": {
+    "facilities": {
+      "transport": "Private AC Transport",
+      "hotel": "Hotel Accommodation",
+      "driver": "Driver & Fuel",
+      "tickets": "All Entrance Tickets"
     }
   }
 }

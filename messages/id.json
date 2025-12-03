@@ -1077,5 +1077,33 @@
       "activities_title": "Aktivitas Harian",
       "activities_desc": "Sudah punya rencana? Pesan aktivitas harian atau tur secara terpisah, dari kelas memasak hingga jip merapi."
     }
+  },
+  "Itinerary": {
+    "backHome": "Kembali ke Beranda",
+    "duration": "Durasi",
+    "region": "Wilayah",
+    "genre": "Genre",
+    "vibe": "Suasana",
+    "overview": "Ringkasan Tur",
+    "highlights": "Sorotan",
+    "schedule": "Jadwal Perjalanan",
+    "day": "Hari",
+    "estimatedPrice": "Estimasi Harga",
+    "priceNote": "*Harga tergantung jumlah pax & musim",
+    "customizeBtn": "Kustomisasi Rencana Ini",
+    "customizeDesc": "Sesuaikan destinasi, hotel, atau aktivitas berdasarkan template ini.",
+    "includes": "Termasuk:",
+    "needHelp": "Butuh Bantuan?",
+    "chatExpert": "Chat dengan ahli Jogja kami untuk menyesuaikan rencana ini.",
+    "preview": "Lihat Rencana Perjalanan",
+    "previewShort": "Lihat"
+  },
+  "ItineraryData": {
+    "facilities": {
+      "transport": "Transportasi AC Pribadi",
+      "hotel": "Akomodasi Hotel",
+      "driver": "Sopir & BBM",
+      "tickets": "Semua Tiket Masuk"
+    }
   }
 }
