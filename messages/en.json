@@ -361,6 +361,11 @@
     "subtitle": "Travel inspirations, holiday tips, and exciting stories from Travelmore.",
     "button": "View All Articles"
   },
+  "blogDetail": {
+    "notFound": "Post not found",
+    "back": "Back",
+    "by": "By"
+  },
   "blog": {
     "title": "Articles & Blog",
     "subtitle": "Travel inspiration, holiday tips, and interesting stories from Travelmore.",
