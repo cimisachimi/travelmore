@@ -5,17 +5,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { Users, Gauge, Luggage } from "lucide-react";
-import api from "@/lib/api"; // ✅ Your centralized API instance
+import api from "@/lib/api";
 
 // --- API Interface ---
-// This interface is simplified because the backend now sends pre-translated data.
+// UPDATE: Menyesuaikan tipe data agar boleh null (untuk mencegah error jika data kosong)
 interface ApiCar {
   id: number;
   car_model: string;
   brand: string;
   description: string | null;
   price_per_day: string;
-  car_type: string;
+  car_type: string | null; 
   transmission: string;
   capacity: number;
   trunk_size: number;
@@ -42,6 +42,7 @@ function CarCard({ car }: { car: ApiCar }) {
       style: "currency",
       currency: "IDR",
       minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -49,10 +50,14 @@ function CarCard({ car }: { car: ApiCar }) {
   const price = parseFloat(car.price_per_day);
   const thumbnail = car.images.find(img => img.type === 'thumbnail');
 
-  // This will now correctly resolve to the full URL like "http://localhost:8000/storage/..."
   const imageUrl = thumbnail
     ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/storage/${thumbnail.url}`
     : "/cars/placeholder.jpg";
+
+  // ✅ PERBAIKAN UTAMA DISINI
+  // Gunakan Optional Chaining (?.) dan Default Value (||)
+  // Jika car_type null, dia akan menampilkan "GENERAL" dan TIDAK ERROR.
+  const displayType = car.car_type?.toUpperCase() || "GENERAL";
 
   return (
     <Link href={`/car-rental/${car.id}`} className="block h-full">
@@ -63,10 +68,13 @@ function CarCard({ car }: { car: ApiCar }) {
             alt={carName}
             fill
             className="object-cover transform group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </div>
         <div className="p-5 flex flex-col flex-grow">
-          <p className="text-sm font-semibold text-primary">{car.car_type.toUpperCase()}</p>
+          {/* ✅ Gunakan variable displayType yang sudah aman */}
+          <p className="text-sm font-semibold text-primary">{displayType}</p>
+          
           <h3 className="text-2xl font-bold text-foreground mt-1">{carName}</h3>
 
           <div className="flex items-center gap-4 mt-4 text-sm text-foreground/70">
@@ -106,14 +114,19 @@ export default function CarRentalPage() {
     const fetchCars = async () => {
       setLoading(true);
       try {
-        // ✅ FIXED: Use the 'api' instance which has the correct '/api' prefix.
         const response = await api.get("/public/car-rentals", {
           params: { locale }
         });
         if (response.status !== 200) throw new Error("Failed to fetch car rental data.");
         setCars(response.data);
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "An unknown error occurred.");
+        // Safe error handling
+        let errorMessage = "An unknown error occurred.";
+        if (err instanceof Error) {
+            errorMessage = err.message;
+        }
+        setError(errorMessage);
+        console.error(err);
       } finally {
         setLoading(false);
       }

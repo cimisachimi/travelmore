@@ -14,7 +14,7 @@ import api from "@/lib/api";
 import Link from "next/link";
 import { differenceInDays } from "date-fns";
 import { AxiosError } from "axios";
-import { Car, Fuel, Gauge, Luggage, User as UserIcon, Settings } from 'lucide-react'; // Import icons
+import { Car, Fuel, Gauge, Luggage, User as UserIcon, Settings, Clock } from 'lucide-react';
 
 // --- Interfaces ---
 interface ApiCarImage {
@@ -416,16 +416,30 @@ export default function CarDetailPage() {
                     required
                     className="w-full border rounded-lg px-4 py-2 bg-background"
                   />
-                  {/* ✅ 2. ADDED THIS INPUT FIELD */}
-                  <input
-                    type="time"
-                    // You will need to add "form.pickupTime" to your translation files
-                    placeholder={t("form.pickupTime")}
-                    value={pickupTime}
-                    onChange={(e) => setPickupTime(e.target.value)}
-                    required
-                    className="w-full border rounded-lg px-4 py-2 bg-background"
-                  />
+                   {/* ✅ MODIFIED PICKUP TIME INPUT WITH LABEL */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">
+                      {t("form.pickupTime")}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={pickupTime ? "time" : "text"}
+                        onFocus={(e) => (e.currentTarget.type = "time")}
+                        onBlur={(e) => {
+                           if (!e.currentTarget.value) e.currentTarget.type = "text";
+                        }}
+                        placeholder={t("form.pickupTime")} 
+                        value={pickupTime}
+                        onChange={(e) => setPickupTime(e.target.value)}
+                        required
+                        className="w-full border border-gray-300 rounded-lg pl-4 pr-10 py-2 bg-white focus:ring-2 focus:ring-blue-500 outline-none placeholder:text-gray-400 text-gray-800 transition-all"
+                      />
+                      {/* Icon Jam absolute positioning */}
+                      {!pickupTime && (
+                         <Clock className="absolute right-3 top-2.5 h-5 w-5 text-gray-400 pointer-events-none" />
+                      )}
+                    </div>
+                  </div>
                   <button
                     type="submit"
                     disabled={
