@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { Order } from "../types";
+import { Order } from "../types"; 
 import { toast } from "sonner";
 import { useMidtransSnap } from "@/hooks/useMidtransSnap";
 import { formatCurrency, formatDate, getStatusChip } from "@/lib/utils";
@@ -25,14 +25,13 @@ import {
   Building2,
   Users,
   Luggage,
-  Baby,
-  Ticket, 
+  Ticket,
   FileText
 } from "lucide-react";
 
-// --- TYPES ---
-// Defined locally to ensure type safety regardless of global types.ts state
+// --- LOCAL TYPES FOR SAFETY ---
 interface BookingDetails {
+  // Common
   brand?: string;
   car_model?: string;
   plate_number?: string;
@@ -40,53 +39,45 @@ interface BookingDetails {
   pickup_location?: string;
   pickup_time?: string;
   phone_number?: string;
-  phone?: string;
   email?: string;
+  full_name?: string;
+  
+  // Trip Planner & Packages
   type?: string;
   company_name?: string;
-  companyName?: string;
   brand_name?: string;
-  brandName?: string;
-  full_name?: string;
-  fullName?: string;
-  name?: string;
-  pax_adults?: string | number;
-  paxAdults?: string | number;
-  pax_teens?: string | number;
-  paxTeens?: string | number;
-  pax_kids?: string | number;
-  paxKids?: string | number;
-  pax_seniors?: string | number;
-  paxSeniors?: string | number;
   trip_type?: string;
-  tripType?: string;
   city?: string;
   province?: string;
   country?: string;
   travel_type?: string;
-  travelType?: string;
   departure_date?: string;
-  departureDate?: string;
-  start_date?: string;
   duration?: string | number;
-  days?: string | number;
+  days?: string | number; // ✅ FIX: Added 'days' explicitly
   budget_pack?: string;
-  budgetPack?: string;
   addons?: string[] | string;
   must_visit?: string;
-  mustVisit?: string;
+  
+  // Pax Info
   adults?: number;
   children?: number;
-  participant_nationality?: string;
+  pax_adults?: string | number;
+  pax_teens?: string | number;
+  pax_kids?: string | number;
+  pax_seniors?: string | number;
   total_pax?: number;
+  
+  // Flights & Activities
   flight_number?: string;
   special_request?: string;
   quantity?: number;
   service_name?: string;
+  
+  // Catch-all
   [key: string]: unknown;
 }
 
-// --- HELPER: SERVICE TYPE BADGE ---
+// --- HELPER: Service Type Badge ---
 const ServiceTypeBadge = ({ type }: { type: string }) => {
   let config = { 
     label: "Service", 
@@ -94,430 +85,114 @@ const ServiceTypeBadge = ({ type }: { type: string }) => {
     icon: FileText 
   };
 
-  if (type.includes("CarRental")) {
-    config = { 
-      label: "Car Rental", 
-      color: "bg-blue-50 text-blue-700 border-blue-200", 
-      icon: Car 
-    };
-  } else if (type.includes("TripPlanner")) {
-    config = { 
-      label: "Trip Planner", 
-      color: "bg-purple-50 text-purple-700 border-purple-200", 
-      icon: Compass 
-    };
-  } else if (type.includes("HolidayPackage")) {
-    config = { 
-      label: "Holiday Package", 
-      color: "bg-emerald-50 text-emerald-700 border-emerald-200", 
-      icon: Luggage 
-    };
-  } else if (type.includes("Activity")) {
-    config = { 
-      label: "Activity", 
-      color: "bg-orange-50 text-orange-700 border-orange-200", 
-      icon: Ticket 
-    };
+  if (type?.includes("CarRental")) {
+    config = { label: "Car Rental", color: "bg-blue-50 text-blue-700 border-blue-200", icon: Car };
+  } else if (type?.includes("TripPlanner")) {
+    config = { label: "Trip Planner", color: "bg-purple-50 text-purple-700 border-purple-200", icon: Compass };
+  } else if (type?.includes("HolidayPackage")) {
+    config = { label: "Holiday Package", color: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: Luggage };
+  } else if (type?.includes("Activity")) {
+    config = { label: "Activity", color: "bg-orange-50 text-orange-700 border-orange-200", icon: Ticket };
   }
 
   const Icon = config.icon;
-
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${config.color} mb-1 w-fit`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${config.color} mb-2 w-fit`}>
       <Icon size={12} /> {config.label}
     </span>
   );
 };
 
-// --- 1. Detail untuk Car Rental ---
-const CarRentalDetails = ({ details }: { details: BookingDetails }) => {
-  return (
-    <div className="space-y-4 text-sm animate-fadeIn">
-      <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
-        <Car size={16} /> Car Rental Details
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Car Info */}
-        <div className="space-y-3">
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Vehicle</span>
-            <span className="font-medium text-base">
-              {details.brand} {details.car_model}
-            </span>
-            {details.plate_number && (
-               <span className="text-xs text-muted-foreground">{details.plate_number}</span>
-            )}
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Duration</span>
-            <span className="font-medium flex items-center gap-1">
-              <Clock size={12} /> {details.total_days} Day(s)
-            </span>
-          </div>
-        </div>
+// --- SUB-COMPONENTS FOR DETAILS ---
 
-        {/* Pickup Info */}
-        <div className="space-y-3">
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Pickup Location</span>
-            <span className="font-medium flex items-center gap-1">
-              <MapPin size={12} /> {details.pickup_location || "-"}
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Pickup Time</span>
-            <span className="font-medium flex items-center gap-1">
-              <Clock size={12} /> {details.pickup_time || "-"}
-            </span>
-          </div>
+const CarRentalDetails = ({ details }: { details: BookingDetails }) => (
+  <div className="space-y-4 text-sm animate-fadeIn">
+    <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
+      <Car size={16} /> Car Rental Details
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-3">
+        <div>
+          <span className="text-xs text-muted-foreground block">Vehicle</span>
+          <span className="font-medium">{details.brand} {details.car_model}</span>
+          {details.plate_number && <div className="text-xs text-muted-foreground">{details.plate_number}</div>}
+        </div>
+        <div>
+          <span className="text-xs text-muted-foreground block">Duration</span>
+          <span className="font-medium flex items-center gap-1"><Clock size={12} /> {details.total_days} Day(s)</span>
         </div>
       </div>
-
-      {/* Contact Info */}
-      <div className="bg-muted/30 p-3 rounded-lg border border-border mt-2">
-         <span className="text-xs text-muted-foreground block mb-1 font-semibold">Contact Driver / Renter</span>
-         <div className="flex items-center gap-2 text-xs">
-            <Phone size={12} /> {details.phone_number || "-"}
-         </div>
+      <div className="space-y-3">
+        <div>
+          <span className="text-xs text-muted-foreground block">Pickup</span>
+          <span className="font-medium flex items-center gap-1"><MapPin size={12} /> {details.pickup_location || "-"}</span>
+        </div>
+        <div>
+          <span className="text-xs text-muted-foreground block">Time</span>
+          <span className="font-medium flex items-center gap-1"><Clock size={12} /> {details.pickup_time || "-"}</span>
+        </div>
       </div>
     </div>
-  );
-};
-
-// --- 2. Detail untuk Trip Planner ---
-const TripPlannerDetails = ({ details }: { details: BookingDetails }) => {
-  const get = (...keys: string[]) => {
-    if (!details) return null;
-    for (const k of keys) {
-      if (details[k] !== undefined && details[k] !== null && details[k] !== "") {
-        return details[k] as string;
-      }
-    }
-    return null;
-  };
-
-  const safeInt = (...keys: string[]) => {
-    const val = get(...keys);
-    const parsed = parseInt(val || "0");
-    return isNaN(parsed) ? 0 : parsed;
-  };
-
-  const type = get('type') || 'personal'; 
-  const email = get('email');
-  const phone = get('phone', 'phone_number', 'whatsapp'); 
-  
-  let contactName = "-";
-  let brandName = null;
-  
-  if (type === 'company') {
-    contactName = get('company_name', 'companyName') || "-";
-    brandName = get('brand_name', 'brandName');
-  } else {
-    contactName = get('full_name', 'fullName', 'name') || "-";
-  }
-
-  const adults = safeInt('pax_adults', 'paxAdults');
-  const teens = safeInt('pax_teens', 'paxTeens');
-  const kids = safeInt('pax_kids', 'paxKids');
-  const seniors = safeInt('pax_seniors', 'paxSeniors');
-  const totalPax = adults + teens + kids + seniors;
-
-  const tripType = get('trip_type', 'tripType'); 
-  const city = get('city');
-  const province = get('province');
-  const country = get('country');
-
-  let locationDisplay = "-";
-  if (city) {
-    if (tripType === "domestic") {
-      locationDisplay = `🇮🇩 ${city}${province ? `, ${province}` : ''}`;
-    } else if (tripType === "foreign") {
-      locationDisplay = `🌐 ${city}${country ? `, ${country}` : ''}`;
-    } else {
-      locationDisplay = city;
-    }
-  }
-
-  const travelType = get('travel_type', 'travelType') || "-";
-  const departureDate = get('departure_date', 'departureDate', 'start_date') || "-";
-  const duration = get('duration', 'days');
-  const budgetPack = get('budget_pack', 'budgetPack') || "-";
-  
-  const addons = details.addons;
-  const mustVisit = get('must_visit', 'mustVisit');
-
-  return (
-    <div className="space-y-4 text-sm animate-fadeIn">
-      <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
-        <Compass size={16} /> Custom Trip Plan Details
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-3">
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Destination</span>
-            <span className="font-medium text-base capitalize">{locationDisplay}</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Date & Duration</span>
-            <span className="font-medium flex items-center gap-1">
-              <Calendar size={14} /> {departureDate}
-              {duration && duration !== "-" && <span className="text-muted-foreground text-xs ml-1">({duration})</span>}
-            </span>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Travel Type</span>
-            <span className="font-medium capitalize flex items-center gap-1">
-              <Plane size={14} /> {travelType.replace(/_/g, " ")}
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Budget Pack</span>
-            <span className="font-medium capitalize flex items-center gap-1">
-              <Wallet size={14} /> {budgetPack.replace(/_/g, " ").toUpperCase()}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-muted/30 p-3 rounded-lg border border-border mt-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <span className="text-xs text-muted-foreground block mb-1 font-semibold flex items-center gap-1">
-              {type === 'company' ? <Building2 size={12}/> : <User size={12}/>}
-              Contact Person ({type})
-            </span>
-            <div className="font-medium text-sm truncate" title={contactName}>
-              {contactName}
-            </div>
-            {type === 'company' && brandName && (
-               <div className="text-xs text-muted-foreground italic">Brand: {brandName}</div>
-            )}
-            <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
-              <div className="flex items-center gap-1"><Mail size={10}/> {email || '-'}</div>
-              <div className="flex items-center gap-1"><Phone size={10}/> {phone || '-'}</div>
-            </div>
-          </div>
-
-          <div>
-            <span className="text-xs text-muted-foreground block mb-1 font-semibold flex items-center gap-1">
-              <Users size={12}/> Participants ({totalPax})
-            </span>
-            {totalPax > 0 ? (
-              <div className="flex flex-wrap gap-2 text-xs mt-1">
-                {adults > 0 && <span className="bg-background px-2 py-1 rounded border border-border">Adults: {adults}</span>}
-                {teens > 0 && <span className="bg-background px-2 py-1 rounded border border-border">Teens: {teens}</span>}
-                {kids > 0 && <span className="bg-background px-2 py-1 rounded border border-border">Kids: {kids}</span>}
-                {seniors > 0 && <span className="bg-background px-2 py-1 rounded border border-border">Seniors: {seniors}</span>}
-              </div>
-            ) : (
-              <span className="text-xs text-muted-foreground italic">No participant details found</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {( (Array.isArray(addons) && addons.length > 0) || mustVisit ) && (
-        <div className="text-xs space-y-2 pt-2 border-t border-dashed border-border mt-2">
-          {Array.isArray(addons) && addons.length > 0 && (
-            <div>
-              <span className="text-muted-foreground font-semibold">Add-ons: </span>
-              <span>{addons.join(", ")}</span>
-            </div>
-          )}
-          {mustVisit && (
-            <div>
-              <span className="text-muted-foreground font-semibold">Must Visit: </span>
-              <span className="italic">&quot;{mustVisit}&quot;</span>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
-const DetailItem = ({ label, value, icon: Icon }: { label: string, value: React.ReactNode, icon?: any }) => (
-  <div className="flex flex-col gap-1">
-    <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5">
-      {Icon && <Icon size={12} />} {label}
-    </span>
-    <span className="font-medium text-sm text-foreground">{value}</span>
   </div>
 );
 
-// --- 3. Detail untuk Holiday Package ---
-const HolidayPackageDetails = ({ details }: { details: BookingDetails }) => {
-  const adults = details.adults || 0;
-  const children = details.children || 0;
-  const totalPax = details.total_pax || (adults + children);
+const TripPlannerDetails = ({ details }: { details: BookingDetails }) => {
+    // Helper to safely parse numbers
+    const safeInt = (val: string | number | undefined) => {
+        const parsed = parseInt(String(val || "0"));
+        return isNaN(parsed) ? 0 : parsed;
+    };
 
-  return (
-    <div className="animate-fadeIn space-y-5">
-      {/* Header Section */}
-      <div className="flex items-center gap-2 pb-3 border-b border-border/60">
-        <div className="p-1.5 bg-emerald-100 text-emerald-700 rounded-md">
-          <Luggage size={18} />
+    const type = details.type || 'personal';
+    const totalPax = safeInt(details.pax_adults) + safeInt(details.pax_teens) + safeInt(details.pax_kids) + safeInt(details.pax_seniors);
+    
+    // Determine location string
+    let location = details.city || "-";
+    if (details.trip_type === "domestic") location = `🇮🇩 ${details.city}, ${details.province}`;
+    if (details.trip_type === "foreign") location = `🌐 ${details.city}, ${details.country}`;
+
+    // Helper to safely get displayable duration string
+    const durationDisplay = details.duration || details.days || "";
+
+    return (
+        <div className="space-y-4 text-sm animate-fadeIn">
+            <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
+                <Compass size={16} /> Custom Trip Details
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                    <div>
+                        <span className="text-xs text-muted-foreground block">Destination</span>
+                        <span className="font-medium capitalize">{location}</span>
+                    </div>
+                    <div>
+                        <span className="text-xs text-muted-foreground block">Date & Duration</span>
+                        <span className="font-medium flex items-center gap-1">
+                             <Calendar size={12}/> {details.departure_date} ({durationDisplay} days)
+                        </span>
+                    </div>
+                </div>
+                <div className="space-y-3">
+                     <div>
+                        <span className="text-xs text-muted-foreground block">Budget & Type</span>
+                        <span className="font-medium capitalize flex items-center gap-1">
+                             <Wallet size={12}/> {String(details.budget_pack || "").replace("_", " ")}
+                        </span>
+                         <div className="text-xs text-muted-foreground capitalize flex items-center gap-1 mt-0.5">
+                             <Plane size={10}/> {String(details.travel_type || "").replace("_", " ")}
+                         </div>
+                    </div>
+                     <div>
+                        <span className="text-xs text-muted-foreground block">Contact ({type})</span>
+                        <span className="font-medium truncate block max-w-[150px]">
+                            {type === 'company' ? details.company_name : details.full_name}
+                        </span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <span className="font-bold text-base text-foreground">Holiday Package Details</span>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
-        {/* Kolom Kiri */}
-        <div className="space-y-5">
-          <DetailItem 
-            label="Lead Guest" 
-            icon={User}
-            value={
-              <div className="flex flex-col">
-                <span>{details.full_name || "-"}</span>
-                <span className="text-xs text-muted-foreground font-normal bg-muted/50 px-1.5 py-0.5 rounded w-fit mt-1">
-                  {details.participant_nationality || "Nationality N/A"}
-                </span>
-              </div>
-            } 
-          />
-
-          <DetailItem 
-            label="Participants" 
-            icon={Users}
-            value={
-              <div className="flex items-center gap-3 text-sm">
-                <span className="font-semibold">{totalPax} Pax Total</span>
-                <span className="text-muted-foreground text-xs border-l pl-3 border-border">
-                  {adults} Adults, {children} Children
-                </span>
-              </div>
-            } 
-          />
-        </div>
-
-        {/* Kolom Kanan */}
-        <div className="space-y-5">
-          <DetailItem 
-            label="Meeting Point / Pickup" 
-            icon={MapPin}
-            value={details.pickup_location || "-"} 
-          />
-
-          {details.flight_number && (
-             <DetailItem 
-              label="Flight Info" 
-              icon={Plane}
-              value={details.flight_number} 
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Footer Info Box (Contact & Special Request) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-        {/* Contact Info - Dibuat lebih clean */}
-        <div className="bg-gray-50/80 border border-gray-200 rounded-lg p-3 space-y-2">
-           <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Contact Info</div>
-           <div className="flex items-center gap-2 text-sm text-foreground/80">
-              <Mail size={14} className="text-muted-foreground"/> 
-              <span className="truncate">{details.email}</span>
-           </div>
-           <div className="flex items-center gap-2 text-sm text-foreground/80">
-              <Phone size={14} className="text-muted-foreground"/> 
-              <span>{details.phone_number}</span>
-           </div>
-        </div>
-
-        {/* Special Request - Dibuat jadi Alert Box agar terlihat penting */}
-        {details.special_request && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-             <div className="text-[10px] font-bold text-amber-700 uppercase mb-1 flex items-center gap-1">
-                Special Request
-             </div>
-             <p className="text-sm italic text-amber-900 leading-relaxed">
-               &quot;{details.special_request}&quot;
-             </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+    );
 };
-
-// --- 4. Detail untuk Activity ---
-const ActivityDetails = ({ details }: { details: BookingDetails }) => {
-  const quantity = details.quantity || 1;
-
-  return (
-    <div className="space-y-4 text-sm animate-fadeIn">
-      <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
-        <Ticket size={16} /> Activity Details
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Kolom Kiri: Tamu & Quantity */}
-        <div className="space-y-3">
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Lead Guest</span>
-            <span className="font-medium">{details.full_name || "-"}</span>
-            <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-              <Flag size={10} /> {details.participant_nationality || "-"}
-            </span>
-          </div>
-
-          <div className="flex flex-col">
-             <span className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                <Users size={12}/> Tickets / Pax
-             </span>
-             <span className="bg-background w-fit px-2 py-1 rounded border border-border text-xs font-medium">
-                Quantity: {quantity}
-             </span>
-          </div>
-        </div>
-
-        {/* Kolom Kanan: Logistik */}
-        <div className="space-y-3">
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Pickup Location</span>
-            <span className="font-medium flex items-center gap-1">
-              <MapPin size={12} /> {details.pickup_location || "-"}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer: Kontak & Request */}
-      <div className="bg-muted/30 p-3 rounded-lg border border-border mt-2 space-y-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-          <div className="flex items-center gap-2">
-             <Mail size={12} className="text-muted-foreground"/> {details.email}
-          </div>
-          <div className="flex items-center gap-2">
-             <Phone size={12} className="text-muted-foreground"/> {details.phone_number}
-          </div>
-        </div>
-
-        {details.special_request && (
-          <div className="pt-2 border-t border-dashed border-border">
-             <span className="text-xs text-muted-foreground block mb-0.5">Special Request:</span>
-             <span className="text-sm italic">&quot;{details.special_request}&quot;</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// --- Fallback Component ---
-const GeneralBookingDetails = () => {
-  return (
-    <div className="text-sm text-muted-foreground italic">
-      No additional details available for this service.
-    </div>
-  );
-};
-
 
 // --- MAIN COMPONENT ---
 
@@ -526,9 +201,9 @@ export default function HistoryTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPaying, setIsPaying] = useState(false);
-  
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
 
+  // Initialize Midtrans Snap Script
   useMidtransSnap(); 
 
   const fetchData = async () => {
@@ -538,8 +213,8 @@ export default function HistoryTab() {
       const ordersResponse = await api.get("/my-orders");
       setOrders(ordersResponse.data);
     } catch (err) {
-      setError("Failed to fetch history.");
       console.error(err);
+      setError("Failed to load your purchase history.");
     } finally {
       setLoading(false);
     }
@@ -550,22 +225,15 @@ export default function HistoryTab() {
   }, []);
 
   const toggleDetails = (orderId: number) => {
-    if (expandedOrderId === orderId) {
-      setExpandedOrderId(null);
-    } else {
-      setExpandedOrderId(orderId);
-    }
+    setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
   };
 
-  const handlePayment = async (
-    order: Order,
-    paymentOption: "down_payment" | "full_payment"
-  ) => {
+  const handlePayment = async (order: Order, paymentOption: "down_payment" | "full_payment") => {
     if (isPaying) return;
     setIsPaying(true);
 
     if (!window.snap) {
-      toast.error("Payment service is not loaded. Please refresh.");
+      toast.error("Payment gateway is loading. Please try again in a moment.");
       setIsPaying(false);
       return;
     }
@@ -577,169 +245,136 @@ export default function HistoryTab() {
       });
 
       const { snap_token } = response.data;
-
-      if (!snap_token) {
-        toast.error("Could not get payment token.");
-        setIsPaying(false);
-        return;
-      }
-
-      let paymentInProgress = true;
+      if (!snap_token) throw new Error("No payment token received");
 
       window.snap.pay(snap_token, {
         onSuccess: () => {
-          paymentInProgress = false;
           toast.success("Payment successful!");
           fetchData();
           setIsPaying(false);
         },
         onPending: () => {
-          paymentInProgress = false;
-          toast.info("Waiting for your payment.");
+          toast.info("Waiting for payment...");
           setIsPaying(false);
         },
         onError: () => {
-          paymentInProgress = false;
-          toast.error("Payment failed. Please try again.");
+          toast.error("Payment failed.");
           setIsPaying(false);
         },
-        onClose: () => {
-          setIsPaying(false);
-          if (paymentInProgress) {
-            toast.info("Payment popup closed.");
-          }
-        },
+        onClose: () => setIsPaying(false),
       });
     } catch (err: unknown) {
-      console.error("Payment initiation error:", err);
       const axiosErr = err as AxiosError<{ message?: string }>;
-      const message =
-        axiosErr.response?.data?.message ??
-        axiosErr.message ??
-        "Could not initiate payment.";
-      toast.error(message);
+      toast.error(axiosErr.response?.data?.message || "Payment initiation failed.");
       setIsPaying(false);
     }
   };
 
-  const renderOrderList = () =>
-    !orders || orders.length === 0 ? (
-      <p>You have no orders yet.</p>
-    ) : (
-      orders.map((order) => {
-        const { booking } = order;
-        // ✅ FIX: Correct initialization of bookable. 
-        // DO NOT use || {} because empty object has no properties (causes TypeScript error)
-        const bookable = booking?.bookable; 
-        const bookableType = booking?.bookable_type || "";
-        
-        const snapshotDetails = booking?.details || {};
-        
-        // ✅ FIX: Handle null bookable when merging
-        // If bookable is null/undefined, fallback to {} for the merge
-        const combinedDetails: BookingDetails = { ...(bookable || {}), ...snapshotDetails };
-
-        // Determine Service Name
-        const serviceName =
-          combinedDetails.service_name || 
-          bookable?.name || // Now safe because bookable is Bookable | undefined
-          (bookable?.brand ? `${bookable.brand} ${bookable.car_model}` : null) || 
-          (bookableType.includes("TripPlanner") ? "Custom Trip Plan" : "Service Details Unavailable");
-
-        const startDate = booking?.start_date;
-        const endDate = booking?.end_date;
-        const isExpanded = expandedOrderId === order.id;
-
-        return (
-          <div
-            key={order.id}
-            className="bg-card border border-border rounded-lg p-4 transition-all hover:shadow-md mb-4"
-          >
-            {/* --- Header Section (UPDATED WITH BADGE) --- */}
-            <div className="flex justify-between items-start mb-3">
-              <div className="flex flex-col gap-1">
-                {/* ✅ VISUAL TAG HERE */}
-                <ServiceTypeBadge type={bookableType} />
-                
-                <div className="flex items-center gap-2">
-                   <p className="font-bold text-lg">Order #{order.order_number}</p>
-                </div>
-                <p className="text-xs text-foreground/60">
-                  Ordered on {formatDate(order.created_at)}
-                </p>
-              </div>
-              <span className={getStatusChip(order.status)}>
-                {order.status.replace("_", " ")}
-              </span>
-            </div>
-
-            {/* --- Main Info --- */}
-            <div className="border-t border-border pt-3">
-              <div className="flex justify-between text-sm mb-3">
-                <span className="font-semibold text-base">{serviceName}</span>
-                <span className="text-foreground/60 text-right">
-                  {startDate
-                    ? `${formatDate(startDate)} ${endDate && endDate !== startDate ? `- ${formatDate(endDate)}` : ""}`
-                    : "Date: See Details"}
-                </span>
-              </div>
-
-              {/* --- Toggle Detail Button --- */}
-              <button
-                onClick={() => toggleDetails(order.id)}
-                className="flex items-center text-sm text-primary font-medium hover:underline mb-3 focus:outline-none"
-              >
-                {isExpanded ? "Hide Details" : "View Details"}
-                {isExpanded ? (
-                  <ChevronUp size={16} className="ml-1" />
-                ) : (
-                  <ChevronDown size={16} className="ml-1" />
-                )}
-              </button>
-
-              {/* --- DYNAMIC DETAIL RENDERING --- */}
-              {isExpanded && (
-                <div className="bg-muted/30 rounded-md p-4 mb-4 border border-border animate-fadeIn">
-                  {bookableType.includes("CarRental") ? (
-                    <CarRentalDetails details={combinedDetails} />
-                  ) : bookableType.includes("TripPlanner") ? (
-                    <TripPlannerDetails details={combinedDetails} />
-                  ) : bookableType.includes("HolidayPackage") ? (
-                    <HolidayPackageDetails details={combinedDetails} />
-                  ) : bookableType.includes("Activity") ? (
-                    <ActivityDetails details={combinedDetails} />
-                  ) : (
-                    <GeneralBookingDetails />
-                  )}
-                </div>
-              )}
-
-              {/* Total Amount & Actions */}
-              <div className="flex justify-between items-center font-bold text-lg pt-3 border-t border-border">
-                <span>Total</span>
-                <span>{formatCurrency(order.total_amount)}</span>
-              </div>
-
-              <OrderPaymentActions
-                order={order}
-                onPay={handlePayment}
-                isPaying={isPaying}
-              />
-            </div>
+  if (loading) return (
+      <div className="flex justify-center py-12">
+          <div className="animate-pulse flex flex-col items-center gap-2">
+              <div className="h-8 w-8 bg-muted rounded-full"></div>
+              <span className="text-muted-foreground text-sm">Loading history...</span>
           </div>
-        );
-      })
-    );
-
-  if (loading) return <p>Loading your history...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+      </div>
+  );
+  
+  if (error) return <div className="text-red-500 text-center py-8">{error}</div>;
 
   return (
     <div className="animate-fadeIn space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">My Bookings</h2>
+      <div className="flex justify-between items-center border-b border-border pb-4">
+        <h2 className="text-2xl font-bold">Purchase History</h2>
       </div>
-      <div className="space-y-4">{renderOrderList()}</div>
+
+      {!orders || orders.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed border-border">
+          <Wallet size={48} className="mb-4 opacity-20" />
+          <p className="font-medium">No orders found.</p>
+          <p className="text-sm">Your transaction history will appear here.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {orders.map((order) => {
+            const { booking } = order;
+            const bookable = booking?.bookable;
+            const bookableType = booking?.bookable_type || "";
+            
+            // Merge details safely
+            const details: BookingDetails = { ...(bookable || {}), ...(booking?.details || {}) };
+            
+            // Determine Service Name display
+            const serviceName = details.service_name || 
+                                bookable?.name || 
+                                (bookable?.brand ? `${bookable.brand} ${bookable.car_model}` : null) ||
+                                "Service Details";
+
+            const isExpanded = expandedOrderId === order.id;
+
+            return (
+              <div key={order.id} className="bg-card border border-border rounded-xl p-5 transition-all hover:shadow-md">
+                {/* Header */}
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <ServiceTypeBadge type={bookableType} />
+                    <h3 className="font-bold text-lg leading-tight">Order #{order.order_number}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                       Ordered on {formatDate(order.created_at)}
+                    </p>
+                  </div>
+                  <span className={getStatusChip(order.status)}>
+                    {order.status.replace("_", " ")}
+                  </span>
+                </div>
+
+                {/* Content */}
+                <div className="border-t border-border pt-3">
+                  <div className="flex justify-between items-center mb-3">
+                     <span className="font-medium text-sm">{serviceName}</span>
+                     <button
+                        onClick={() => toggleDetails(order.id)}
+                        className="text-xs font-semibold text-primary flex items-center gap-1 hover:underline"
+                      >
+                        {isExpanded ? "Less Details" : "More Details"}
+                        {isExpanded ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
+                      </button>
+                  </div>
+
+                  {/* Expandable Details */}
+                  {isExpanded && (
+                    <div className="bg-muted/40 rounded-lg p-4 mb-4 border border-border/50">
+                        {bookableType.includes("CarRental") && <CarRentalDetails details={details} />}
+                        {bookableType.includes("TripPlanner") && <TripPlannerDetails details={details} />}
+                        {/* Fallback for others */}
+                        {!bookableType.includes("CarRental") && !bookableType.includes("TripPlanner") && (
+                             <div className="text-sm text-muted-foreground italic">
+                                 Specific details for this service type are not yet supported in this view.
+                             </div>
+                        )}
+                    </div>
+                  )}
+
+                  {/* Footer Actions */}
+                  <div className="flex flex-col sm:flex-row justify-between items-center pt-3 border-t border-border gap-4 sm:gap-0">
+                      <div className="text-left w-full sm:w-auto">
+                          <p className="text-xs text-muted-foreground">Total Amount</p>
+                          <p className="font-bold text-lg text-primary">{formatCurrency(order.total_amount)}</p>
+                      </div>
+                      
+                      <div className="w-full sm:w-auto">
+                        <OrderPaymentActions
+                            order={order}
+                            onPay={handlePayment}
+                            isPaying={isPaying}
+                        />
+                      </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

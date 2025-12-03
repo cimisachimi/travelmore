@@ -3,26 +3,41 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLocale } from "next-intl"; // Import useLocale
+import { useLocale } from "next-intl";
 import { useTheme } from "./ThemeProvider";
+
+// ✅ CONFIGURATION: Define custom labels and hidden segments here
+const SEGMENT_LABELS: Record<string, string> = {
+  profile: "My Profile",
+  bookings: "My Bookings",
+  history: "Purchase History",
+  "car-rental": "Car Rental",
+};
+
+// Segments to completely skip in the visual breadcrumb
+const HIDDEN_SEGMENTS = ["components", "sections", "Booking"]; 
 
 const Breadcrumbs = () => {
   const pathname = usePathname();
   const { theme } = useTheme();
-  const locale = useLocale(); // Get the current locale (e.g., "en" or "id")
+  const locale = useLocale();
 
-  // 1. Updated check to hide on any homepage (e.g., "/" or "/en")
   if (!pathname || pathname === "/" || pathname === `/${locale}`) {
     return null;
   }
 
-  // 2. Logic to remove the locale from the breadcrumb segments for a cleaner display
   const allSegments = pathname.split("/").filter(Boolean);
   const isLocalePrefixed = allSegments[0] === locale;
-  const pathSegments = isLocalePrefixed ? allSegments.slice(1) : allSegments;
+  
+  // ✅ FIX 1: Changed 'let' to 'const'
+  const rawSegments = isLocalePrefixed ? allSegments.slice(1) : allSegments;
 
-  // If there are no actual page segments after removing the locale, don't render.
-  if (pathSegments.length === 0) {
+  // ✅ FILTER: Remove hidden segments from the visual array
+  const visibleSegments = rawSegments
+    .map((segment, index) => ({ name: segment, originalIndex: index }))
+    .filter((item) => !HIDDEN_SEGMENTS.includes(item.name));
+
+  if (visibleSegments.length === 0) {
     return null;
   }
 
@@ -30,6 +45,20 @@ const Breadcrumbs = () => {
   const breadcrumbTextColor = isExclusive ? "text-gray-400" : "text-gray-500";
   const linkColor = isExclusive ? "hover:text-primary" : "hover:text-primary";
   const currentPageColor = isExclusive ? "text-white" : "text-foreground";
+
+  // ✅ FIX 2: Removed unused 'isLast' parameter
+  const getDisplayName = (segment: string) => {
+    // If it is a number (ID), format it nicely
+    if (!isNaN(Number(segment))) {
+      return `Order #${segment}`;
+    }
+    // Check our custom map
+    if (SEGMENT_LABELS[segment]) {
+      return SEGMENT_LABELS[segment];
+    }
+    // Default formatting: remove hyphens and capitalize
+    return segment.replace(/-/g, " ");
+  };
 
   return (
     <nav aria-label="Breadcrumb" className="bg-background">
@@ -43,15 +72,16 @@ const Breadcrumbs = () => {
               Home
             </Link>
           </li>
-          {pathSegments.map((segment, index) => {
-            const pathSlice = pathSegments.slice(0, index + 1);
-
-            // 3. Reconstruct the href correctly, including the locale if needed
+          {visibleSegments.map((item, visualIndex) => {
+            const pathSlice = rawSegments.slice(0, item.originalIndex + 1);
+            
             const href = isLocalePrefixed
               ? `/${locale}/${pathSlice.join("/")}`
               : `/${pathSlice.join("/")}`;
 
-            const isLast = index === pathSegments.length - 1;
+            const isLast = visualIndex === visibleSegments.length - 1;
+            // ✅ FIX 2: Updated function call
+            const displayName = getDisplayName(item.name);
 
             return (
               <React.Fragment key={href}>
@@ -59,16 +89,18 @@ const Breadcrumbs = () => {
                   <span className={breadcrumbTextColor}>/</span>
                 </li>
                 <li>
-                  <Link
-                    href={href}
-                    className={`capitalize transition-colors duration-300 ${isLast
-                        ? `font-semibold ${currentPageColor}`
-                        : `${breadcrumbTextColor} ${linkColor}`
-                      }`}
-                    aria-current={isLast ? "page" : undefined}
-                  >
-                    {segment.replace(/-/g, " ")}
-                  </Link>
+                  {isLast ? (
+                    <span className={`capitalize font-semibold ${currentPageColor}`}>
+                      {displayName}
+                    </span>
+                  ) : (
+                    <Link
+                      href={href}
+                      className={`capitalize transition-colors duration-300 ${breadcrumbTextColor} ${linkColor}`}
+                    >
+                      {displayName}
+                    </Link>
+                  )}
                 </li>
               </React.Fragment>
             );

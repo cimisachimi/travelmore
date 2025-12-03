@@ -7,7 +7,7 @@ import { X, Info } from "lucide-react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 // ✅ Import shared type
-import { SimpleBooking } from "../../types";
+import { SimpleBooking } from "../types";
 
 interface RefundModalProps {
   isOpen: boolean;
