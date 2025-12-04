@@ -240,7 +240,8 @@
       "title": "Filter",
       "price": "Rentang Harga",
       "upTo": "Hingga",
-      "categories": "Kategori"
+      "categories": "Kategori",
+      "startingFrom": "Mulai dari"
     },
     "buttons": {
       "details": "Lihat Detail",

@@ -240,7 +240,8 @@
       "title": "Filters",
       "price": "Price Range",
       "upTo": "Up to",
-      "categories": "Categories"
+      "categories": "Categories",
+      "startingFrom": "Starting from"
     },
     "buttons": {
       "details": "View Details",
