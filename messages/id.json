@@ -136,7 +136,7 @@
     "subtitle": "Segala yang Anda butuhkan untuk pengalaman perjalanan yang lengkap dan fleksibel.",
     "packages": {
       "title": "Paket Wisata",
-      "description": "Pilih paket wisata kurasi kami untuk liburan bebas repot. Kami telah menggabungkan destinasi dan aktivitas terbaik.",
+      "description": "Pilih dari paket wisata kurasi kami untuk liburan bebas repot. Kami telah menggabungkan destinasi dan aktivitas terbaik.",
       "button": "Lihat Detail"
     },
     "carRental": {
@@ -506,6 +506,11 @@
       "loading": "Memuat open trip...",
       "noCategories": "Kategori tidak ditemukan.",
       "fetchError": "Gagal memuat open trip. Silakan coba lagi."
+    },
+    "comingSoon": {
+      "title": "Segera Hadir Open Trip Travelmore!",
+      "description": "Kami sedang mempersiapkan jadwal terbaik untuk pengalaman open trip yang seru dan terkurasi. Pendaftaran akan dibuka secara berkala dengan kuota terbatas.",
+      "cta": "Hubungi Kami untuk Info"
     }
   },
   "OpenTripDetail": {
@@ -797,12 +802,11 @@
     },
     "exclusive": {
       "title": "Konsultasi Perencana Eksklusif",
-      "description": "Nikmati pengalaman perjalanan premium dengan itinerary kustom oleh desainer perjalanan senior kami. Dapatkan akses eksklusif dan layanan prioritas.",
+      "description": "Nikmati layanan premium dengan itinerary yang dirancang khusus oleh desainer perjalanan senior kami untuk pengalaman tak tertandingi.",
       "features": {
         "f1": "Revisi itinerary tak terbatas",
-        "f2": "Pemesanan end-to-end (penerbangan, hotel premium, transport)",
-        "f3": "Desainer perjalanan senior berdedikasi",
-        "f4": "Layanan concierge 24/7 selama perjalanan",
+        "f2": "Pemesanan premium end-to-end",
+        "f3": "Dukungan concierge 24/7",
         "f5": "Akses eksklusif & pengalaman lokal unik"
       },
       "price": "IDR 500.000 / paket",
@@ -1084,7 +1088,7 @@
     "region": "Wilayah",
     "genre": "Genre",
     "vibe": "Suasana",
-    "overview": "Ringkasan Tur",
+    "overview": "Ikhtisar Tur",
     "highlights": "Sorotan",
     "schedule": "Jadwal Perjalanan",
     "day": "Hari",

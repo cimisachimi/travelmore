@@ -7,10 +7,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import { useTranslations } from "next-intl";
-import api from "@/lib/api"; // ✅ Import API Helper
-
-// Import Types only (Removed openTripsData)
+import api from "@/lib/api"; 
 import { OpenTripListItem } from "@/data/trips"; 
+import { CalendarClock } from "lucide-react";
 
 // Icon Filter (Opsional untuk mobile)
 const FilterIcon = () => (
@@ -26,36 +25,29 @@ export default function OpenTripPage() {
   const [apiPackages, setApiPackages] = useState<OpenTripListItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   
-  // --- States untuk Filter ---
   const [maxPrice, setMaxPrice] = useState<number>(0);
-  const [priceSliderMax, setPriceSliderMax] = useState<number>(10000000); // Default fallback
+  const [priceSliderMax, setPriceSliderMax] = useState<number>(10000000); 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]); 
   const [isFilterOpen, setIsFilterOpen] = useState(false); 
 
-  // Styles
   const mainBgClass = theme === "regular" ? "bg-gray-50" : "bg-black";
   const cardBgClass = theme === "regular" ? "bg-white" : "bg-gray-800";
   const textClass = theme === "regular" ? "text-gray-900" : "text-white";
   const textMutedClass = theme === "regular" ? "text-gray-600" : "text-gray-300";
   const borderClass = theme === "regular" ? "border-gray-200" : "border-gray-700";
 
-  // 1. Fetch Data from Backend
   useEffect(() => {
     const fetchOpenTrips = async () => {
       setLoading(true);
       try {
-        // ✅ Call the API
-        // Adjust endpoint if your route is named differently (e.g., /open-trips or /public/open-trips)
         const response = await api.get('/open-trips'); 
         
-        // Handle Laravel Pagination (response.data.data) or Standard List (response.data)
         const data: OpenTripListItem[] = Array.isArray(response.data) 
             ? response.data 
             : response.data.data || [];
 
         setApiPackages(data);
 
-        // Calculate Max Price dynamically from real data
         if (data.length > 0) {
           const allPrices = data.map((p) => p.starting_from_price).filter((p): p is number => typeof p === 'number');
           if (allPrices.length > 0) {
@@ -74,13 +66,11 @@ export default function OpenTripPage() {
     fetchOpenTrips();
   }, []);
 
-  // 2. Ambil List Kategori Unik dari Data
   const allCategories = useMemo(() => {
     const categories = apiPackages.map(p => p.category).filter((c): c is string => !!c);
-    return [...new Set(categories)]; // Hapus duplikat
+    return [...new Set(categories)]; 
   }, [apiPackages]);
 
-  // 3. Handle Checkbox Kategori
   const handleCategoryChange = (category: string) => {
     setSelectedCategories(prev => 
       prev.includes(category) 
@@ -93,15 +83,10 @@ export default function OpenTripPage() {
     return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Number(amount) || 0);
   };
 
-  // 4. Logic Filter Utama (Harga & Kategori)
   const filteredPackages = useMemo(() => {
     return apiPackages.filter((pkg) => {
-      // Filter Harga
       const matchPrice = (pkg.starting_from_price || 0) <= maxPrice;
-      
-      // Filter Kategori
       const matchCategory = selectedCategories.length === 0 || (pkg.category && selectedCategories.includes(pkg.category));
-
       return matchPrice && matchCategory;
     });
   }, [apiPackages, maxPrice, selectedCategories]);
@@ -120,95 +105,108 @@ export default function OpenTripPage() {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 lg:px-8 py-12">
+      <div className="container mx-auto px-4 lg:px-8 py-12 min-h-[60vh]">
         
-        {/* --- LAYOUT UTAMA: SIDEBAR + GRID --- */}
-        <div className="flex flex-col lg:flex-row gap-8">
+        {/* --- KONDISI 1: LOADING --- */}
+        {loading ? (
+           <div className="flex flex-col items-center justify-center py-20">
+              <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className={`${textMutedClass} animate-pulse text-lg`}>{t("status.loading")}</p>
+           </div>
+        ) : apiPackages.length === 0 ? (
           
-          {/* A. SIDEBAR FILTER (KIRI) */}
-          <aside className={`w-full lg:w-1/4`}>
-            
-            {/* Tombol Toggle Filter (Hanya Mobile) */}
-            <button 
-              className={`lg:hidden w-full flex items-center justify-center gap-2 p-3 rounded-lg mb-4 font-bold shadow-md ${cardBgClass} ${textClass}`}
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-            >
-              <FilterIcon /> {isFilterOpen ? t("closeFilters") : t("showFilters")}
-            </button>
+          /* --- KONDISI 2: DATA KOSONG (COMING SOON) - DIUBAH PAKE i18n --- */
+          <div className="flex flex-col items-center justify-center text-center py-20 max-w-3xl mx-auto">
+             <div className={`p-6 rounded-full ${theme === "regular" ? "bg-blue-50" : "bg-blue-900/20"} mb-6`}>
+                <CalendarClock className="w-20 h-20 text-primary" />
+             </div>
+             
+             <h2 className={`text-3xl md:text-5xl font-bold mb-6 ${textClass}`}>
+               {t("comingSoon.title")} {/* "Coming Soon Travelmore's Open Trip!" */}
+             </h2>
+             
+             <p className={`text-lg md:text-xl leading-relaxed ${textMutedClass}`}>
+               {t("comingSoon.description")}
+             </p>
 
-            {/* Konten Sidebar */}
-            <div className={`
-              ${cardBgClass} p-6 rounded-lg shadow-md lg:sticky lg:top-24 border ${borderClass}
-              ${isFilterOpen ? "block" : "hidden lg:block"} 
-            `}>
-              <h3 className={`text-xl font-bold mb-6 ${textClass}`}>{t("filters")}</h3>
+             <div className="mt-8">
+               <Link 
+                 href="/contact" 
+                 className="inline-flex items-center px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:bg-primary/90 transition-colors"
+               >
+                 {t("comingSoon.cta")}
+               </Link>
+             </div>
+          </div>
 
-              {/* 1. Filter Harga */}
-              <div className="mb-8">
-                <label className={`block font-semibold mb-3 ${textClass}`}>{t("priceRange")}</label>
-                <input
-                    type="range"
-                    min={0}
-                    max={priceSliderMax}
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(Number(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
-                />
-                <div className={`mt-2 text-sm ${textMutedClass}`}>
-                    {t("upTo")}: <strong>{formatCurrency(maxPrice)}</strong>
+        ) : (
+
+          /* --- KONDISI 3: ADA DATA (TAMPILKAN FILTER & GRID) --- */
+          <div className="flex flex-col lg:flex-row gap-8">
+            <aside className={`w-full lg:w-1/4`}>
+              <button 
+                className={`lg:hidden w-full flex items-center justify-center gap-2 p-3 rounded-lg mb-4 font-bold shadow-md ${cardBgClass} ${textClass}`}
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                <FilterIcon /> {isFilterOpen ? t("closeFilters") : t("showFilters")}
+              </button>
+
+              <div className={`
+                ${cardBgClass} p-6 rounded-lg shadow-md lg:sticky lg:top-24 border ${borderClass}
+                ${isFilterOpen ? "block" : "hidden lg:block"} 
+              `}>
+                <h3 className={`text-xl font-bold mb-6 ${textClass}`}>{t("filters")}</h3>
+
+                <div className="mb-8">
+                  <label className={`block font-semibold mb-3 ${textClass}`}>{t("priceRange")}</label>
+                  <input
+                      type="range"
+                      min={0}
+                      max={priceSliderMax}
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(Number(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                  <div className={`mt-2 text-sm ${textMutedClass}`}>
+                      {t("upTo")}: <strong>{formatCurrency(maxPrice)}</strong>
+                  </div>
+                </div>
+
+                <hr className={`my-6 ${borderClass}`} />
+
+                <div>
+                  <label className={`block font-semibold mb-3 ${textClass}`}>{t("categories")}</label>
+                  <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
+                    {allCategories.map((cat) => (
+                      <label key={cat} className="flex items-center space-x-3 cursor-pointer group">
+                        <div className="relative flex items-center">
+                          <input 
+                            type="checkbox"
+                            checked={selectedCategories.includes(cat)}
+                            onChange={() => handleCategoryChange(cat)}
+                            className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-300 bg-white checked:border-primary checked:bg-primary transition-all"
+                          />
+                          <svg className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white transition-opacity" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        </div>
+                        <span className={`${textMutedClass} group-hover:${textClass} transition-colors capitalize`}>
+                          {cat}
+                        </span>
+                      </label>
+                    ))}
+                    {allCategories.length === 0 && <p className={`text-sm ${textMutedClass}`}>No categories found.</p>}
+                  </div>
                 </div>
               </div>
+            </aside>
 
-              <hr className={`my-6 ${borderClass}`} />
-
-              {/* 2. Filter Kategori (Checkboxes) */}
-              <div>
-                <label className={`block font-semibold mb-3 ${textClass}`}>{t("categories")}</label>
-                <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
-                  {allCategories.map((cat) => (
-                    <label key={cat} className="flex items-center space-x-3 cursor-pointer group">
-                      <div className="relative flex items-center">
-                        <input 
-                          type="checkbox"
-                          checked={selectedCategories.includes(cat)}
-                          onChange={() => handleCategoryChange(cat)}
-                          className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-300 bg-white checked:border-primary checked:bg-primary transition-all"
-                        />
-                        <svg className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white transition-opacity" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                      </div>
-                      <span className={`${textMutedClass} group-hover:${textClass} transition-colors capitalize`}>
-                        {cat}
-                      </span>
-                    </label>
-                  ))}
-                  {allCategories.length === 0 && <p className={`text-sm ${textMutedClass}`}>No categories found.</p>}
-                </div>
-              </div>
-
-            </div>
-          </aside>
-
-          {/* B. GRID CONTENT (KANAN) */}
-          <main className="w-full lg:w-3/4">
-            
-            {/* Loading State */}
-            {loading && (
-              <div className="text-center py-20">
-                  <p className={`${textMutedClass} animate-pulse text-lg`}>{t("status.loading")}</p>
-              </div>
-            )}
-
-            {/* Grid Cards */}
-            {!loading && (
+            <main className="w-full lg:w-3/4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {filteredPackages.map((pkg) => (
                       <Link key={pkg.id} href={`/open-trip/${pkg.id}`} className="block group h-full">
                           <div className={`${cardBgClass} rounded-2xl shadow-lg border ${borderClass} overflow-hidden flex flex-col h-full hover:shadow-2xl transition duration-300 transform hover:-translate-y-1`}>
-                              {/* Gambar */}
                               <div className="relative h-56 w-full overflow-hidden">
-                                  {/* Handle External URL vs Internal Images */}
                                   <Image
                                       src={pkg.thumbnail_url?.startsWith('http') ? pkg.thumbnail_url : (pkg.thumbnail_url ? `/storage/${pkg.thumbnail_url}` : "/placeholder.jpg")}
                                       alt={pkg.name}
@@ -216,11 +214,9 @@ export default function OpenTripPage() {
                                       className="object-cover transition-transform duration-700 group-hover:scale-110"
                                       unoptimized={pkg.thumbnail_url?.startsWith('http')}
                                   />
-                                  {/* Badge Duration */}
                                   <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white py-1 px-3 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
                                       <span>⏳ {pkg.duration} {t("days")}</span>
                                   </div>
-                                  {/* Badge Category */}
                                   {pkg.category && (
                                       <div className="absolute bottom-3 left-3 bg-primary text-white py-1 px-3 rounded-lg text-xs font-bold uppercase tracking-wider shadow-md">
                                           {pkg.category}
@@ -228,7 +224,6 @@ export default function OpenTripPage() {
                                   )}
                               </div>
 
-                              {/* Konten Card */}
                               <div className="p-5 flex flex-col flex-grow">
                                   <div className="flex items-center gap-2 mb-2 text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wide">
                                     <span className="text-primary">OPEN TRIP</span> • <span>📍 {pkg.location || "Indonesia"}</span>
@@ -254,26 +249,24 @@ export default function OpenTripPage() {
                       </Link>
                   ))}
               </div>
-            )}
-            
-            {/* Empty State */}
-            {filteredPackages.length === 0 && !loading && (
-                 <div className={`text-center py-20 border-2 border-dashed ${borderClass} rounded-xl`}>
-                     <p className={`text-lg ${textMutedClass}`}>{t("noResults")}</p>
-                     <button 
-                        onClick={() => {
-                          setMaxPrice(priceSliderMax);
-                          setSelectedCategories([]);
-                        }}
-                        className="mt-4 text-primary font-bold hover:underline"
-                     >
-                       Reset Filters
-                     </button>
-                 </div>
-            )}
-          </main>
-
-        </div>
+              
+              {filteredPackages.length === 0 && (
+                    <div className={`text-center py-20 border-2 border-dashed ${borderClass} rounded-xl`}>
+                        <p className={`text-lg ${textMutedClass}`}>{t("noResults")}</p>
+                        <button 
+                          onClick={() => {
+                            setMaxPrice(priceSliderMax);
+                            setSelectedCategories([]);
+                          }}
+                          className="mt-4 text-primary font-bold hover:underline"
+                        >
+                          Reset Filters
+                        </button>
+                    </div>
+              )}
+            </main>
+          </div>
+        )}
       </div>
     </div>
   );

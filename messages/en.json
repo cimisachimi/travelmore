@@ -240,8 +240,7 @@
       "title": "Filters",
       "price": "Price Range",
       "upTo": "Up to",
-      "categories": "Categories",
-      "startingFrom": "Starting from"
+      "categories": "Categories"
     },
     "buttons": {
       "details": "View Details",
@@ -523,6 +522,11 @@
       "loading": "Loading open trips...",
       "noCategories": "No categories found.",
       "fetchError": "Failed to load open trips. Please try again."
+    },
+    "comingSoon": {
+      "title": "Coming Soon Travelmore's Open Trip!",
+      "description": "We're currently preparing the best schedule for an exciting and curated open trip experience. Registration will open periodically with limited space.",
+      "cta": "Contact Us for Info"
     }
   },
   "OpenTripDetail": {
