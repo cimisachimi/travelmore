@@ -6,7 +6,6 @@ import api from "@/lib/api";
 import { formatCurrency, formatDate, getStatusChip } from "@/lib/utils";
 import { 
   ArrowLeft, 
-  Download, 
   Calendar, 
   CreditCard, 
   FileText, 
@@ -182,7 +181,6 @@ export default function BookingDetailPage() {
 
   const [booking, setBooking] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
-  const [downloading, setDownloading] = useState(false);
 
   // --- FETCHING LOGIC ---
   useEffect(() => {
@@ -214,28 +212,6 @@ export default function BookingDetailPage() {
     };
     fetchDetail();
   }, [id]);
-
-  const handleDownloadInvoice = async () => {
-    if (!booking) return;
-    setDownloading(true);
-    try {
-      const bookingId = booking.booking?.id || booking.id;
-      const response = await api.get(`/bookings/${bookingId}/invoice`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `Invoice-${booking.order_number}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      toast.success("Invoice downloaded successfully");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to download invoice.");
-    } finally {
-      setDownloading(false);
-    }
-  };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground animate-pulse">Loading details...</div>;
   if (!booking) return <div className="min-h-screen flex items-center justify-center text-red-500 flex-col gap-2"><AlertCircle size={32}/> Booking not found.</div>;
@@ -518,19 +494,9 @@ export default function BookingDetailPage() {
                      </div>
                 </div>
             </div>
-
-            {/* FOOTER ACTIONS */}
-            <div className="bg-gray-50 p-4 md:px-8 md:py-6 border-t border-gray-100 flex justify-end gap-3">
-                <button 
-                    onClick={handleDownloadInvoice}
-                    disabled={downloading}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 shadow-sm text-sm"
-                >
-                    {downloading ? "Downloading..." : "Download Invoice"} 
-                    {!downloading && <Download size={16} />}
-                </button>
-            </div>
-
+            
+            {
+            
         </div>
       </div>
     </div>
