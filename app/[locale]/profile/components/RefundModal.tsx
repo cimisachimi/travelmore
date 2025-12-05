@@ -1,13 +1,24 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import api from "@/lib/api";
+import api from "@/lib/api"; // Kept your original alias
 import { formatCurrency, getStatusChip } from "@/lib/utils";
 import { X, Info } from "lucide-react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
-// ✅ Import shared type
+// Import shared type
 import { SimpleBooking } from "../types";
+
+// ✅ LOCAL TYPE DEFINITION
+// Extend SimpleBooking to handle potential direct 'order_id' or nested 'order' object
+type BookingWithRelations = SimpleBooking & {
+  order_id?: number;
+  order?: {
+    id: number;
+    order_number?: string;
+  };
+  order_number?: string;
+};
 
 interface RefundModalProps {
   isOpen: boolean;
@@ -23,14 +34,20 @@ export default function RefundModal({ isOpen, onClose, booking, onSuccess }: Ref
 
   if (!isOpen || !booking) return null;
 
+  // Safe cast to access extended properties
+  const bookingData = booking as BookingWithRelations;
+
   const serviceName = 
     booking.details?.service_name || 
     booking.bookable?.name || 
     (booking.bookable?.brand ? `${booking.bookable.brand} ${booking.bookable.car_model}` : "Service");
 
-  // ✅ FIX: Use intersection type instead of 'any' to safely access potential order_number
-  const bookingWithOrder = booking as SimpleBooking & { order_number?: string };
-  const orderDisplay = bookingWithOrder.order_number ? `#${bookingWithOrder.order_number}` : `#${booking.id}`;
+  // Logic to display order number: Check nested order object first, then direct property, then fallback to ID
+  const orderDisplay = bookingData.order?.order_number 
+    ? `#${bookingData.order.order_number}`
+    : bookingData.order_number 
+      ? `#${bookingData.order_number}` 
+      : `#${booking.id}`;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -43,8 +60,24 @@ export default function RefundModal({ isOpen, onClose, booking, onSuccess }: Ref
     setIsSubmitting(true);
 
     try {
+      // ✅ FIX: Prioritize real Order relations before falling back to booking.id
+      // 1. Check if there is a nested 'order' object (eager loaded)
+      // 2. Check if there is a direct 'order_id' column
+      // 3. Fallback to 'id' (Booking ID) usually only if they are 1:1 mapped
+      const payloadOrderId = 
+          bookingData.order?.id || 
+          bookingData.order_id || 
+          booking.id;
+
+      // Debugging log to verify what is being sent
+      console.log("Submitting Refund for:", {
+        bookingId: booking.id,
+        resolvedOrderId: payloadOrderId,
+        amount: booking.total_price
+      });
+
       await api.post("/my-refunds", {
-        order_id: booking.id, 
+        order_id: payloadOrderId, // Correct ID sent here
         reason: reason,
         amount: booking.total_price, 
       });
@@ -104,7 +137,6 @@ export default function RefundModal({ isOpen, onClose, booking, onSuccess }: Ref
             </div>
             <div className="flex justify-between text-sm font-medium border-t border-dashed border-border/50 pt-2 mt-2">
                <span>Refundable Amount</span>
-               {/* formatCurrency handles string or number input */}
                <span>{formatCurrency(booking.total_price)}</span>
             </div>
           </div>
