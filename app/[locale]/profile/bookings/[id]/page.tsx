@@ -1,3 +1,4 @@
+// Booking Detail Page - Next.js 13 (App Router) with Client Component
 "use client";
 
 import { useEffect, useState } from "react";
@@ -495,7 +496,7 @@ export default function BookingDetailPage() {
                 </div>
             </div>
             
-            {
+            
             
         </div>
       </div>
