@@ -32,7 +32,7 @@ export const itinerariesData: Record<string, Itinerary> = {
   "3d2n-explorer": {
     id: 1,
     slug: "3d2n-explorer",
-    image: "/jogja-1.WEBP",
+    image: "/jogja-1.webp",
     duration: "3 Days 2 Nights",
     price: "Start from Rp 1.850.000 /pax",
     styles: ["Culture & Heritage", "City & Urban Life", "Culinary & Lifestyle"],
@@ -65,7 +65,7 @@ export const itinerariesData: Record<string, Itinerary> = {
   "4d3n-culture": {
     id: 2,
     slug: "4d3n-culture",
-    image: "/jogja-2.WEBP",
+    image: "/jogja-2.webp",
     duration: "4 Days 3 Nights",
     price: "Start from Rp 2.500.000 /pax",
     styles: ["Culture & Heritage", "Nature & Adventure", "Photography & Instagrammable"],
@@ -100,7 +100,7 @@ export const itinerariesData: Record<string, Itinerary> = {
   "2d1n-culinary": {
     id: 3,
     slug: "2d1n-culinary",
-    image: "/jogja-3.WEBP",
+    image: "/jogja-3.webp",
     duration: "2 Days 1 Night",
     price: "Start from Rp 1.200.000 /pax",
     styles: ["Culinary & Lifestyle", "Wellness & Healing"],

@@ -11,14 +11,14 @@ export default function SampleItineraries() {
   const t = useTranslations("Itinerary");
   const locale = useLocale();
   
-  // Ubah Object data menjadi Array agar bisa diloop (map)
+ 
   const itinerariesList = Object.values(itinerariesData).map((item) => {
-    // Tentukan bahasa konten (id atau en)
+    
     const currentLang = (locale === "id" ? "id" : "en") as keyof typeof item.content;
     
     return {
       id: item.id,
-      title: item.content[currentLang].title, // Judul dinamis sesuai bahasa
+      title: item.content[currentLang].title,
       image: item.image,
       link: `/itinerary/${item.slug}`,
     };

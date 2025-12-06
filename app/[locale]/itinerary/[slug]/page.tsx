@@ -22,11 +22,11 @@ export default async function ItineraryDetailPage({
 }) {
   const { slug, locale } = await params;
   
-  // Ambil penerjemah bahasa (UI labels)
+  
   const t = await getTranslations("Itinerary");
   const tData = await getTranslations("ItineraryData");
 
-  // Ambil data konten dari file terpisah
+
   const rawData = itinerariesData[slug];
 
   if (!rawData) {
