@@ -4,7 +4,7 @@ import React, { useState, FormEvent, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { X, MapPin, AlertCircle } from "lucide-react";
+import { X, MapPin, AlertCircle, Tag } from "lucide-react"; // ✅ Added Tag icon
 import { useTheme } from "@/components/ThemeProvider";
 import { AxiosError } from "axios";
 
@@ -22,12 +22,19 @@ interface PriceTier {
   price: number;
 }
 
+// ✅ ADDED: Addon Interface
+interface Addon {
+  name: string;
+  price: number;
+}
+
 interface TripDetail {
   id: number;
   name: string;
   starting_from_price: number | null;
   price_tiers?: PriceTier[];
   meeting_points?: MeetingPoint[];
+  addons?: Addon[]; // ✅ ADDED: Addons Array
 }
 
 interface User {
@@ -67,6 +74,9 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
   const [specialRequest, setSpecialRequest] = useState("");
   
   const [selectedMeetingPoint, setSelectedMeetingPoint] = useState("");
+  
+  // ✅ ADDED: State for selected addons
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -85,9 +95,9 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
       setNationality("");
       setSpecialRequest("");
       setDiscountCode("");
+      setSelectedAddons([]); // ✅ Reset addons
       setErrors({});
       
-      // Prevent body scroll when modal is open
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -98,11 +108,20 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
     };
   }, [isOpen, user]);
 
+  // ✅ HELPER: Toggle Addon Selection
+  const toggleAddon = (addonName: string) => {
+    setSelectedAddons((prev) => 
+      prev.includes(addonName) 
+        ? prev.filter((item) => item !== addonName) 
+        : [...prev, addonName]
+    );
+  };
+
   // --- DYNAMIC PRICE CALCULATION ---
-  const { pricePerPax, totalPax, activeTier } = useMemo(() => {
+  const { pricePerPax, totalPax, activeTier, addonsTotal, grandTotal } = useMemo(() => {
     const count = adults + children;
     
-    // Default fallback
+    // 1. Base Price Calculation (Tiered)
     let finalPrice = pkg.starting_from_price || 0;
     let foundTier = null;
 
@@ -127,10 +146,22 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
         }
     }
 
-    return { pricePerPax: finalPrice, totalPax: count, activeTier: foundTier };
-  }, [adults, children, pkg]);
+    // ✅ 2. Addons Calculation
+    const addonsCost = selectedAddons.reduce((sum, addonName) => {
+        const addon = pkg.addons?.find(a => a.name === addonName);
+        return sum + (addon ? Number(addon.price) : 0);
+    }, 0);
 
-  const grandTotal = (pricePerPax * totalPax);
+    const total = (finalPrice * count) + addonsCost;
+
+    return { 
+        pricePerPax: finalPrice, 
+        totalPax: count, 
+        activeTier: foundTier, 
+        addonsTotal: addonsCost, // ✅ Return addons total
+        grandTotal: total 
+    };
+  }, [adults, children, pkg, selectedAddons]); // ✅ Re-run when addons change
 
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(amount);
@@ -166,6 +197,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
         pickup_location: selectedMeetingPoint, 
         special_request: specialRequest || null,
         discount_code: discountCode.trim() === "" ? null : discountCode,
+        selected_addons: selectedAddons, // ✅ Send selected addons to backend
       };
 
       const response = await api.post(`/open-trips/${pkg.id}/book`, payload);
@@ -204,8 +236,6 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
   const inputClass = `w-full p-2 rounded border ${theme === "regular" ? "bg-gray-50 border-gray-300" : "bg-gray-700 border-gray-600 text-white"}`;
 
   return (
-    // FIX: Menggunakan fixed inset-0 dengan overflow-y-auto pada parent,
-    // dan menghapus overflow/max-height pada child card agar scroll lebih natural.
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm">
       <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-6">
         
@@ -262,6 +292,33 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
                 </div>
             </div>
 
+            {/* ✅ ADD-ONS CHECKLIST SECTION */}
+            {pkg.addons && pkg.addons.length > 0 && (
+              <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <h4 className={`text-sm font-bold flex items-center gap-2 mb-3 ${textColor}`}>
+                  <Tag size={16} className="text-primary"/> Optional Add-ons
+                </h4>
+                <div className="space-y-2">
+                  {pkg.addons.map((addon, idx) => (
+                    <label key={idx} className="flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded transition">
+                      <div className="flex items-center gap-3">
+                        <input 
+                          type="checkbox"
+                          checked={selectedAddons.includes(addon.name)}
+                          onChange={() => toggleAddon(addon.name)}
+                          className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
+                        />
+                        <span className={`text-sm ${textColor}`}>{addon.name}</span>
+                      </div>
+                      <span className={`text-sm font-semibold ${textColor}`}>
+                        +{formatPrice(addon.price)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Meeting Point */}
             <div>
                 <label className={`block text-sm font-medium ${textColor} flex items-center gap-1`}>
@@ -298,25 +355,21 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
             </div>
 
             {/* Contact Info */}
-            <div>
-                <label className={`block text-sm font-medium ${textColor}`}>Full Name</label>
-                <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputClass} />
-            </div>
-            <div>
-                <label className={`block text-sm font-medium ${textColor}`}>WhatsApp Number</label>
-                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
-            </div>
-            
-            {/* Nationality */}
-            <div>
-                <label className={`block text-sm font-medium ${textColor}`}>Nationality</label>
-                <input 
-                type="text" 
-                value={nationality} 
-                onChange={(e) => setNationality(e.target.value)} 
-                placeholder="e.g. Indonesia"
-                className={inputClass} 
-                />
+            <div className="grid grid-cols-1 gap-3">
+                <div>
+                    <label className={`block text-sm font-medium ${textColor}`}>Full Name</label>
+                    <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputClass} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                        <label className={`block text-sm font-medium ${textColor}`}>WhatsApp</label>
+                        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
+                    </div>
+                    <div>
+                        <label className={`block text-sm font-medium ${textColor}`}>Nationality</label>
+                        <input type="text" value={nationality} onChange={(e) => setNationality(e.target.value)} placeholder="e.g. Indonesia" className={inputClass} />
+                    </div>
+                </div>
             </div>
 
             {/* Special Request */}
@@ -341,19 +394,29 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
                 />
             </div>
 
-            {/* Total Price */}
-            <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex justify-between items-center sticky bottom-0 z-10">
-                <span className="font-semibold text-gray-700 dark:text-gray-200">Total Price</span>
-                <div className="text-right">
-                    <span className="text-xl font-bold text-primary block">{formatPrice(grandTotal)}</span>
-                    <span className="text-xs text-gray-500">({totalPax} pax x {formatPrice(pricePerPax)})</span>
+            {/* ✅ TOTAL PRICE SUMMARY */}
+            <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg sticky bottom-0 z-10 space-y-1">
+                <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+                    <span>Base Price ({totalPax} pax)</span>
+                    <span>{formatPrice(pricePerPax * totalPax)}</span>
+                </div>
+                {/* Show Add-on total if any selected */}
+                {addonsTotal > 0 && (
+                    <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+                        <span>Add-ons Total</span>
+                        <span>+ {formatPrice(addonsTotal)}</span>
+                    </div>
+                )}
+                <div className="flex justify-between items-center pt-2 border-t border-gray-300 dark:border-gray-600 mt-2">
+                    <span className="font-semibold text-gray-700 dark:text-gray-200">Grand Total</span>
+                    <span className="text-xl font-bold text-primary">{formatPrice(grandTotal)}</span>
                 </div>
             </div>
 
             <button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-lg transition"
+                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {isSubmitting ? "Booking..." : "Join Open Trip"}
             </button>

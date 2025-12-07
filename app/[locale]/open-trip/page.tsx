@@ -1,5 +1,3 @@
-// app/[locale]/open-trip/page.tsx
-
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -8,10 +6,22 @@ import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api"; 
-import { OpenTripListItem } from "@/data/trips"; 
 import { CalendarClock } from "lucide-react";
 
-// Icon Filter (Opsional untuk mobile)
+// ✅ DEFINED LOCALLY: Matches your Laravel API Response
+interface OpenTrip {
+  id: number;
+  name: string;
+  category?: string;
+  location?: string;
+  duration?: number;
+  rating?: number;
+  starting_from_price?: number; // Matches $appends in OpenTrip.php
+  thumbnail_url?: string;       // Matches $appends in OpenTrip.php
+  is_active?: boolean;
+}
+
+// Icon Filter (Optional for mobile)
 const FilterIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
     <path fillRule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.59L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z" clipRule="evenodd" />
@@ -22,7 +32,7 @@ export default function OpenTripPage() {
   const { theme } = useTheme();
   const t = useTranslations("OpenTripPage"); 
 
-  const [apiPackages, setApiPackages] = useState<OpenTripListItem[]>([]);
+  const [apiPackages, setApiPackages] = useState<OpenTrip[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   
   const [maxPrice, setMaxPrice] = useState<number>(0);
@@ -42,14 +52,22 @@ export default function OpenTripPage() {
       try {
         const response = await api.get('/open-trips'); 
         
-        const data: OpenTripListItem[] = Array.isArray(response.data) 
+        // Handle both simple array and Laravel Paginated response (data.data)
+        const data: OpenTrip[] = Array.isArray(response.data) 
             ? response.data 
-            : response.data.data || [];
+            : (response.data.data || []);
 
-        setApiPackages(data);
+        // Filter only active trips if the backend sends everything
+        const activeTrips = data.filter(trip => trip.is_active !== false); 
 
-        if (data.length > 0) {
-          const allPrices = data.map((p) => p.starting_from_price).filter((p): p is number => typeof p === 'number');
+        setApiPackages(activeTrips);
+
+        // Initialize Price Slider based on highest price found
+        if (activeTrips.length > 0) {
+          const allPrices = activeTrips
+            .map((p) => p.starting_from_price)
+            .filter((p): p is number => typeof p === 'number');
+            
           if (allPrices.length > 0) {
             const max = Math.max(...allPrices);
             setPriceSliderMax(max);
@@ -107,7 +125,7 @@ export default function OpenTripPage() {
 
       <div className="container mx-auto px-4 lg:px-8 py-12 min-h-[60vh]">
         
-        {/* --- KONDISI 1: LOADING --- */}
+        {/* --- STATE 1: LOADING --- */}
         {loading ? (
            <div className="flex flex-col items-center justify-center py-20">
               <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -115,14 +133,14 @@ export default function OpenTripPage() {
            </div>
         ) : apiPackages.length === 0 ? (
           
-          /* --- KONDISI 2: DATA KOSONG (COMING SOON) - DIUBAH PAKE i18n --- */
+          /* --- STATE 2: EMPTY STATE --- */
           <div className="flex flex-col items-center justify-center text-center py-20 max-w-3xl mx-auto">
              <div className={`p-6 rounded-full ${theme === "regular" ? "bg-blue-50" : "bg-blue-900/20"} mb-6`}>
                 <CalendarClock className="w-20 h-20 text-primary" />
              </div>
              
              <h2 className={`text-3xl md:text-5xl font-bold mb-6 ${textClass}`}>
-               {t("comingSoon.title")} {/* "Coming Soon Travelmore's Open Trip!" */}
+               {t("comingSoon.title")} 
              </h2>
              
              <p className={`text-lg md:text-xl leading-relaxed ${textMutedClass}`}>
@@ -141,7 +159,7 @@ export default function OpenTripPage() {
 
         ) : (
 
-          /* --- KONDISI 3: ADA DATA (TAMPILKAN FILTER & GRID) --- */
+          /* --- STATE 3: DATA LISTING --- */
           <div className="flex flex-col lg:flex-row gap-8">
             <aside className={`w-full lg:w-1/4`}>
               <button 
@@ -157,6 +175,7 @@ export default function OpenTripPage() {
               `}>
                 <h3 className={`text-xl font-bold mb-6 ${textClass}`}>{t("filters")}</h3>
 
+                {/* Price Filter */}
                 <div className="mb-8">
                   <label className={`block font-semibold mb-3 ${textClass}`}>{t("priceRange")}</label>
                   <input
@@ -174,6 +193,7 @@ export default function OpenTripPage() {
 
                 <hr className={`my-6 ${borderClass}`} />
 
+                {/* Category Filter */}
                 <div>
                   <label className={`block font-semibold mb-3 ${textClass}`}>{t("categories")}</label>
                   <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
@@ -201,6 +221,7 @@ export default function OpenTripPage() {
               </div>
             </aside>
 
+            {/* Main Grid */}
             <main className="w-full lg:w-3/4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {filteredPackages.map((pkg) => (

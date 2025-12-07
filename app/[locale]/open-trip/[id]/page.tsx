@@ -34,6 +34,12 @@ interface PriceTier {
   price: number;
 }
 
+// ✅ ADDED: Addon Interface
+interface Addon {
+  name: string;
+  price: number;
+}
+
 export interface TripDetail {
   id: number;
   name: string;
@@ -50,6 +56,7 @@ export interface TripDetail {
   excludes?: string[];
   meeting_points?: MeetingPoint[];
   map_url?: string;
+  addons?: Addon[]; // ✅ ADDED: Addons Array
 }
 
 export default function OpenTripDetail() {
@@ -288,7 +295,7 @@ export default function OpenTripDetail() {
                 </div>
             )}
 
-            {/* 3. PRICING - FIX #2: IMPROVED CONTRAST & READABILITY */}
+            {/* 3. PRICING */}
             {activeTab === "pricing" && (
                 <div className={`${contentBgClass} rounded-2xl p-6 md:p-8 border ${borderClass} animate-fadeIn`}>
                     
