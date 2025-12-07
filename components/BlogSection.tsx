@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
+import { useParams } from "next/navigation"; // [1] Import useParams untuk ambil locale
 import api from "@/lib/api";
 
 // Interface to match API response
@@ -19,6 +20,8 @@ interface Blog {
 
 export default function BlogSection() {
   const t = useTranslations("blogSection");
+  const params = useParams(); // [2] Ambil params dari URL
+  const locale = (params.locale as string) || "en"; // Default ke 'en' jika tidak ada
 
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,11 +30,19 @@ export default function BlogSection() {
     const fetchBlogs = async () => {
       try {
         setLoading(true);
-        // Mengambil hanya 3 post terbaru untuk halaman utama
-        const response = await api.get("/public/posts?limit=3");
         
-        // Pastikan menyesuaikan struktur response API Anda
-        // Jika response.data.data adalah array, gunakan itu.
+        // [3] Kirim request ke API dengan locale yang benar
+        // PENTING: Backend Anda harus siap menerima parameter ini.
+        // Opsi A: Lewat Query Param (lebih umum untuk GET request sederhana)
+        // const response = await api.get(`/public/posts?limit=3&lang=${locale}`);
+        
+        // Opsi B: Lewat Header (jika konfigurasi axios/backend mendukung)
+        const response = await api.get("/public/posts?limit=3", {
+            headers: {
+                "Accept-Language": locale 
+            }
+        });
+        
         setBlogs(response.data.data || []); 
       } catch (error) {
         console.error("Failed to fetch blogs:", error);
@@ -40,8 +51,9 @@ export default function BlogSection() {
       }
     };
 
+    // Fetch ulang setiap kali 'locale' berubah
     fetchBlogs();
-  }, []);
+  }, [locale]); // [4] Tambahkan dependency 'locale'
 
   // Jika tidak ada blog dan tidak loading, sembunyikan section (opsional)
   if (!loading && blogs.length === 0) {
@@ -79,7 +91,7 @@ export default function BlogSection() {
             blogs.map((blog) => (
               <Link
                 key={blog.id}
-                href={`/blog/${blog.slug}`}
+                href={`/${locale}/blog/${blog.slug}`} // [5] Pastikan link blog tetap dalam locale yang sama
                 className="bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col overflow-hidden group border border-gray-100"
               >
                 {/* Gambar */}
@@ -90,6 +102,7 @@ export default function BlogSection() {
                       alt={blog.title}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // [6] Fix warning next/image
                     />
                   ) : (
                     <div className="h-full w-full bg-gray-100 flex items-center justify-center text-gray-400">
@@ -101,7 +114,8 @@ export default function BlogSection() {
                 {/* Konten */}
                 <div className="p-6 flex flex-col flex-1">
                   <span className="text-sm text-gray-500">
-                    {new Date(blog.published_at).toLocaleDateString("id-ID", {
+                    {/* [7] Format tanggal dinamis sesuai locale */}
+                    {new Date(blog.published_at).toLocaleDateString(locale === 'id' ? "id-ID" : "en-US", {
                       year: 'numeric', month: 'long', day: 'numeric'
                     })}
                   </span>
@@ -112,7 +126,8 @@ export default function BlogSection() {
                     {blog.excerpt}
                   </p>
                   <span className="mt-4 text-sm font-medium text-gray-900">
-                    Oleh {blog.author}
+                    {/* Translasi manual kecil untuk kata "By/Oleh" */}
+                    {locale === 'id' ? 'Oleh' : 'By'} {blog.author}
                   </span>
                 </div>
               </Link>
@@ -120,10 +135,10 @@ export default function BlogSection() {
           )}
         </div>
 
-        {/* Show More Button - Mengarah ke halaman /blog utama */}
+        {/* Show More Button */}
         <div className="mt-12 flex justify-center">
           <Link
-            href="/blog"
+            href={`/${locale}/blog`} // [8] Link show more juga harus ikut locale
             className="inline-flex items-center px-8 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
           >
             {t("button")}

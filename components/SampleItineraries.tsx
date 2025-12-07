@@ -7,65 +7,107 @@ import { ArrowRight } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { itinerariesData } from "@/data/itineraries";
 
+// Import Swiper untuk Mobile
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
+
+// --- 1. DEFINISIKAN TIPE DATA (FIX ERROR 'ANY') ---
+interface ItineraryItemProps {
+  id: number;
+  title: string;
+  image: string;
+  link: string;
+}
+
+// Tipe untuk fungsi translasi (sederhana)
+type TranslateFn = (key: string) => string;
+
+// --- 2. Komponen Kartu ---
+// Sekarang menggunakan tipe spesifik, bukan 'any'
+const ItineraryCard = ({ item, t }: { item: ItineraryItemProps; t: TranslateFn }) => (
+  <div className="bg-white rounded-xl p-3 shadow-lg border border-gray-100 flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+    
+    {/* Gambar */}
+    <div className="relative w-full h-40 sm:h-48 md:h-40 rounded-lg overflow-hidden mb-4 group">
+      <Image
+        src={item.image}
+        alt={item.title}
+        fill
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        className="object-cover transition-transform duration-500 group-hover:scale-110"
+      />
+    </div>
+
+    {/* Judul */}
+    <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-3 leading-tight min-h-[2.5rem] line-clamp-2">
+      {item.title}
+    </h3>
+
+    {/* Tombol */}
+    <div className="mt-auto">
+      <Link 
+        href={item.link}
+        className="flex w-full py-2.5 px-3 rounded-lg border border-gray-200 items-center justify-center gap-2 text-xs md:text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-primary hover:border-primary/30 transition-colors group"
+      >
+        <span>{t("preview")}</span>
+        <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors" />
+      </Link>
+    </div>
+  </div>
+);
+
+// --- 3. Komponen Utama ---
 export default function SampleItineraries() {
   const t = useTranslations("Itinerary");
   const locale = useLocale();
   
- 
-  const itinerariesList = Object.values(itinerariesData).map((item) => {
-    
+  const itinerariesList: ItineraryItemProps[] = Object.values(itinerariesData).map((item) => {
+    // Pastikan key valid untuk content
     const currentLang = (locale === "id" ? "id" : "en") as keyof typeof item.content;
     
+    // Safety check sederhana
+    const content = item.content[currentLang] || item.content["en"];
+
     return {
       id: item.id,
-      title: item.content[currentLang].title,
+      title: content.title,
       image: item.image,
       link: `/itinerary/${item.slug}`,
     };
   });
 
   return (
-    <section className="relative z-30 pb-8 px-2 md:px-4">
+    <section className="relative z-30 pb-8 px-0 md:px-4 overflow-hidden md:overflow-visible">
       <div className="container mx-auto max-w-6xl">
         
-        <div className="mt-6 md:-mt-16 grid grid-cols-3 gap-2 md:gap-6">
-          
+        {/* --- TAMPILAN MOBILE (SLIDER) --- */}
+        <div className="mt-6 px-4 md:hidden">
+          <Swiper
+            modules={[Pagination]}
+            pagination={{ clickable: true }}
+            spaceBetween={16}
+            slidesPerView={1.1} 
+            className="pb-12 !overflow-visible"
+          >
+            {itinerariesList.map((item) => (
+              <SwiperSlide key={item.id} className="h-auto">
+                <ItineraryCard item={item} t={t} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+
+        {/* --- TAMPILAN DESKTOP (GRID TETAP) --- */}
+        <div className="hidden md:grid md:-mt-16 grid-cols-3 gap-6 px-4 md:px-0">
           {itinerariesList.map((item) => (
-            <div 
-              key={item.id} 
-              className="bg-white rounded-xl p-2 md:p-3 shadow-lg border border-gray-100 flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-            >
-              {/* Gambar Card */}
-              <div className="relative w-full h-20 sm:h-32 md:h-40 rounded-lg overflow-hidden mb-2 md:mb-4 group">
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-
-              {/* Judul Dinamis */}
-              <h3 className="text-[10px] sm:text-sm md:text-lg font-bold text-gray-900 mb-2 md:mb-4 leading-tight px-1 line-clamp-2 md:line-clamp-none">
-                {item.title}
-              </h3>
-
-              {/* Tombol Preview */}
-              <div className="mt-auto">
-                <Link 
-                  href={item.link}
-                  className="block w-full py-1.5 md:py-2.5 px-1 md:px-3 rounded-md md:rounded-lg border border-gray-200 text-center text-[9px] sm:text-xs md:text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-primary hover:border-primary/30 transition-colors flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 group"
-                >
-                  <span className="md:hidden">{t("previewShort")}</span> 
-                  <span className="hidden md:inline">{t("preview")}</span>
-                  
-                  <ArrowRight className="w-3 h-3 md:w-4 md:h-4 text-gray-400 group-hover:text-primary transition-colors hidden sm:block" />
-                </Link>
-              </div>
+            <div key={item.id} className="h-full">
+               <ItineraryCard item={item} t={t} />
             </div>
           ))}
-
         </div>
+
       </div>
     </section>
   );

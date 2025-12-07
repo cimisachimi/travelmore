@@ -2,13 +2,9 @@
 import React from "react";
 import HeroSlider from "@/components/HeroSlider";
 import ActivitySlider from "@/components/ActivitySlider";
-import PopularPackages from "@/components/PopularPackages";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import CTASection from "@/components/CTASection";
-import Testimonials from "@/components/Testimoni";
 import BlogSection from "@/components/BlogSection"; 
-import HowItWorks from "@/components/HowItWork";
-import OtherServices from "@/components/OtherServices"; 
 import PopularPackagesSlider from "@/components/PopularPackagesSlider";
 import DiscountBanner from "@/components/DiscountBanner";
 
@@ -39,9 +35,6 @@ export default function Home() {
       {/* 6. Aktivitas / Wisata */}
       <ActivitySlider />
       
-      {/* <HowItWorks /> */}
-      
-      {/* <OtherServices /> */}
       
       {/* 7. Keunggulan Kami */}
       <WhyChooseUs />
