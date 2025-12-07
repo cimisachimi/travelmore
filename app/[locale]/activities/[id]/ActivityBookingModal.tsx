@@ -86,6 +86,8 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   const [email, setEmail] = useState<string>("");
   const [pickupLocation, setPickupLocation] = useState<string>("");
   const [specialRequest, setSpecialRequest] = useState<string>("");
+  
+  // ✅ New: Add-ons State
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
 
   const [phoneCode, setPhoneCode] = useState("+62");
@@ -103,8 +105,9 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
       setEmail(user?.email || "");
 
       // Phone pre-fill logic
-      // @ts-expect-error: Accessing potential phone property
-      const fullPhoneNumber = user?.phone_number || user?.phone || "";
+      // ✅ FIXED: Removed 'user?.phone' which caused the type error
+      const fullPhoneNumber = user?.phone_number || "";
+      
       const matchedCode = countryCodes.find((c) => fullPhoneNumber.startsWith(c.code));
 
       if (matchedCode) {
@@ -122,7 +125,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
       setNationality("");
       setPickupLocation("");
       setSpecialRequest("");
-      setSelectedAddons([]);
+      setSelectedAddons([]); // Reset add-ons
       setErrors({});
     }
   }, [isOpen, user]);
@@ -134,6 +137,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     return pricePerPax * quantity;
   }, [quantity, activity.price]);
 
+  // ✅ New: Calculate Add-ons Total
   const addonsTotal = useMemo(() => {
     if (!activity.addons || selectedAddons.length === 0) return 0;
     
@@ -143,6 +147,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     }, 0);
   }, [selectedAddons, activity.addons]);
 
+  // ✅ Updated: Grand Total
   const grandTotal = baseSubtotal + addonsTotal;
 
   const formatPrice = (amount: number) => {
@@ -159,6 +164,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     setLocalPhone(numericValue);
   };
 
+  // ✅ New: Toggle Add-on Selection
   const toggleAddon = (addonName: string) => {
     setSelectedAddons(prev => 
       prev.includes(addonName) 
@@ -216,6 +222,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
         phone_number: fullPhoneNumber,
         pickup_location: pickupLocation,
         special_request: specialRequest || null,
+        // ✅ Send Add-ons to API
         selected_addons: selectedAddons,
       };
 
@@ -270,13 +277,14 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   const summaryBgClass = theme === "regular" ? "bg-gray-100" : "bg-gray-700/50";
   const errorBorderClass = "border-red-500 focus:border-red-500 focus:ring-red-500";
   const iconBgClass = theme === "regular" ? "bg-blue-100" : "bg-blue-900/30";
+  
+  // ✅ New Add-on specific styles
   const addonCardClass = theme === "regular" ? "border-gray-200 hover:border-blue-400 bg-white" : "border-gray-600 hover:border-blue-500 bg-gray-700";
   const addonSelectedClass = "border-blue-500 ring-1 ring-blue-500 bg-blue-50 dark:bg-blue-900/20";
 
   const baseInputClass = `mt-1 block w-full rounded-md shadow-sm ${inputBgClass} ${focusRingClass} ${textColor} placeholder:${mutedTextColor} py-2 px-3 border ${inputBorderClass}`;
 
   return (
-    // ✅ FIX: Fixed outer positioning and added internal scrolling
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn p-4">
       <div className={`${modalBgClass} rounded-xl shadow-xl p-6 sm:p-8 w-full max-w-lg relative transform transition-all duration-300 max-h-[90vh] overflow-y-auto`}>
         <button onClick={onClose} className={`absolute top-4 right-4 ${mutedTextColor} hover:${textColor} transition-colors`} aria-label="Close modal">
@@ -363,7 +371,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
             <div className="space-y-3 pt-2">
               <label className={`block text-sm font-bold ${textColor} flex items-center gap-2`}>
                 <Camera size={16} />
-                {t("booking.enhanceTrip")}
+                {t("booking.enhanceTrip") || "Optional Add-ons"}
               </label>
               <div className="grid grid-cols-1 gap-3">
                 {activity.addons.map((addon) => {
@@ -441,7 +449,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               <span className={`text-sm font-medium ${textColor}`}>x {quantity}</span>
             </div>
             
-            {/* Show Add-ons total if any selected */}
+            {/* ✅ Show Add-ons total if any selected */}
             {addonsTotal > 0 && (
                <div className="flex justify-between items-center mb-1 pb-1 border-b border-gray-300 dark:border-gray-600">
                 <span className={`text-sm ${mutedTextColor}`}>Add-ons</span>
