@@ -41,13 +41,16 @@ const LocaleSwitcher = () => {
 function NavLink({
   href,
   children,
+  onClick,
 }: {
   href: string;
   children: React.ReactNode;
+  onClick?: () => void;
 }) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       className="relative inline-block group text-foreground font-medium hover:text-primary transition-colors"
     >
       {children}
@@ -63,9 +66,11 @@ function NavLink({
 function DropdownLink({
   title,
   items,
+  onItemClick,
 }: {
   title: string;
   items: { name: string; href: string }[];
+  onItemClick?: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -121,6 +126,7 @@ function DropdownLink({
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={onItemClick}
                 className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition-colors"
                 role="menuitem"
               >
@@ -243,14 +249,21 @@ function MobileMenu({
 
   return (
     <div className="md:hidden flex flex-col space-y-4 pb-4 animate-fadeIn">
-      <NavLink href="/">{t("home")}</NavLink>
-      <DropdownLink title={t("ourServices")} items={serviceLinks} />
-      <NavLink href="/blog">{t("blog")}</NavLink>
-      <DropdownLink title={t("more")} items={moreLinks} />
+      {/* 1. Home */}
+      <NavLink href="/" onClick={closeMenu}>{t("home")}</NavLink>
+      
+      {/* 2. Services (Dropdown) - Tambahkan onItemClick agar menutup saat dipilih */}
+      <DropdownLink title={t("ourServices")} items={serviceLinks} onItemClick={closeMenu} />
+      
+      {/* 3. Blog */}
+      <NavLink href="/blog" onClick={closeMenu}>{t("blog")}</NavLink>
+      
+      {/* 4. More (Dropdown) - Tambahkan onItemClick */}
+      <DropdownLink title={t("more")} items={moreLinks} onItemClick={closeMenu} />
 
       <div className="border-t border-border my-2"></div>
 
-      {/* Mobile Auth UI */}
+      {/* Auth Section */}
       {loading ? (
         <div className="h-10 w-full animate-pulse bg-gray-200 dark:bg-gray-700 rounded-md"></div>
       ) : user ? (

@@ -230,7 +230,6 @@ export default function PlannerPage() {
                 </div>
               </div>
             </section>
-            <ComparisonSection />
           </section>
         )}
       </main>
