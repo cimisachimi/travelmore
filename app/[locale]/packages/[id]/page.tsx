@@ -1,7 +1,7 @@
-/// app/[locale]/packages/[id]/page.tsx
+// app/[locale]/packages/[id]/page.tsx
 "use client";
 
-import React, { useState, useEffect, ReactNode } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -15,7 +15,6 @@ import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { packages as localPackages } from "@/data/packages";
 
 // Import Modal
 import PackageBookingModal from "./PackageBookingModal";
@@ -65,7 +64,7 @@ export interface HolidayPackage {
   location: string;
   rating: number | null;
   images_url: string[];
-  addons?: Addon[]; // ✅ Added Add-ons
+  addons?: Addon[]; // ✅ Added Add-ons (from API)
   itinerary: { day: number; title: string; description: string }[];
   cost: { included: string[]; excluded: string[] };
   faqs: { question: string; answer: string }[];
@@ -134,23 +133,16 @@ export default function PackageDetailPage() {
       setLoading(true);
       setError(null);
       
-      // 1. Ambil data utama dari API (Laravel)
+      // ✅ Just fetch from API, no local file merging needed.
+      // If package is unpublished, API returns 404, which goes to catch block.
       const response = await api.get(`/public/packages/${id}`);
       const apiData = response.data as HolidayPackage;
-
-      // 2. Ambil data Addons dari file lokal (data/packages.ts)
-      // Pastikan ID di data/packages.ts SAMA PERSIS dengan ID di URL/Database
-      const localData = localPackages.find(p => p.id === id || p.id === apiData.id.toString());
-      
-      // 3. Gabungkan datanya
-      setPkg({
-        ...apiData,
-        addons: localData?.addons || [] // Pakai addons lokal jika ada
-      });
+      setPkg(apiData);
 
     } catch (err) {
       console.error("Failed to fetch package:", err);
-      setError(t("status.fetchError"));
+      // This handles 404s for Unpublished packages
+      setError(t("status.fetchError") || "Package not found or unavailable.");
     } finally {
       setLoading(false);
     }
@@ -194,11 +186,10 @@ export default function PackageDetailPage() {
   const itineraryData = Array.isArray(pkg.itinerary) ? pkg.itinerary : [];
   const tripInfo = Array.isArray(pkg.tripInfo) ? pkg.tripInfo : [];
   const faqsData = Array.isArray(pkg.faqs) ? pkg.faqs : [];
-  const title = pkg.name.split(": ")[1] || pkg.name; // Clean title if needed
+  const title = pkg.name.split(": ")[1] || pkg.name; 
 
   const tabs = ["Overview", "Itinerary", "Pricing", "Cost", "FAQs", "Map"];
 
-  // Styling
   const isDark = theme === "exclusive";
   const mainBg = isDark ? "bg-black" : "bg-gray-50";
   const cardBg = isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100";
@@ -238,13 +229,11 @@ export default function PackageDetailPage() {
                 </Link>
              </div>
            </div>
-           {/* Dynamic Gallery logic for 2-4 images */}
            {images.slice(1, 5).map((src, i) => (
              <div key={i} className={`col-span-1 row-span-1 relative overflow-hidden group ${i === 1 ? 'rounded-tr-2xl' : ''} ${i === 3 ? 'rounded-br-2xl' : ''}`}>
                <Image src={src} alt={`Gallery ${i + 1}`} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
              </div>
            ))}
-           {/* Fallback for missing images to fill grid */}
            {images.length < 5 && Array.from({ length: 5 - images.length }).map((_, i) => (
              <div key={`placeholder-${i}`} className="bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-400">
                <Camera size={24} />

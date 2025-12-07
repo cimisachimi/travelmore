@@ -11,26 +11,14 @@ import { useTheme } from "@/components/ThemeProvider";
 
 import { HolidayPackage, TFunction, AuthUser } from "./page";
 
-// Define Addon Interface locally (or export from page.tsx)
-interface Addon {
-  name: string;
-  price: number;
-}
-
-// Extend HolidayPackage to include addons
-interface HolidayPackageWithAddons extends HolidayPackage {
-  addons?: Addon[];
-}
-
 interface PackageBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  pkg: HolidayPackageWithAddons;
+  pkg: HolidayPackage; // ✅ Uses correct interface with addons
   user: AuthUser | null;
   t: TFunction;
 }
 
-// API response/error types
 interface ApiErrorResponse {
   message?: string;
   errors?: Record<string, string[]>;
@@ -102,7 +90,6 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
       setFullName(user?.name || "");
       setEmail(user?.email || "");
 
-      // Phone pre-fill logic
       // @ts-expect-error: Accessing potential phone property
       const fullPhoneNumber = user?.phone_number || user?.phone || "";
       const matchedCode = countryCodes.find((c) =>
@@ -205,7 +192,6 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // ✅ FIXED: Removed the second string argument from all t() calls
     if (!startDate) {
       newErrors.startDate = t("booking.errors.noDate");
     }
@@ -252,7 +238,6 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
     }
 
     if (!user) {
-      // ✅ FIXED: Removed second argument
       toast.error(t("booking.errors.notLoggedIn"));
       return;
     }
@@ -274,12 +259,12 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
           pickup_location: pickupLocation,
           flight_number: flightNumber || null,
           special_request: specialRequest || null,
+          // ✅ Send Addons to API
           selected_addons: selectedAddons,
         }
       );
 
       if (response.status === 201) {
-        // ✅ FIXED: Removed second argument
         toast.success(t("booking.success.message"));
         const orderId = response.data?.id;
         router.push(orderId ? `/profile?order_id=${orderId}` : "/profile");
@@ -303,10 +288,8 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
         if (validationErrors.pickup_location) newApiErrors.pickup_location = validationErrors.pickup_location[0];
 
         setErrors(newApiErrors);
-        // ✅ FIXED: Removed second argument
         toast.error(error.response.data.message || t("booking.errors.validation"));
       } else {
-        // ✅ FIXED: Removed second argument
         toast.error(error.response?.data?.message || t("booking.errors.general"));
       }
     } finally {
@@ -548,7 +531,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
                 if (errors.pickup_location) setErrors((p) => ({ ...p, pickup_location: undefined }));
               }}
               required
-              placeholder={t("booking.pickupLocation")} /* Opsional: biar ada tulisan bayangan */
+              placeholder={t("booking.pickupLocation")}
               className={`${baseInputClass} ${errors.pickup_location ? errorBorderClass : inputBorderClass}`}
             />
             {errors.pickup_location && (
