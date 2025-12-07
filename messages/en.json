@@ -2,9 +2,9 @@
   "Navbar": {
     "home": "Home",
     "planner": "Trip Planner",
-    "packages": "Packages",
+    "packages": "Trip Packages",
     "openTrip": "Open Trip",
-    "carRental": "Car Rental",
+    "carRental": "City Tour",
     "activities": "Activities",
     "ourServices": "Our Services",
     "blog": "Blog",
