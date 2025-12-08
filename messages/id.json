@@ -4,7 +4,7 @@
     "planner": "Perencana Perjalanan",
     "packages": "Paket Wisata",
     "openTrip": "Open Trip",
-    "carRental": "City Tour",
+    "carRental": "Rental Mobil",
     "activities": "Aktivitas",
     "ourServices": "Layanan Kami",
     "blog": "Blog",
@@ -301,6 +301,7 @@
         "hotel": "Hotel",
         "placeholder": "Cth: Hotel, Villa, atau Alamat"
       },
+
       "meetingPoint": {
         "title": "Titik Kumpul",
         "select": "Pilih Titik Kumpul",

@@ -4,7 +4,7 @@
     "planner": "Trip Planner",
     "packages": "Trip Packages",
     "openTrip": "Open Trip",
-    "carRental": "City Tour",
+    "carRental": "Car Rental",
     "activities": "Activities",
     "ourServices": "Our Services",
     "blog": "Blog",
@@ -240,7 +240,8 @@
       "title": "Filters",
       "price": "Price Range",
       "upTo": "Up to",
-      "categories": "Categories"
+      "categories": "Categories",
+      "startingFrom": "Starting from"
     },
     "buttons": {
       "details": "View Details",

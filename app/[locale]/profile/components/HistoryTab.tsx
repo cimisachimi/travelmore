@@ -13,25 +13,25 @@ import {
   ChevronUp,
   MapPin,
   Phone,
-  Mail,
   User,
   Plane,
-  Flag,
   Car,
   Clock,
   Calendar,
   Wallet,
   Compass,
-  Building2,
   Users,
   Luggage,
   Ticket,
-  FileText
+  FileText,
+  Flag,
+  Briefcase
 } from "lucide-react";
 
 // --- LOCAL TYPES FOR SAFETY ---
 interface BookingDetails {
   // Common
+  name?: string; // ✅ Added to fix generic access issues
   brand?: string;
   car_model?: string;
   plate_number?: string;
@@ -48,12 +48,16 @@ interface BookingDetails {
   brand_name?: string;
   trip_type?: string;
   city?: string;
+  destination?: string; // ✅ Added to fix the specific error
   province?: string;
   country?: string;
   travel_type?: string;
   departure_date?: string;
+  booking_date?: string; // Common for Activity
+  start_date?: string;   // Open Trip
+  end_date?: string;     // Open Trip
   duration?: string | number;
-  days?: string | number; // ✅ FIX: Added 'days' explicitly
+  days?: string | number;
   budget_pack?: string;
   addons?: string[] | string;
   must_visit?: string;
@@ -66,12 +70,15 @@ interface BookingDetails {
   pax_kids?: string | number;
   pax_seniors?: string | number;
   total_pax?: number;
+  participant_nationality?: string;
   
-  // Flights & Activities
+  // Flights & Activities & Services
   flight_number?: string;
   special_request?: string;
   quantity?: number;
+  activity_time?: string;
   service_name?: string;
+  notes?: string;
   
   // Catch-all
   [key: string]: unknown;
@@ -93,6 +100,10 @@ const ServiceTypeBadge = ({ type }: { type: string }) => {
     config = { label: "Holiday Package", color: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: Luggage };
   } else if (type?.includes("Activity")) {
     config = { label: "Activity", color: "bg-orange-50 text-orange-700 border-orange-200", icon: Ticket };
+  } else if (type?.includes("OpenTrip")) {
+    config = { label: "Open Trip", color: "bg-teal-50 text-teal-700 border-teal-200", icon: Flag };
+  } else if (type?.includes("Service")) {
+    config = { label: "Service", color: "bg-indigo-50 text-indigo-700 border-indigo-200", icon: Briefcase };
   }
 
   const Icon = config.icon;
@@ -137,21 +148,19 @@ const CarRentalDetails = ({ details }: { details: BookingDetails }) => (
 );
 
 const TripPlannerDetails = ({ details }: { details: BookingDetails }) => {
-    // Helper to safely parse numbers
     const safeInt = (val: string | number | undefined) => {
         const parsed = parseInt(String(val || "0"));
         return isNaN(parsed) ? 0 : parsed;
     };
 
     const type = details.type || 'personal';
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const totalPax = safeInt(details.pax_adults) + safeInt(details.pax_teens) + safeInt(details.pax_kids) + safeInt(details.pax_seniors);
     
-    // Determine location string
     let location = details.city || "-";
     if (details.trip_type === "domestic") location = `🇮🇩 ${details.city}, ${details.province}`;
     if (details.trip_type === "foreign") location = `🌐 ${details.city}, ${details.country}`;
 
-    // Helper to safely get displayable duration string
     const durationDisplay = details.duration || details.days || "";
 
     return (
@@ -193,6 +202,186 @@ const TripPlannerDetails = ({ details }: { details: BookingDetails }) => {
         </div>
     );
 };
+
+const HolidayPackageDetails = ({ details }: { details: BookingDetails }) => {
+  const totalPax = details.total_pax || (Number(details.adults || 0) + Number(details.children || 0));
+
+  return (
+    <div className="space-y-4 text-sm animate-fadeIn">
+      <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
+        <Luggage size={16} /> Package Details
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-3">
+          <div>
+            <span className="text-xs text-muted-foreground block">Schedule</span>
+            <span className="font-medium flex items-center gap-1">
+              <Calendar size={12} /> {details.departure_date || details.booking_date || "-"}
+            </span>
+            {details.duration && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                <Clock size={10} /> {details.duration} Days
+              </span>
+            )}
+          </div>
+          <div>
+            <span className="text-xs text-muted-foreground block">Participants</span>
+            <span className="font-medium flex items-center gap-1">
+              <Users size={12} /> {totalPax || details.quantity || 1} Pax
+            </span>
+          </div>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <span className="text-xs text-muted-foreground block">Contact Info</span>
+            <span className="font-medium flex items-center gap-1">
+              <User size={12} /> {details.full_name}
+            </span>
+            <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+              <Phone size={10} /> {details.phone_number || "-"}
+            </div>
+          </div>
+          {details.special_request && (
+            <div>
+              <span className="text-xs text-muted-foreground block">Special Request</span>
+              <span className="font-medium italic text-xs">&quot;{details.special_request}&quot;</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ActivityDetails = ({ details }: { details: BookingDetails }) => (
+  <div className="space-y-4 text-sm animate-fadeIn">
+    <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
+      <Ticket size={16} /> Activity Details
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-3">
+        <div>
+          <span className="text-xs text-muted-foreground block">Date & Time</span>
+          <span className="font-medium flex items-center gap-1">
+            <Calendar size={12} /> {details.booking_date || details.departure_date || "-"}
+          </span>
+          <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+            <Clock size={10} /> {details.activity_time || details.pickup_time || "TBA"}
+          </div>
+        </div>
+        <div>
+          <span className="text-xs text-muted-foreground block">Participants</span>
+          <span className="font-medium flex items-center gap-1">
+            <Users size={12} /> {details.quantity} Pax
+          </span>
+          {details.participant_nationality && (
+             <span className="text-xs text-muted-foreground block mt-0.5">
+               ({details.participant_nationality})
+             </span>
+          )}
+        </div>
+      </div>
+      <div className="space-y-3">
+        <div>
+          <span className="text-xs text-muted-foreground block">Pickup Location</span>
+          <span className="font-medium flex items-center gap-1">
+            <MapPin size={12} /> {details.pickup_location || "Meeting Point"}
+          </span>
+        </div>
+        {details.special_request && (
+          <div>
+            <span className="text-xs text-muted-foreground block">Special Request</span>
+            <span className="font-medium italic text-xs">&quot;{details.special_request}&quot;</span>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+// ✅ NEW: Open Trip Details
+const OpenTripDetails = ({ details }: { details: BookingDetails }) => (
+  <div className="space-y-4 text-sm animate-fadeIn">
+    <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
+      <Flag size={16} /> Open Trip Details
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-3">
+        <div>
+          <span className="text-xs text-muted-foreground block">Destination</span>
+          <span className="font-medium flex items-center gap-1">
+            {/* ✅ FIXED: details.destination is now typed as string | undefined */}
+            <MapPin size={12} /> {details.destination || details.city || "-"}
+          </span>
+        </div>
+        <div>
+          <span className="text-xs text-muted-foreground block">Schedule</span>
+          <div className="font-medium flex items-center gap-1">
+            <Calendar size={12} /> {details.start_date}
+          </div>
+          {details.end_date && (
+             <div className="text-xs text-muted-foreground mt-0.5 ml-4">
+                to {details.end_date}
+             </div>
+          )}
+        </div>
+      </div>
+      <div className="space-y-3">
+        <div>
+          <span className="text-xs text-muted-foreground block">Participants</span>
+          <span className="font-medium flex items-center gap-1">
+            <Users size={12} /> {details.quantity || 1} Pax
+          </span>
+        </div>
+        {details.full_name && (
+          <div>
+            <span className="text-xs text-muted-foreground block">Contact</span>
+            <span className="font-medium flex items-center gap-1">
+              <User size={12} /> {details.full_name}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+// ✅ NEW: Generic Service Details
+const ServiceDetails = ({ details }: { details: BookingDetails }) => (
+  <div className="space-y-4 text-sm animate-fadeIn">
+    <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
+      <Briefcase size={16} /> Service Details
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-3">
+        <div>
+          <span className="text-xs text-muted-foreground block">Service Name</span>
+          <span className="font-medium">{details.service_name || details.name || "Custom Service"}</span>
+        </div>
+        <div>
+          <span className="text-xs text-muted-foreground block">Booking Date</span>
+          <span className="font-medium flex items-center gap-1">
+            <Calendar size={12} /> {details.booking_date || details.departure_date || "-"}
+          </span>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {details.notes && (
+          <div>
+            <span className="text-xs text-muted-foreground block">Notes</span>
+            <span className="font-medium text-xs italic">{details.notes}</span>
+          </div>
+        )}
+        <div>
+          <span className="text-xs text-muted-foreground block">Contact</span>
+          <span className="font-medium flex items-center gap-1">
+            <User size={12} /> {details.full_name || "-"}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 // --- MAIN COMPONENT ---
 
@@ -345,8 +534,20 @@ export default function HistoryTab() {
                     <div className="bg-muted/40 rounded-lg p-4 mb-4 border border-border/50">
                         {bookableType.includes("CarRental") && <CarRentalDetails details={details} />}
                         {bookableType.includes("TripPlanner") && <TripPlannerDetails details={details} />}
+                        {bookableType.includes("HolidayPackage") && <HolidayPackageDetails details={details} />}
+                        {bookableType.includes("Activity") && <ActivityDetails details={details} />}
+                        {/* ✅ NEW: Open Trip Support */}
+                        {bookableType.includes("OpenTrip") && <OpenTripDetails details={details} />}
+                        {/* ✅ NEW: Generic Service Support */}
+                        {bookableType.includes("Service") && <ServiceDetails details={details} />}
+                        
                         {/* Fallback for others */}
-                        {!bookableType.includes("CarRental") && !bookableType.includes("TripPlanner") && (
+                        {!bookableType.includes("CarRental") && 
+                         !bookableType.includes("TripPlanner") && 
+                         !bookableType.includes("HolidayPackage") && 
+                         !bookableType.includes("Activity") && 
+                         !bookableType.includes("OpenTrip") &&
+                         !bookableType.includes("Service") && (
                              <div className="text-sm text-muted-foreground italic">
                                  Specific details for this service type are not yet supported in this view.
                              </div>
