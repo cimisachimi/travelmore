@@ -310,8 +310,8 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
   const summaryBgClass = theme === "regular" ? "bg-gray-100" : "bg-background";
   const errorBorderClass = "border-red-500 focus:border-red-500 focus:ring-red-500";
   const iconBgClass = theme === "regular" ? "bg-primary/10" : "bg-primary/20";
-  const addonCardClass = theme === "regular" ? "border-gray-200 hover:border-blue-400 bg-white" : "border-gray-600 hover:border-blue-500 bg-gray-700";
-  const addonSelectedClass = "border-blue-500 ring-1 ring-blue-500 bg-blue-50 dark:bg-blue-900/20";
+  const addonCardClass = theme === "regular" ? "border-gray-200 hover:border-primary bg-white" : "border-gray-600 hover:border-primary bg-gray-700";
+  const addonSelectedClass = "border-primary ring-1 ring-primary bg-primary/10 dark:bg-primary/20";
 
   const baseInputClass = `mt-1 block w-full rounded-md shadow-sm ${inputBgClass} ${focusRingClass} ${textColor} placeholder:${mutedTextColor}`;
 
@@ -418,7 +418,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
                     >
                       <div className={`
                         w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors
-                        ${isSelected ? "bg-blue-500 border-blue-500" : "border-gray-400 bg-transparent"}
+                        ${isSelected ? "bg-primary border-primary" : "border-gray-400 bg-transparent"}
                       `}>
                         {isSelected && <Plus size={14} className="text-white" />}
                       </div>

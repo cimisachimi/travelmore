@@ -149,7 +149,7 @@ export default function ActivitiesPage() {
         </div>
         
         <div className="container mx-auto px-4 text-center relative z-10">
-          <span className={`inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase mb-4 ${isExclusive ? "bg-yellow-900/30 text-yellow-500" : "bg-blue-100 text-blue-600"}`}>
+          <span className={`inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase mb-4 ${isExclusive ? "bg-yellow-900/30 text-yellow-500" : "bg-blue-100 text-priamary"}`}>
             {t("subtitle", { defaultMessage: "Explore The World" })}
           </span>
           <h1 className={`text-4xl md:text-6xl font-black tracking-tight mb-6 ${textClass}`}>
@@ -161,7 +161,7 @@ export default function ActivitiesPage() {
             <div className={`flex items-center p-1.5 rounded-full ${isExclusive ? "bg-gray-800" : "bg-gray-100"}`}>
               <button
                 onClick={() => setTheme("regular")}
-                className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${!isExclusive ? "bg-white text-blue-600 shadow-md" : "text-gray-400 hover:text-white"}`}
+                className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${!isExclusive ? "bg-white text-primary shadow-md" : "text-gray-400 hover:text-white"}`}
               >
                 {tNav("regular", { defaultMessage: "Regular" })}
               </button>
@@ -213,7 +213,7 @@ export default function ActivitiesPage() {
                     placeholder="Search activities..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:outline-none transition-all ${isExclusive ? "bg-gray-800 border-gray-700 text-white focus:ring-yellow-500" : "bg-gray-50 border-gray-200 focus:ring-blue-500"}`}
+                    className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:outline-none transition-all ${isExclusive ? "bg-gray-800 border-gray-700 text-white focus:ring-yellow-500" : "bg-gray-50 border-gray-200 focus:ring-primary "}`}
                   />
                 </div>
 
@@ -230,7 +230,7 @@ export default function ActivitiesPage() {
                     step="50000"
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(Number(e.target.value))}
-                    className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${isExclusive ? "bg-gray-700 accent-yellow-500" : "bg-gray-200 accent-blue-600"}`}
+                    className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${isExclusive ? "bg-gray-700 accent-yellow-500" : "bg-gray-200 accent-primary"}`}
                   />
                   <div className="flex justify-between mt-2 text-sm">
                     <span className={textMutedClass}>0</span>
@@ -247,7 +247,7 @@ export default function ActivitiesPage() {
                   <div className="space-y-2.5">
                     {allCategories.map((category) => (
                       <label key={category} className="flex items-center group cursor-pointer">
-                        <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${selectedCategories.includes(category) ? (isExclusive ? "bg-yellow-500 border-yellow-500" : "bg-blue-600 border-blue-600") : "border-gray-400 bg-transparent"}`}>
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${selectedCategories.includes(category) ? (isExclusive ? "bg-yellow-500 border-yellow-500" : "bg-primary border-primary") : "border-gray-400 bg-transparent"}`}>
                            {selectedCategories.includes(category) && <X size={12} className="text-white rotate-45" />}
                         </div>
                         <input
@@ -340,11 +340,11 @@ export default function ActivitiesPage() {
                         <div className={`pt-4 mt-auto border-t flex items-end justify-between ${isExclusive ? "border-gray-800" : "border-gray-100"}`}>
                           <div>
                             <p className={`text-xs ${textMutedClass} mb-0.5`}>{t("filters.startingFrom", { defaultMessage: "Starting from" })}</p>
-                            <p className={`text-lg font-bold ${isExclusive ? "text-yellow-500" : "text-blue-600"}`}>
+                            <p className={`text-lg font-bold ${isExclusive ? "text-yellow-500" : "text-primary"}`}>
                               {formatCurrency(act.price)}
                             </p>
                           </div>
-                          <span className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isExclusive ? "bg-gray-800 text-white group-hover:bg-yellow-500 group-hover:text-black" : "bg-gray-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white"}`}>
+                          <span className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isExclusive ? "bg-gray-800 text-white group-hover:bg-yellow-500 group-hover:text-black" : "bg-gray-100 text-primary group-hover:bg-primary group-hover:text-white"}`}>
                             <ChevronRight size={20} />
                           </span>
                         </div>

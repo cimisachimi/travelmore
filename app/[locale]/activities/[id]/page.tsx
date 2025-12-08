@@ -113,7 +113,7 @@ const MobileImageSlider: React.FC<{ images: string[]; title: string }> = ({ imag
 
 const SectionTitle = ({ children, icon: Icon, theme }: { children: React.ReactNode; icon?: LucideIcon; theme: string }) => (
   <h3 className={`text-2xl font-bold mb-6 flex items-center gap-3 ${theme === "regular" ? "text-gray-900" : "text-white"}`}>
-    {Icon && <Icon className="w-6 h-6 text-blue-600" />}
+    {Icon && <Icon className="w-6 h-6 text-primary" />}
     {children}
   </h3>
 );
@@ -151,7 +151,7 @@ export default function ActivityDetailPage() {
     fetchActivity();
   }, [id, tAct]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
   if (error || !activity) return <div className="min-h-screen flex items-center justify-center text-red-500">{error || "Activity not found"}</div>;
 
   // Data Extraction
@@ -243,7 +243,7 @@ export default function ActivityDetailPage() {
         <div className="mb-8">
            <div className="flex flex-wrap gap-3 mb-4">
               {activity.category && (
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isDark ? "bg-blue-900/30 text-blue-400" : "bg-blue-100 text-blue-700"}`}>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isDark ? "bg-blue-900/30 text-primary" : "bg-blue-100 text-primary"}`}>
                   <Tag size={12} /> {activity.category}
                 </span>
               )}
@@ -277,7 +277,7 @@ export default function ActivityDetailPage() {
                     className={`
                       px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200
                       ${activeTab === tab 
-                        ? "bg-blue-600 text-white shadow-md shadow-blue-600/20" 
+                        ? "bg-primary text-white shadow-md shadow-primary/20" 
                         : `${isDark ? "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white" : "bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900"} border ${borderColor}`
                       }
                     `}
@@ -362,7 +362,7 @@ export default function ActivityDetailPage() {
                         {priceTiers.map((tier) => (
                           <tr key={tier.min_pax}>
                             <td className={`px-6 py-4 ${textColor}`}>{formatPaxRange(tier.min_pax, tier.max_pax)}</td>
-                            <td className="px-6 py-4 font-bold text-blue-600">{formatPrice(tier.price)}</td>
+                            <td className="px-6 py-4 font-bold text-primary">{formatPrice(tier.price)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -423,7 +423,7 @@ export default function ActivityDetailPage() {
                   {faqsData.length ? faqsData.map((faq, i) => (
                     <div key={i} className={`p-5 rounded-xl border ${borderColor} ${isDark ? "bg-gray-800/30" : "bg-gray-50/50"}`}>
                       <h4 className={`font-bold flex gap-3 ${textColor}`}>
-                        <Users className="w-5 h-5 text-blue-500 shrink-0" />
+                        <Users className="w-5 h-5 text-primary shrink-0" />
                         {faq.question}
                       </h4>
                       <p className={`mt-3 pl-8 text-sm leading-relaxed ${textMuted}`}>{faq.answer}</p>
@@ -453,7 +453,7 @@ export default function ActivityDetailPage() {
               <div className="mb-6">
                 <p className={`text-sm font-medium mb-1 ${textMuted}`}>Starting from</p>
                 <div className="flex items-baseline gap-2">
-                   <span className={`text-4xl font-black ${isDark ? "text-white" : "text-blue-600"}`}>
+                   <span className={`text-4xl font-black ${isDark ? "text-white" : "text-primary"}`}>
                      {formatPrice(startingPrice)}
                    </span>
                    <span className={textMuted}>/ pax</span>
@@ -469,8 +469,8 @@ export default function ActivityDetailPage() {
                 <button
                   onClick={() => setIsModalOpen(true)}
                   className={`
-                    w-full py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-600/20 transform transition-all hover:-translate-y-1
-                    bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white
+                    w-full py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 transform transition-all hover:-translate-y-1
+                    bg-gradient-to-r from-primary to-cyan-500 hover:from-primary hover:to-cyan-600 text-white
                   `}
                 >
                   {user ? "Book Now" : "Login to Book"}

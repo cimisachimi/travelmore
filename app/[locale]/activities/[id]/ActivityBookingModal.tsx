@@ -272,15 +272,15 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   const mutedTextColor = theme === "regular" ? "text-gray-600" : "text-gray-300";
   const inputBgClass = theme === "regular" ? "bg-gray-50" : "bg-gray-700";
   const inputBorderClass = theme === "regular" ? "border-gray-300" : "border-gray-600";
-  const focusRingClass = "focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
-  const buttonClass = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed";
+  const focusRingClass = "focus:ring-2 focus:ring-primary focus:border-primary";
+  const buttonClass = "w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed";
   const summaryBgClass = theme === "regular" ? "bg-gray-100" : "bg-gray-700/50";
   const errorBorderClass = "border-red-500 focus:border-red-500 focus:ring-red-500";
-  const iconBgClass = theme === "regular" ? "bg-blue-100" : "bg-blue-900/30";
+  const iconBgClass = theme === "regular" ? "bg-primary/20" : "bg-primary/30";
   
   // ✅ New Add-on specific styles
-  const addonCardClass = theme === "regular" ? "border-gray-200 hover:border-blue-400 bg-white" : "border-gray-600 hover:border-blue-500 bg-gray-700";
-  const addonSelectedClass = "border-blue-500 ring-1 ring-blue-500 bg-blue-50 dark:bg-blue-900/20";
+  const addonCardClass = theme === "regular" ? "border-gray-200 hover:border-primary bg-white" : "border-gray-600 hover:border-primary bg-gray-700";
+  const addonSelectedClass = "border-primary ring-1 ring-primary bg-primary/20 dark:bg-primary/30";
 
   const baseInputClass = `mt-1 block w-full rounded-md shadow-sm ${inputBgClass} ${focusRingClass} ${textColor} placeholder:${mutedTextColor} py-2 px-3 border ${inputBorderClass}`;
 
@@ -294,7 +294,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
         {/* Header */}
         <div className="sm:flex sm:items-start mb-6">
           <div className={`mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${iconBgClass} sm:mx-0 sm:h-10 sm:w-10`}>
-            <CalendarDays className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <CalendarDays className="h-6 w-6 text-primary dark:text-primary" />
           </div>
           <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
             <h2 className={`text-2xl font-bold ${textColor}`} id="modal-title">
@@ -382,7 +382,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
                       onClick={() => toggleAddon(addon.name)}
                       className={`relative flex items-center p-3 rounded-lg border cursor-pointer transition-all duration-200 ${addonCardClass} ${isSelected ? addonSelectedClass : ""}`}
                     >
-                      <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${isSelected ? "bg-blue-500 border-blue-500" : "border-gray-400 bg-transparent"}`}>
+                      <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${isSelected ? "bg-primary border-primary" : "border-gray-400 bg-transparent"}`}>
                         {isSelected && <Plus size={14} className="text-white" />}
                       </div>
                       <div className="flex-1">
@@ -459,7 +459,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
 
             <div className={`flex justify-between items-center border-t ${inputBorderClass} pt-2 mt-2`}>
               <p className={`text-lg font-semibold ${textColor}`}>{t("booking.total")}:</p>
-              <p className="text-xl font-bold text-blue-600">{formatPrice(grandTotal)}</p>
+              <p className="text-xl font-bold text-primary">{formatPrice(grandTotal)}</p>
             </div>
              {errors.general && <p className="text-red-600 text-sm mt-1 text-center">{errors.general}</p>}
           </div>

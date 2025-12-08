@@ -106,7 +106,7 @@ const MobileImageSlider: React.FC<{ images: string[]; title: string }> = ({ imag
 
 const SectionTitle = ({ children, icon: Icon, theme }: { children: React.ReactNode; icon?: LucideIcon; theme: string }) => (
   <h3 className={`text-2xl font-bold mb-6 flex items-center gap-3 ${theme === "regular" ? "text-gray-900" : "text-white"}`}>
-    {Icon && <Icon className="w-6 h-6 text-blue-600" />}
+    {Icon && <Icon className="w-6 h-6 text-primary" />}
     {children}
   </h3>
 );
@@ -151,7 +151,7 @@ export default function PackageDetailPage() {
     fetchPackage();
   }, [id, t]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
   if (error || !pkg) return <div className="min-h-screen flex items-center justify-center text-red-500">{error || t("status.notFound")}</div>;
 
   // Data Processing
@@ -251,7 +251,7 @@ export default function PackageDetailPage() {
                 <Clock size={12} /> {pkg.duration} {t("trip.days")}
               </span>
               {pkg.category && (
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isDark ? "bg-blue-900/30 text-blue-400" : "bg-blue-100 text-blue-700"}`}>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isDark ? "bg-blue-900/30 text-primary" : "bg-blue-100 text-primary"}`}>
                   <Tag size={12} /> {pkg.category}
                 </span>
               )}
@@ -279,7 +279,7 @@ export default function PackageDetailPage() {
                     className={`
                       px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200
                       ${activeTab === tab 
-                        ? "bg-blue-600 text-white shadow-md shadow-blue-600/20" 
+                        ? "bg-primary text-white shadow-md shadow-primary/20" 
                         : `${isDark ? "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white" : "bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900"} border ${borderColor}`
                       }
                     `}
@@ -326,7 +326,7 @@ export default function PackageDetailPage() {
                     <div className="relative pl-8 space-y-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-blue-200 dark:before:bg-blue-900">
                       {itineraryData.map((item, index) => (
                         <div key={index} className="relative">
-                           <div className="absolute -left-[35px] w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-lg ring-4 ring-white dark:ring-gray-900">
+                           <div className="absolute -left-[35px] w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg ring-4 ring-white dark:ring-gray-900">
                              {item.day}
                            </div>
                            <h4 className={`text-lg font-bold ${textColor}`}>{item.title}</h4>
@@ -379,7 +379,7 @@ export default function PackageDetailPage() {
                                 {formatPaxRange(tier.min_pax, tier.max_pax)}
                                 {tier.min_pax === bestPriceTier.min_pax && <span className="ml-2 text-xs font-bold text-green-600 uppercase">Best</span>}
                               </td>
-                              <td className="px-6 py-4 font-bold text-blue-600">{formatPrice(tier.price)}</td>
+                              <td className="px-6 py-4 font-bold text-primary">{formatPrice(tier.price)}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -442,7 +442,7 @@ export default function PackageDetailPage() {
                   {faqsData.length ? faqsData.map((faq, i) => (
                     <div key={i} className={`p-5 rounded-xl border ${borderColor} ${isDark ? "bg-gray-800/30" : "bg-gray-50/50"}`}>
                       <h4 className={`font-bold flex gap-3 ${textColor}`}>
-                        <Users className="w-5 h-5 text-blue-500 shrink-0" />
+                        <Users className="w-5 h-5 text-primary shrink-0" />
                         {faq.question}
                       </h4>
                       <p className={`mt-3 pl-8 text-sm leading-relaxed ${textMuted}`}>{faq.answer}</p>
@@ -471,7 +471,7 @@ export default function PackageDetailPage() {
               <div className="mb-6">
                 <p className={`text-sm font-medium mb-1 ${textMuted}`}>Starting from</p>
                 <div className="flex items-baseline gap-2">
-                   <span className={`text-4xl font-black ${isDark ? "text-white" : "text-blue-600"}`}>
+                   <span className={`text-4xl font-black ${isDark ? "text-white" : "text-primary"}`}>
                      {formatPrice(startingPrice)}
                    </span>
                    <span className={textMuted}>/ pax</span>
@@ -490,8 +490,8 @@ export default function PackageDetailPage() {
                 <button
                   onClick={() => setIsModalOpen(true)}
                   className={`
-                    w-full py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-600/20 transform transition-all hover:-translate-y-1
-                    bg-linear-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white
+                    w-full py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 transform transition-all hover:-translate-y-1
+                    bg-linear-to-r from-primary to-cyan-500 hover:from-primary hover:to-cyan-600 text-white
                   `}
                 >
                   {user ? t("booking.checkAvailability") : t("booking.loginToBook")}

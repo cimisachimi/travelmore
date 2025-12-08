@@ -268,7 +268,7 @@ export default function PackagesPage() {
                           name={category}
                           checked={selectedCategories.includes(category)}
                           onChange={handleCategoryChange}
-                          className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-600 dark:bg-gray-700 dark:checked:bg-blue-600 dark:focus:ring-offset-gray-800"
+                          className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary dark:bg-gray-700 dark:checked:bg-primary dark:focus:ring-offset-gray-800"
                         />
                         <span className={`ml-3 text-sm ${textMutedClass}`}>
                           {category}
@@ -358,7 +358,7 @@ export default function PackagesPage() {
 
                           <div className="p-6 flex flex-col flex-grow">
                             {pkg.category && (
-                              <p className="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-1">
+                              <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-1">
                                 {pkg.category}
                               </p>
                             )}
@@ -374,12 +374,12 @@ export default function PackagesPage() {
                             <div className={`flex justify-between items-center mt-auto pt-4 border-t ${borderClass}`}>
                               <div>
                                 <span className={`text-xs ${textMutedClass}`}>{t("from")}</span>
-                                <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                <p className="text-lg font-bold text-primary dark:text-primary">
                                   {formatCurrency(startingPrice)}
                                 </p>
                                 <p className={`text-xs italic ${textMutedClass}`}>*Price varies by group size</p>
                               </div>
-                              <span className={`text-sm font-semibold ${textClass} group-hover:text-blue-500 transition-colors duration-300`}>
+                              <span className={`text-sm font-semibold ${textClass} group-hover:text-primary transition-colors duration-300`}>
                                 {t("viewDetails")} →
                               </span>
                             </div>
