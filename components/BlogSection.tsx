@@ -31,12 +31,7 @@ export default function BlogSection() {
       try {
         setLoading(true);
         
-        // [3] Kirim request ke API dengan locale yang benar
-        // PENTING: Backend Anda harus siap menerima parameter ini.
-        // Opsi A: Lewat Query Param (lebih umum untuk GET request sederhana)
-        // const response = await api.get(`/public/posts?limit=3&lang=${locale}`);
-        
-        // Opsi B: Lewat Header (jika konfigurasi axios/backend mendukung)
+       
         const response = await api.get("/public/posts?limit=3", {
             headers: {
                 "Accept-Language": locale 
@@ -119,7 +114,7 @@ export default function BlogSection() {
                       year: 'numeric', month: 'long', day: 'numeric'
                     })}
                   </span>
-                  <h3 className="text-xl font-semibold mt-2 text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+                  <h3 className="text-xl font-semibold mt-2 text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
                     {blog.title}
                   </h3>
                   <p className="text-gray-600 mt-3 flex-1 line-clamp-3">
@@ -139,7 +134,7 @@ export default function BlogSection() {
         <div className="mt-12 flex justify-center">
           <Link
             href={`/${locale}/blog`} // [8] Link show more juga harus ikut locale
-            className="inline-flex items-center px-8 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
+            className="inline-flex items-center px-8 py-3 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary hover:text-white transition-colors"
           >
             {t("button")}
             <svg

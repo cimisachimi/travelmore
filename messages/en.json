@@ -279,6 +279,7 @@
       "confirm": "Book Now",
       "optional": "Optional",
       "date": "Select Date",
+      "time": "Select Time",
       "quantity": "Quantity",
       "discountCode": "Discount Code",
       "subtotal": "Subtotal",
@@ -755,6 +756,7 @@
         "title": "Special Request",
         "placeholder": "e.g., allergies, dietary needs, late pickup..."
       },
+      "enhanceTrip": "Enhance your trip",
       "optional": "Optional",
       "total": "Total Price",
       "submitting": "Booking...",
