@@ -8,12 +8,13 @@ export default function DiscountBanner() {
   const t = useTranslations("DiscountBanner");
 
   return (
-   
-    <section className="mt-8 mb-16 md:mt-12 md:mb-24">
-      <div className="relative w-full h-[500px] md:h-[350px] overflow-hidden shadow-xl flex">
+    <section className="mt-8 mb-16 md:mt-12 md:mb-24 px-4 md:px-0">
+      
+     
+      <div className="relative w-full min-h-[500px] md:min-h-[400px] lg:min-h-[450px] overflow-hidden shadow-xl  flex items-center">
         
-        <div className="relative flex-grow">
-        
+       
+        <div className="absolute inset-0 w-full h-full">
           <Image
             src="/banner.webp" 
             alt="Yogyakarta cityscape"
@@ -23,36 +24,59 @@ export default function DiscountBanner() {
             priority
           />
 
+          {/* Overlay Warna */}
           <div
-            className="absolute inset-0 bg-primary/80 md:bg-primary 
+            className="absolute inset-0 bg-primary/90 md:bg-primary 
                        md:[clip-path:polygon(100%_0,_100%_100%,_35%_100%,_50%_0)]"
           />
+        </div>
 
-          <div className="absolute inset-0 flex justify-center items-center md:justify-end z-10">
-            <div className="w-11/12 md:w-3/5 lg:w-1/2 p-8 md:p-12 text-white text-center md:text-left">
-              <span className="inline-block bg-white/20 text-white text-xs font-bold py-1 px-3 rounded-full uppercase tracking-wider mb-4">
-                {t("badge")}
-              </span>
-              
-              <h2 className="text-4xl md:text-5xl font-bold">
-                {t("title")}
-              </h2>
+        
+        <div className="relative z-10 w-full flex justify-center md:justify-end py-12 md:py-0">
+          <div className="w-11/12 md:w-3/5 lg:w-1/2 p-4 md:p-12 text-white text-center md:text-left">
             
-              <p className="mt-4 text-sm max-w-xs mx-auto md:mx-0">
-                {t("description")}
-              </p>
-              <div className="mt-6 space-y-4">
-                
-                <Link
-                  href="/packages"
-                  className="inline-block bg-white text-gray-900 font-bold py-3 px-8 rounded-lg text-sm shadow-md transition-transform hover:scale-105"
-                >
-                  {t("ctaButton")}
-                </Link>
-              </div>
+            {/* Badge */}
+            <span className="inline-block bg-white/20 text-white font-bold rounded-full uppercase tracking-wider mb-4 
+                             text-[10px] px-2 py-1       
+                             md:text-xs md:px-3          
+                             lg:text-sm lg:px-4 lg:py-1.5 border border-white/30">
+              {t("badge")}
+            </span>
+            
+           
+            <h2 className="font-extrabold leading-tight mb-4
+                           text-3xl        /* Mobile */
+                           md:text-3xl     /* Tablet */
+                           lg:text-5xl     /* Laptop */
+                           xl:text-6xl     /* Layar Besar */">
+              {t("title")}
+            </h2>
+          
+            {/* Deskripsi */}
+            <p className="leading-relaxed opacity-90 mx-auto md:mx-0 mb-8
+                          text-sm max-w-xs             
+                          md:text-sm md:max-w-sm       
+                          lg:text-base lg:max-w-md     
+                          xl:text-lg xl:max-w-lg">
+              {t("description")}
+            </p>
+
+            {/* Tombol */}
+            <div>
+              <Link
+                href="/packages"
+                className="inline-block bg-white text-gray-900 font-bold rounded-lg shadow-lg transition-transform hover:scale-105
+                           text-sm py-3 px-8           
+                           md:text-sm md:py-3 md:px-6  
+                           lg:text-base lg:py-4 lg:px-8"
+              >
+                {t("ctaButton")}
+              </Link>
             </div>
+
           </div>
         </div>
+
       </div>
     </section>
   );
