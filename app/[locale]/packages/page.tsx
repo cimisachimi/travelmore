@@ -1,5 +1,3 @@
-// app/[locale]/packages/page.tsx
-
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -9,6 +7,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { AxiosError } from "axios";
+import { ChevronLeft, ChevronRight } from "lucide-react"; 
 
 // --- Interfaces ---
 
@@ -35,7 +34,7 @@ interface PackageListItem {
   // Pricing & Addons
   price_tiers: PackagePriceTier[];
   starting_from_price: number | null; 
-  addons?: Addon[]; // ✅ Added to match API
+  addons?: Addon[];
 }
 
 interface ApiResponse {
@@ -57,6 +56,29 @@ interface ApiResponse {
     total: number;
   };
 }
+
+// --- Helper Functions ---
+
+const calculateDisplayPrice = (pkg: PackageListItem): number => {
+  if (pkg.starting_from_price && pkg.starting_from_price > 0) {
+    return pkg.starting_from_price;
+  }
+  
+  const priceTiers = pkg.price_tiers || [];
+  if (priceTiers.length > 0) {
+    const sortedTiers = [...priceTiers].sort((a, b) => a.min_pax - b.min_pax);
+    const smallGroupTier = sortedTiers.find(
+      (tier) => tier.min_pax <= 4 && (tier.max_pax || 4) >= 2
+    );
+    
+    if (smallGroupTier) return smallGroupTier.price;
+    
+    const medianIndex = Math.floor(sortedTiers.length / 2);
+    return sortedTiers[medianIndex]?.price || 0;
+  }
+  
+  return 0;
+};
 
 // --- Helper Icon ---
 const FilterIcon = () => (
@@ -85,9 +107,15 @@ export default function PackagesPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [maxPrice, setMaxPrice] = useState<number>(0);
+  
+  const [maxPrice, setMaxPrice] = useState<number>(10000000); 
   const [priceSliderMax, setPriceSliderMax] = useState<number>(10000000); 
+  
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  // State untuk Pagination
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const ITEMS_PER_PAGE = 6; 
 
   const fetchErrorString = useMemo(() => t("status.fetchError"), [t]);
   const loadingString = useMemo(() => t("status.loading"), [t]);
@@ -100,30 +128,23 @@ export default function PackagesPage() {
       setLoading(true);
       setError(null);
       try {
-        // This endpoint now returns only 'is_active: true' packages
-        const response = await api.get<ApiResponse>("/public/packages");
+        const response = await api.get<ApiResponse>("/public/packages?per_page=100");
         
         if (isMounted) {
           const packagesData = response.data.data || [];
           setApiPackages(packagesData);
 
           if (packagesData.length > 0) {
-            const allPrices = packagesData.map((p) => p.starting_from_price);
-            const numericPrices = allPrices.filter(
-              (p): p is number => typeof p === "number" && !isNaN(p)
-            );
+            const allPrices = packagesData.map((p) => calculateDisplayPrice(p));
+            const numericPrices = allPrices.filter((p) => p > 0);
 
             if (numericPrices.length > 0) {
               const calculatedMax = Math.max(...numericPrices);
-              setPriceSliderMax(calculatedMax);
-              setMaxPrice(calculatedMax);
-            } else {
-              setPriceSliderMax(10000000); 
-              setMaxPrice(10000000);
+              const niceMax = Math.ceil(calculatedMax / 1000000) * 1000000;
+              
+              setPriceSliderMax(niceMax);
+              setMaxPrice((prev) => prev === 10000000 ? niceMax : prev);
             }
-          } else {
-            setPriceSliderMax(10000000); 
-            setMaxPrice(10000000);
           }
         }
       } catch (err: unknown) {
@@ -146,15 +167,13 @@ export default function PackagesPage() {
     };
   }, [fetchErrorString]); 
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [maxPrice, selectedCategories]);
+
   const priceBounds = useMemo(() => {
-    if (apiPackages.length === 0) return { min: 0, max: priceSliderMax }; 
-    const allPrices = apiPackages.map((p) => p.starting_from_price);
-    const numericPrices = allPrices.filter(
-      (p): p is number => typeof p === "number" && !isNaN(p)
-    );
-    if (numericPrices.length === 0) return { min: 0, max: priceSliderMax };
-    return { min: Math.min(0, ...numericPrices), max: priceSliderMax };
-  }, [apiPackages, priceSliderMax]);
+    return { min: 0, max: priceSliderMax };
+  }, [priceSliderMax]);
 
   const allCategories = useMemo(
     () => [
@@ -176,13 +195,27 @@ export default function PackagesPage() {
 
   const filteredPackages = useMemo(() => {
     return apiPackages.filter((pkg) => {
-      const priceMatch = (pkg.starting_from_price || 0) <= maxPrice;
+      const realPrice = calculateDisplayPrice(pkg);
+      const priceMatch = realPrice <= maxPrice;
+      
       const categoryMatch =
         selectedCategories.length === 0 ||
         (pkg.category && selectedCategories.includes(pkg.category));
+        
       return priceMatch && categoryMatch;
     });
   }, [apiPackages, maxPrice, selectedCategories]);
+
+  const totalPages = Math.ceil(filteredPackages.length / ITEMS_PER_PAGE);
+  const currentPackages = filteredPackages.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+  };
 
   const formatCurrency = (amount: number | null | undefined): string => {
     const numericAmount = Number(amount) || 0;
@@ -194,13 +227,17 @@ export default function PackagesPage() {
     }).format(numericAmount);
   };
 
-  // Memoize CSS classes
+  
   const mainBgClass = useMemo(() => (theme === "regular" ? "bg-gray-50" : "bg-black"), [theme]);
-  const cardBgClass = useMemo(() => (theme === "regular" ? "bg-white" : "bg-gray-800"), [theme]);
+  const cardBgClass = useMemo(() => (theme === "regular" ? "bg-white border-gray-100" : "bg-gray-900 border-gray-800"), [theme]);
   const textClass = useMemo(() => (theme === "regular" ? "text-gray-900" : "text-white"), [theme]);
-  const textMutedClass = useMemo(() => (theme === "regular" ? "text-gray-600" : "text-gray-300"), [theme]);
+  const textMutedClass = useMemo(() => (theme === "regular" ? "text-gray-600" : "text-gray-400"), [theme]);
   const headerBgClass = useMemo(() => (theme === "regular" ? "bg-white" : "bg-gray-900"), [theme]);
   const borderClass = useMemo(() => (theme === "regular" ? "border-gray-200" : "border-gray-700"), [theme]);
+  
+  
+  const activePageClass = "bg-primary text-white border-primary";
+  const inactivePageClass = theme === "regular" ? "bg-white text-gray-700 border-gray-300 hover:bg-gray-50" : "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700";
 
   return (
     <div className={mainBgClass}>
@@ -217,6 +254,7 @@ export default function PackagesPage() {
 
       <div className="container mx-auto px-4 lg:px-8 py-12">
         <div className="flex flex-col md:flex-row gap-8">
+          
           {/* --- Filters Sidebar --- */}
           <aside
             id="filter-sidebar"
@@ -227,7 +265,7 @@ export default function PackagesPage() {
                 : "hidden md:block max-h-0 md:max-h-full overflow-hidden"
             }`}
           >
-            <div className={`${cardBgClass} p-6 rounded-lg shadow-md sticky top-24`}>
+            <div className={`${cardBgClass} border p-6 rounded-2xl shadow-sm sticky top-24`}>
               <h3 className={`text-xl font-bold mb-4 ${textClass}`}>
                 {t("filters")}
               </h3>
@@ -239,13 +277,13 @@ export default function PackagesPage() {
                 <input
                   id="priceRange"
                   type="range"
-                  min={priceBounds.min}
+                  min={0} 
                   max={priceBounds.max} 
                   step="100000"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
                   disabled={loading || apiPackages.length === 0}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed accent-primary"
                 />
                 <div className={`mt-2 text-sm ${textMutedClass}`}>
                   {t("upTo")}: <strong>{formatCurrency(maxPrice)}</strong>
@@ -254,34 +292,35 @@ export default function PackagesPage() {
               <hr className={`my-6 ${borderClass}`} />
               {/* Category Filter */}
               <div>
-                <h4 className={`font-semibold mb-2 ${textClass}`}>
-                  {t("categories")}
-                </h4>
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                  {loading ? (
-                    <p className={textMutedClass}>{loadingString}</p>
-                  ) : allCategories.length > 0 ? (
-                    allCategories.map((category) => (
-                      <label key={category} className="flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name={category}
-                          checked={selectedCategories.includes(category)}
-                          onChange={handleCategoryChange}
-                          className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary dark:bg-gray-700 dark:checked:bg-primary dark:focus:ring-offset-gray-800"
-                        />
-                        <span className={`ml-3 text-sm ${textMutedClass}`}>
-                          {category}
-                        </span>
-                      </label>
-                    ))
-                  ) : (
-                    <p className={`text-sm ${textMutedClass}`}>
-                      {noCategoriesString}
-                    </p>
-                  )}
+                  <h4 className={`font-semibold mb-2 ${textClass}`}>
+                    {t("categories")}
+                  </h4>
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2"> 
+                    {loading ? (
+                      <p className={textMutedClass}>{loadingString}</p>
+                    ) : allCategories.length > 0 ? (
+                      allCategories.map((category) => (
+                        <label key={category} className="flex items-center cursor-pointer group">
+                          <input
+                            type="checkbox"
+                            name={category}
+                            checked={selectedCategories.includes(category)}
+                            onChange={handleCategoryChange}
+                            // ✅ FIX: Menambahkan accent-primary agar warna centang hijau (primary)
+                            className="h-4 w-4 rounded border-gray-300 text-primary accent-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700 dark:checked:bg-primary cursor-pointer"
+                          />
+                          <span className={`ml-3 text-sm ${textMutedClass} group-hover:text-primary transition-colors`}>
+                            {category}
+                          </span>
+                        </label>
+                      ))
+                    ) : (
+                      <p className={`text-sm ${textMutedClass}`}>
+                        {noCategoriesString}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
             </div>
           </aside>
 
@@ -294,8 +333,7 @@ export default function PackagesPage() {
                 aria-expanded={isFilterOpen}
                 className={`w-full flex items-center justify-center gap-2 p-3 rounded-lg font-semibold ${cardBgClass} ${textClass} shadow-md`}
               >
-                <FilterIcon />{" "}
-                {isFilterOpen ? t("closeFilters") : t("showFilters")}
+                <FilterIcon /> {isFilterOpen ? t("closeFilters") : t("showFilters")}
               </button>
             </div>
             
@@ -315,85 +353,113 @@ export default function PackagesPage() {
             )}
 
             {!loading && !error && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {filteredPackages.length > 0 ? (
-                  filteredPackages.map((pkg) => {
-                    const priceTiers = pkg.price_tiers || [];
-                    let startingPrice = 0;
+              <>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
+                  {currentPackages.length > 0 ? (
+                    currentPackages.map((pkg) => {
+                      const startingPrice = calculateDisplayPrice(pkg);
 
-                    if (pkg.starting_from_price && pkg.starting_from_price > 0) {
-                      startingPrice = pkg.starting_from_price;
-                    } else if (priceTiers.length > 0) {
-                      const sortedTiers = [...priceTiers].sort((a, b) => a.min_pax - b.min_pax);
-                      // Prefer 2–4 pax range
-                      const smallGroupTier = sortedTiers.find((tier) => tier.min_pax <= 4 && (tier.max_pax || 4) >= 2);
-                      if (smallGroupTier) {
-                        startingPrice = smallGroupTier.price;
-                      } else {
-                        const medianIndex = Math.floor(sortedTiers.length / 2);
-                        startingPrice = sortedTiers[medianIndex]?.price || 0; 
-                      }
-                    }
-
-                    return (
-                      <Link key={pkg.id} href={`/packages/${pkg.id}`} className="block group h-full">
-                        <div className={`${cardBgClass} rounded-lg shadow-lg overflow-hidden flex flex-col h-full transition duration-300 ease-in-out group-hover:shadow-2xl group-hover:-translate-y-1`}>
-                          <div className="relative h-56 w-full overflow-hidden">
-                            <Image
-                              src={pkg.thumbnail_url || "/placeholder.jpg"}
-                              alt={pkg.name || "Holiday Package"}
-                              fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-105"
-                              sizes="(max-width: 1023px) 100vw, 50vw"
-                              priority={filteredPackages.indexOf(pkg) < 4}
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).srcset = "/placeholder.jpg";
-                                (e.target as HTMLImageElement).src = "/placeholder.jpg";
-                              }}
-                            />
-                            <div className="absolute top-4 right-4 bg-black bg-opacity-60 text-white py-1 px-3 rounded-full text-sm font-bold backdrop-blur-sm">
-                              {pkg.duration} {t("days")}
-                            </div>
-                          </div>
-
-                          <div className="p-6 flex flex-col flex-grow">
-                            {pkg.category && (
-                              <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-1">
-                                {pkg.category}
-                              </p>
-                            )}
-
-                            <h2 className={`text-xl font-bold mb-2 ${textClass} line-clamp-2`}>
-                              {pkg.name?.split(": ")[1] || pkg.name || "Unnamed Package"}
-                            </h2>
-
-                            {pkg.location && (
-                              <p className={`text-sm ${textMutedClass} mb-3`}>{pkg.location}</p>
-                            )}
-
-                            <div className={`flex justify-between items-center mt-auto pt-4 border-t ${borderClass}`}>
-                              <div>
-                                <span className={`text-xs ${textMutedClass}`}>{t("from")}</span>
-                                <p className="text-lg font-bold text-primary dark:text-primary">
-                                  {formatCurrency(startingPrice)}
-                                </p>
-                                <p className={`text-xs italic ${textMutedClass}`}>*Price varies by group size</p>
+                      return (
+                        <Link key={pkg.id} href={`/packages/${pkg.id}`} className="block group h-full">
+                        
+                          <div className={`h-full flex flex-col rounded-2xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border ${cardBgClass}`}>
+                            <div className="relative h-56 w-full overflow-hidden">
+                              <Image
+                                src={pkg.thumbnail_url || "/placeholder.jpg"}
+                                alt={pkg.name || "Holiday Package"}
+                                fill
+                                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                sizes="(max-width: 1023px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                                priority={false}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).srcset = "/placeholder.jpg";
+                                  (e.target as HTMLImageElement).src = "/placeholder.jpg";
+                                }}
+                              />
+                              <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-md text-white py-1 px-3 rounded-full text-xs font-bold">
+                                {pkg.duration} {t("days")}
                               </div>
-                              <span className={`text-sm font-semibold ${textClass} group-hover:text-primary transition-colors duration-300`}>
-                                {t("viewDetails")} →
-                              </span>
+                            </div>
+
+                            <div className="p-5 flex flex-col flex-grow">
+                              {pkg.category && (
+                                
+                                <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">
+                                  {pkg.category}
+                                </p>
+                              )}
+
+                              
+                              <h2 className={`text-lg font-bold mb-2 ${textClass} line-clamp-2 leading-tight`}>
+                                {pkg.name?.split(": ")[1] || pkg.name || "Unnamed Package"}
+                              </h2>
+
+                              {pkg.location && (
+                                <p className={`text-xs ${textMutedClass} mb-4 flex items-center gap-1`}>
+                                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                   {pkg.location}
+                                </p>
+                              )}
+
+                              <div className={`flex justify-between items-end mt-auto pt-4 border-t ${borderClass}`}>
+                                <div>
+                                  <span className={`text-xs ${textMutedClass} block mb-0.5`}>{t("from")}</span>
+                               
+                                  <p className="text-lg font-extrabold text-primary dark:text-primary">
+                                    {formatCurrency(startingPrice)}
+                                  </p>
+                                </div>
+                               
+                                <span className={`w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 text-gray-400 group-hover:bg-primary group-hover:text-white transition-all duration-300`}>
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Link>
-                    );
-                  })
-                ) : (
-                  <div className="lg:col-span-2 text-center py-16">
-                    <p className="text-gray-500 dark:text-gray-400 text-xl">{noResultsString}</p>
+                        </Link>
+                      );
+                    })
+                  ) : (
+                    <div className="lg:col-span-3 text-center py-16">
+                      <p className="text-gray-500 dark:text-gray-400 text-xl">{noResultsString}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* ✅ Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-2 mt-8">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className={`p-2 rounded-md border transition-colors ${inactivePageClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`w-10 h-10 flex items-center justify-center rounded-md border text-sm font-semibold transition-colors ${
+                          currentPage === page ? activePageClass : inactivePageClass
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className={`p-2 rounded-md border transition-colors ${inactivePageClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      <ChevronRight size={20} />
+                    </button>
                   </div>
                 )}
-              </div>
+              </>
             )}
           </main>
         </div>

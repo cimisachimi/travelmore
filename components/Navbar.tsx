@@ -127,7 +127,7 @@ function DropdownLink({
                 key={item.name}
                 href={item.href}
                 onClick={onItemClick}
-                className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition-colors"
+                className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 hover:text-primary transition-colors"
                 role="menuitem"
               >
                 {item.name}
