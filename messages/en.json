@@ -1124,7 +1124,8 @@
     "needHelp": "Need Help?",
     "chatExpert": "Chat with our Jogja expert to tailor this itinerary.",
     "preview": "Preview Itinerary",
-    "previewShort": "Preview"
+    "previewShort": "Preview",
+    "pricingPackages": "Daftar Harga Paket"
   },
   "ItineraryData": {
     "facilities": {
