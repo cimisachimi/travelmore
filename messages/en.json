@@ -554,6 +554,10 @@
     },
     "defaultDescription": "Enjoy the excitement of {name} with other travelers. This package is designed to provide the best experience at an affordable price. Explore the beauty of {location} and create unforgettable memories."
   },
+  "galleryPage": {
+    "title": "Jelajahi Destinasi Kami",
+    "subtitle": "Temukan keindahan Indonesia yang memukau melalui lensa kami. Temukan petualangan Anda berikutnya di antara tempat-tempat pilihan ini."
+  },
   "PackagesPage": {
     "title": "Explore Our Tour Packages",
     "subtitle": "Find the perfect adventure in Yogyakarta, curated just for you. Adjust the filters to match your preferences.",

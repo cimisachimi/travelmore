@@ -1,11 +1,8 @@
-// components/GalleryGrid.tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { destinations } from "@/data/gallery";
-import type { Destination } from "@/data/gallery";
 import { 
   X, 
   ChevronLeft, 
@@ -14,173 +11,297 @@ import {
   Clock, 
   Tag, 
   Info, 
-  ZoomIn 
+  ZoomIn,
+  Loader2,
+  ArrowUpRight
 } from "lucide-react";
+import api from "@/lib/api"; 
+import { useLocale } from "next-intl";
+
+interface GalleryItem {
+  id: number;
+  title: string;
+  location: string | null;
+  description: string;
+  best_time: string;
+  ticket_price: string;
+  redirect_url: string | null;
+  redirect_text: string | null;
+  thumbnail: string | null;
+  images: string[];
+}
 
 export default function GalleryGrid() {
-  const [selectedImage, setSelectedImage] = useState<Destination | null>(null);
+  const locale = useLocale();
+  
+  const [items, setItems] = useState<GalleryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  
+  const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
 
-  const closeLightBox = () => setSelectedImage(null);
+  // --- FETCH DATA ---
+  const fetchGallery = async (pageNum: number) => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/public/galleries?page=${pageNum}`, {
+        headers: { "Accept-Language": locale }
+      });
+      
+      const newData = response.data.data;
+      const meta = response.data; 
+
+      if (pageNum === 1) {
+        setItems(newData);
+      } else {
+        setItems((prev) => [...prev, ...newData]);
+      }
+
+      setHasMore(meta.current_page < meta.last_page);
+    } catch (error) {
+      console.error("Failed to fetch gallery:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setPage(1);
+    fetchGallery(1);
+  }, [locale]);
+
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchGallery(nextPage);
+  };
+
+  // --- LIGHTBOX LOGIC ---
+  const closeLightBox = () => setSelectedItem(null);
 
   const navigateImage = useCallback((direction: "next" | "prev") => {
-    if (!selectedImage) return;
-    const currentIndex = destinations.findIndex((d) => d.id === selectedImage.id);
+    if (!selectedItem) return;
+    const currentIndex = items.findIndex((d) => d.id === selectedItem.id);
     let newIndex;
     if (direction === "next") {
-      newIndex = (currentIndex + 1) % destinations.length;
+      newIndex = (currentIndex + 1) % items.length;
     } else {
-      newIndex = (currentIndex - 1 + destinations.length) % destinations.length;
+      newIndex = (currentIndex - 1 + items.length) % items.length;
     }
-    setSelectedImage(destinations[newIndex]);
-  }, [selectedImage]);
+    setSelectedItem(items[newIndex]);
+  }, [selectedItem, items]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!selectedImage) return;
+      if (!selectedItem) return;
       if (e.key === "Escape") closeLightBox();
       if (e.key === "ArrowRight") navigateImage("next");
       if (e.key === "ArrowLeft") navigateImage("prev");
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedImage, navigateImage]);
+  }, [selectedItem, navigateImage]);
 
-  if (!destinations || destinations.length === 0) {
-    return <p className="text-center text-gray-500">No destinations to display.</p>;
-  }
-
+  // --- RENDER ---
   return (
     <>
       {/* --- GRID GALLERY --- */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4">
-        {destinations.map((dest: Destination) => (
-          <div
-            key={dest.id}
-            onClick={() => setSelectedImage(dest)}
-            className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col group cursor-pointer hover:shadow-xl transition-all duration-300 border border-gray-100"
-          >
-            <div className="overflow-hidden relative h-64 w-full">
-              <Image
-                src={dest.imageUrl}
-                alt={dest.name}
-                fill
-                className="object-cover transform group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                 <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
-                    <ZoomIn className="text-white w-8 h-8" />
-                 </div>
+      {items.length === 0 && !loading ? (
+        <div className="text-center py-20">
+            <p className="text-gray-400 text-lg">No gallery items found.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 pb-10">
+          {items.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => setSelectedItem(item)}
+              className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col group cursor-pointer"
+            >
+              {/* IMAGE CONTAINER */}
+              <div className="relative h-80 w-full overflow-hidden bg-gray-100">
+                {item.thumbnail ? (
+                  <Image
+                    src={item.thumbnail}
+                    alt={item.title}
+                    fill
+                    className="object-cover transform group-hover:scale-110 transition-transform duration-700"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-400">No Image</div>
+                )}
+                
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                   <div className="bg-white/90 p-3.5 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                      <ZoomIn className="text-gray-800 w-6 h-6" />
+                   </div>
+                </div>
+              </div>
+
+              {/* CARD CONTENT */}
+              <div className="p-6 bg-white relative z-10 flex flex-col justify-center border-t border-gray-50">
+                <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-1 mb-2">
+                  {item.title}
+                </h3>
+                {item.location ? (
+                    <div className="flex items-center gap-2 text-gray-500 text-sm">
+                        <MapPin size={16} className="text-primary shrink-0" />
+                        <span className="line-clamp-1">{item.location}</span>
+                    </div>
+                ) : (
+                    <div className="h-5"></div>
+                )}
               </div>
             </div>
-            <div className="p-5 z-10 relative bg-white">
-              <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">
-                {dest.name}
-              </h3>
-              <p className="text-sm text-gray-500 mt-1 line-clamp-1">
-                {dest.location}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {/* --- RICH MODAL (Force White Style) --- */}
-      {selectedImage && (
+      {/* --- LOAD MORE --- */}
+      {hasMore && (
+        <div className="flex justify-center mt-8 mb-16">
+          <button
+            onClick={loadMore}
+            disabled={loading}
+            className="px-8 py-3.5 bg-white border-2 border-gray-200 text-gray-800 font-bold rounded-full hover:border-primary hover:text-primary hover:shadow-lg transition-all duration-300 disabled:opacity-50 flex items-center gap-2"
+          >
+            {loading && <Loader2 size={20} className="animate-spin" />}
+            {loading ? "Loading..." : "Load More Photos"}
+          </button>
+        </div>
+      )}
+
+      {/* --- RICH MODAL (Focus View) --- */}
+      {selectedItem && (
         <div 
-            className="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fadeIn"
+            className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-in fade-in duration-300"
             onClick={closeLightBox}
         >
           <div 
-            className="bg-white w-full max-w-5xl rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]"
+            className="bg-white w-full max-w-6xl rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:h-[80vh]"
             onClick={(e) => e.stopPropagation()} 
           >
             
-            {/* --- KOLOM KIRI: GAMBAR --- */}
-            <div className="relative w-full md:w-[60%] h-64 md:h-auto bg-gray-100 group">
-               <Image
-                  src={selectedImage.imageUrl}
-                  alt={selectedImage.name}
-                  fill
-                  className="object-cover"
-                  priority
-               />
+            {/* --- LEFT: IMAGE --- */}
+            <div className="relative w-full md:w-[60%] h-64 md:h-full bg-gray-100 group">
+               {selectedItem.thumbnail ? (
+                   <Image
+                      src={selectedItem.thumbnail}
+                      alt={selectedItem.title}
+                      fill
+                      className="object-cover"
+                      priority
+                   />
+               ) : (
+                   <div className="flex items-center justify-center h-full text-gray-400">No Image</div>
+               )}
+               
                <button 
-                  onClick={() => navigateImage("prev")} 
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black p-2 rounded-full shadow-lg transition opacity-0 group-hover:opacity-100"
+                  onClick={(e) => { e.stopPropagation(); navigateImage("prev"); }} 
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black p-3 rounded-full shadow-lg transition opacity-0 group-hover:opacity-100 hidden md:block"
                >
                   <ChevronLeft size={24} />
                </button>
                <button 
-                  onClick={() => navigateImage("next")} 
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black p-2 rounded-full shadow-lg transition opacity-0 group-hover:opacity-100"
+                  onClick={(e) => { e.stopPropagation(); navigateImage("next"); }} 
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black p-3 rounded-full shadow-lg transition opacity-0 group-hover:opacity-100 hidden md:block"
                >
                   <ChevronRight size={24} />
                </button>
             </div>
 
-            {/* --- KOLOM KANAN: INFO (Force White Text Color Logic) --- */}
-            <div className="w-full md:w-[40%] p-6 md:p-8 overflow-y-auto relative flex flex-col bg-white text-gray-900">
+            {/* --- RIGHT: INFO --- */}
+            <div className="w-full md:w-[40%] p-8 overflow-y-auto relative flex flex-col bg-white text-gray-900">
                 
                 <button 
                     onClick={closeLightBox} 
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 transition bg-gray-100 p-1 rounded-full"
+                    className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition bg-gray-100 hover:bg-gray-200 p-2 rounded-full"
                 >
                     <X size={20} />
                 </button>
 
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 mt-2 pr-8">
-                    {selectedImage.name}
+                {/* Title */}
+                <h2 className="text-3xl font-bold text-gray-900 mb-4 mt-2 pr-8 leading-tight">
+                    {selectedItem.title}
                 </h2>
 
-                <div className="flex gap-3 mb-6">
-                    <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                        {selectedImage.description}
-                    </p>
-                </div>
+                {/* Description (Top) */}
+                {selectedItem.description && (
+                    <div className="prose prose-sm prose-gray text-gray-600 mb-8 leading-relaxed">
+                        <p>{selectedItem.description}</p>
+                    </div>
+                )}
 
-                {/* Info Box */}
-                <div className="space-y-4 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                {/* Info Box (Smaller) */}
+                <div className="space-y-4 mb-8 bg-gray-50 p-5 rounded-xl border border-gray-100">
                     
-                    <div className="flex items-start gap-3">
-                        <div className="mt-0.5 w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center shrink-0">
-                            <MapPin size={18} />
+                    {selectedItem.location && (
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 w-7 h-7 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center shrink-0">
+                                <MapPin size={14} />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">
+                                    Location
+                                </span>
+                                <span className="text-sm font-semibold text-gray-800 leading-tight">
+                                    {selectedItem.location}
+                                </span>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Lokasi</p>
-                            <p className="text-sm font-semibold text-gray-800">{selectedImage.location}</p>
-                        </div>
-                    </div>
+                    )}
 
-                    <div className="flex items-start gap-3">
-                        <div className="mt-0.5 w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center shrink-0">
-                            <Clock size={18} />
+                    {selectedItem.best_time && (
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 w-7 h-7 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                                <Clock size={14} />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">
+                                    Best Time
+                                </span>
+                                <span className="text-sm font-semibold text-gray-800 leading-tight">
+                                    {selectedItem.best_time}
+                                </span>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Waktu Terbaik</p>
-                            <p className="text-sm font-semibold text-gray-800">{selectedImage.bestTime}</p>
-                        </div>
-                    </div>
+                    )}
 
-                    <div className="flex items-start gap-3">
-                        <div className="mt-0.5 w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center shrink-0">
-                            <Tag size={18} />
+                    {selectedItem.ticket_price && (
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 w-7 h-7 rounded-lg bg-green-100 text-green-600 flex items-center justify-center shrink-0">
+                                <Tag size={14} />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">
+                                    Entrance Fee
+                                </span>
+                                <span className="text-sm font-semibold text-gray-800 leading-tight">
+                                    {selectedItem.ticket_price}
+                                </span>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tiket Masuk (Est)</p>
-                            <p className="text-sm font-semibold text-gray-800">{selectedImage.priceStart}</p>
-                        </div>
-                    </div>
-
+                    )}
                 </div>
 
-                <div className="mt-auto">
-                    <Link 
-                        href="/packages" 
-                        className="block w-full py-3 bg-primary hover:bg-primary/90 text-white font-bold text-center rounded-xl transition shadow-lg shadow-primary/20"
-                    >
-                        Lihat Paket Wisata
-                    </Link>
+                {/* Footer Button (Primary Color) */}
+                <div className="mt-auto pt-4 border-t border-gray-100">
+                    {selectedItem.redirect_url ? (
+                        <Link 
+                            href={selectedItem.redirect_url} 
+                            // ✅ CHANGED: Now using bg-primary
+                            className="flex items-center justify-center w-full py-3.5 bg-primary hover:bg-primary/90 text-white font-bold text-sm text-center rounded-xl transition shadow-lg hover:shadow-xl gap-2 group"
+                        >
+                            {selectedItem.redirect_text || "View Package Details"}
+                            <ArrowUpRight size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        </Link>
+                    ) : (
+                        <button disabled className="block w-full py-3.5 bg-gray-100 text-gray-400 font-bold text-sm text-center rounded-xl cursor-not-allowed">
+                            Information Only
+                        </button>
+                    )}
                 </div>
 
             </div>

@@ -3,11 +3,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl"; // ✅ Import useLocale
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
 
-// Interface to match API response
 interface Blog {
   id: number;
   slug: string;
@@ -20,6 +19,7 @@ interface Blog {
 
 export default function BlogSection() {
   const t = useTranslations("blogSection");
+  const locale = useLocale(); // ✅ Get current active language (e.g., 'id' or 'en')
 
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,11 +29,14 @@ export default function BlogSection() {
       try {
         setLoading(true);
         
-        // ✅ FIXED: Removed the extra '/api' prefix.
-        // The 'api' helper already includes it.
-        const response = await api.get("/public/posts?limit=3");
+        // ✅ ADDED: Header to tell backend which language we want
+        const response = await api.get("/public/posts?limit=3", {
+          headers: {
+            "Accept-Language": locale 
+          }
+        });
         
-        setBlogs(response.data.data); // API data is in `response.data.data`
+        setBlogs(response.data.data);
       } catch (error) {
         console.error("Failed to fetch blogs:", error);
       } finally {
@@ -42,7 +45,7 @@ export default function BlogSection() {
     };
 
     fetchBlogs();
-  }, []);
+  }, [locale]); // ✅ Re-fetch if language changes
 
   return (
     <section className="bg-card py-20">
@@ -60,7 +63,6 @@ export default function BlogSection() {
         {/* Blog Grid */}
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
           {loading ? (
-            // Simple loading placeholders
             Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="bg-background rounded-3xl shadow-md flex flex-col overflow-hidden border border-border">
                 <div className="relative h-60 w-full bg-foreground/10 animate-pulse"></div>
@@ -68,8 +70,6 @@ export default function BlogSection() {
                   <div className="h-4 bg-foreground/10 rounded w-1/4"></div>
                   <div className="h-6 bg-foreground/10 rounded w-3/4 mt-3"></div>
                   <div className="h-4 bg-foreground/10 rounded w-full mt-4"></div>
-                  <div className="h-4 bg-foreground/10 rounded w-full mt-2"></div>
-                  <div className="h-4 bg-foreground/10 rounded w-1/2 mt-4"></div>
                 </div>
               </div>
             ))
@@ -80,7 +80,6 @@ export default function BlogSection() {
                 href={`/blog/${blog.slug}`}
                 className="bg-background rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col overflow-hidden group border border-border"
               >
-                {/* Gambar */}
                 <div className="relative h-60 w-full overflow-hidden">
                   {blog.images.length > 0 ? (
                     <Image
@@ -96,10 +95,10 @@ export default function BlogSection() {
                   )}
                 </div>
 
-                {/* Konten */}
                 <div className="p-6 flex flex-col flex-1">
                   <span className="text-sm text-foreground/60">
-                    {new Date(blog.published_at).toLocaleDateString(undefined, {
+                    {/* ✅ Ensure date formatting uses the correct locale */}
+                    {new Date(blog.published_at).toLocaleDateString(locale, {
                       year: 'numeric', month: 'long', day: 'numeric'
                     })}
                   </span>
@@ -132,11 +131,7 @@ export default function BlogSection() {
               strokeWidth={2}
               viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
           </Link>
         </div>
