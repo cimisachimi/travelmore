@@ -1,21 +1,21 @@
+// app/[locale]/activities/[id]/ActivityBookingModal.tsx
 "use client";
 
 import React, { useState, FormEvent, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { X, CalendarDays, Users, Clock, Camera, Plus } from "lucide-react";
+// ✅ 1. Import TicketPercent icon
+import { X, CalendarDays, Users, Clock, Camera, Plus, TicketPercent } from "lucide-react";
 import { AxiosError } from "axios";
 import { useTheme } from "@/components/ThemeProvider";
 import { Activity, TFunction, AuthUser } from "./page";
 
-// Define Addon Interface locally if not exported from page.tsx
 interface Addon {
   name: string;
   price: number;
 }
 
-// Extend Activity to ensure addons are available
 interface ActivityWithAddons extends Activity {
   addons?: Addon[];
 }
@@ -54,6 +54,8 @@ type FormErrors = {
   phone_number?: string;
   pickup_location?: string;
   general?: string;
+  // ✅ 2. Add discount_code to error types
+  discount_code?: string;
 };
 
 const countryCodes = [
@@ -87,9 +89,10 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   const [pickupLocation, setPickupLocation] = useState<string>("");
   const [specialRequest, setSpecialRequest] = useState<string>("");
   
-  // ✅ New: Add-ons State
-  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+  // ✅ 3. Add Discount Code State
+  const [discountCode, setDiscountCode] = useState<string>("");
 
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [phoneCode, setPhoneCode] = useState("+62");
   const [localPhone, setLocalPhone] = useState("");
 
@@ -100,14 +103,10 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      // Pre-fill user data
       setFullName(user?.name || "");
       setEmail(user?.email || "");
 
-      // Phone pre-fill logic
-      // ✅ FIXED: Removed 'user?.phone' which caused the type error
       const fullPhoneNumber = user?.phone_number || "";
-      
       const matchedCode = countryCodes.find((c) => fullPhoneNumber.startsWith(c.code));
 
       if (matchedCode) {
@@ -118,26 +117,25 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
         setLocalPhone(fullPhoneNumber.replace(/^0|^\+62/, ""));
       }
 
-      // Reset form fields
       setBookingDate("");
       setActivityTime("");
       setQuantity(1);
       setNationality("");
       setPickupLocation("");
       setSpecialRequest("");
-      setSelectedAddons([]); // Reset add-ons
+      setSelectedAddons([]);
+      // ✅ 4. Reset Discount Code
+      setDiscountCode("");
       setErrors({});
     }
   }, [isOpen, user]);
 
   // --- CALCULATIONS ---
-
   const baseSubtotal = useMemo(() => {
     const pricePerPax = Number(activity.price) || 0;
     return pricePerPax * quantity;
   }, [quantity, activity.price]);
 
-  // ✅ New: Calculate Add-ons Total
   const addonsTotal = useMemo(() => {
     if (!activity.addons || selectedAddons.length === 0) return 0;
     
@@ -147,7 +145,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     }, 0);
   }, [selectedAddons, activity.addons]);
 
-  // ✅ Updated: Grand Total
   const grandTotal = baseSubtotal + addonsTotal;
 
   const formatPrice = (amount: number) => {
@@ -164,7 +161,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     setLocalPhone(numericValue);
   };
 
-  // ✅ New: Toggle Add-on Selection
   const toggleAddon = (addonName: string) => {
     setSelectedAddons(prev => 
       prev.includes(addonName) 
@@ -222,8 +218,9 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
         phone_number: fullPhoneNumber,
         pickup_location: pickupLocation,
         special_request: specialRequest || null,
-        // ✅ Send Add-ons to API
         selected_addons: selectedAddons,
+        // ✅ 5. Send Discount Code to API
+        discount_code: discountCode || null,
       };
 
       const response = await api.post<ApiBookingSuccessResponse>(
@@ -233,7 +230,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
 
       if (response.status === 201) {
         toast.success(t("booking.success.message"));
-        
         const orderId = response.data.order?.id;
         router.push(orderId ? `/profile?order_id=${orderId}` : "/profile");
         onClose();
@@ -253,6 +249,8 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
         if (validationErrors.email) newApiErrors.email = validationErrors.email[0];
         if (validationErrors.phone_number) newApiErrors.phone_number = validationErrors.phone_number[0];
         if (validationErrors.pickup_location) newApiErrors.pickup_location = validationErrors.pickup_location[0];
+        // ✅ 6. Handle Discount Code Error
+        if (validationErrors.discount_code) newApiErrors.discount_code = validationErrors.discount_code[0];
 
         setErrors(newApiErrors);
         toast.error(error.response.data.message || t("booking.errors.validation"));
@@ -278,7 +276,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   const errorBorderClass = "border-red-500 focus:border-red-500 focus:ring-red-500";
   const iconBgClass = theme === "regular" ? "bg-primary/20" : "bg-primary/30";
   
-  // ✅ New Add-on specific styles
   const addonCardClass = theme === "regular" ? "border-gray-200 hover:border-primary bg-white" : "border-gray-600 hover:border-primary bg-gray-700";
   const addonSelectedClass = "border-primary ring-1 ring-primary bg-primary/20 dark:bg-primary/30";
 
@@ -366,7 +363,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
             {errors.quantity && <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>}
           </div>
 
-          {/* ✅ ADD-ONS SECTION */}
+          {/* ADD-ONS SECTION */}
           {activity.addons && activity.addons.length > 0 && (
             <div className="space-y-3 pt-2">
               <label className={`block text-sm font-bold ${textColor} flex items-center gap-2`}>
@@ -438,6 +435,25 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
             <textarea id="specialRequest" rows={2} value={specialRequest} onChange={(e) => setSpecialRequest(e.target.value)} className={`${baseInputClass}`} placeholder={t("booking.specialRequest.placeholder")} />
           </div>
 
+          
+          <div>
+            <label htmlFor="discount-code" className={`block text-sm font-medium ${mutedTextColor}`}>
+              <TicketPercent size={14} className="inline mr-1 mb-0.5" /> {t("booking.discountCode") || "Discount Code"}
+            </label>
+            <input
+              id="discount-code"
+              type="text"
+              value={discountCode}
+              onChange={(e) => {
+                setDiscountCode(e.target.value.toUpperCase());
+                if (errors.discount_code) setErrors((p) => ({ ...p, discount_code: undefined }));
+              }}
+              placeholder="e.g., SALE10"
+              className={`${baseInputClass} ${errors.discount_code ? errorBorderClass : ""}`}
+            />
+            {errors.discount_code && <p className="text-red-600 text-sm mt-1">{errors.discount_code}</p>}
+          </div>
+
           {/* Price Summary */}
           <div className={`mt-2 ${summaryBgClass} p-4 rounded-lg border ${inputBorderClass}`}>
             <div className="flex justify-between items-center mb-1">
@@ -449,7 +465,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               <span className={`text-sm font-medium ${textColor}`}>x {quantity}</span>
             </div>
             
-            {/* ✅ Show Add-ons total if any selected */}
+            {/* Show Add-ons total if any selected */}
             {addonsTotal > 0 && (
                <div className="flex justify-between items-center mb-1 pb-1 border-b border-gray-300 dark:border-gray-600">
                 <span className={`text-sm ${mutedTextColor}`}>Add-ons</span>
@@ -462,6 +478,8 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               <p className="text-xl font-bold text-primary">{formatPrice(grandTotal)}</p>
             </div>
              {errors.general && <p className="text-red-600 text-sm mt-1 text-center">{errors.general}</p>}
+             
+             <p className={`text-xs ${mutedTextColor} text-center pt-1`}>{t("booking.discountInfo") || "Discount applied at next step"}</p>
           </div>
 
           <button type="submit" disabled={isSubmitting} className={buttonClass}>

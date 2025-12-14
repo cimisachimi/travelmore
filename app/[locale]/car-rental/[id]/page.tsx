@@ -1,4 +1,4 @@
-//  app/[locale]/car-rental/[id]/page.tsx
+// app/[locale]/car-rental/[id]/page.tsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -14,7 +14,7 @@ import api from "@/lib/api";
 import Link from "next/link";
 import { differenceInDays } from "date-fns";
 import { AxiosError } from "axios";
-import { Car, Fuel, Gauge, Luggage, User as UserIcon, Settings, Clock } from 'lucide-react';
+import { Car, Fuel, Gauge, Luggage, User as UserIcon, Settings, Clock, TicketPercent } from 'lucide-react';
 
 // --- Interfaces ---
 interface ApiCarImage {
@@ -63,10 +63,12 @@ export default function CarDetailPage() {
   const [email, setEmail] = useState(user?.email || "");
   const [phone, setPhone] = useState("");
   const [pickupLocation, setPickupLocation] = useState("");
-  const [pickupTime, setPickupTime] = useState(""); // ✅ 1. ADDED THIS STATE
+  const [pickupTime, setPickupTime] = useState("");
+  
+  // ✅ 2. State untuk Voucher Diskon
+  const [discountCode, setDiscountCode] = useState("");
 
   const fetchAvailability = async () => {
-    // ... (unchanged)
     if (!id) return;
     try {
       const availabilityResponse = await api.get(
@@ -79,7 +81,6 @@ export default function CarDetailPage() {
   };
 
   useEffect(() => {
-    // ... (unchanged)
     if (!id) return;
     const fetchCarAndAvailability = async () => {
       try {
@@ -112,7 +113,6 @@ export default function CarDetailPage() {
   }, [id, locale, t]);
 
   useEffect(() => {
-    // ... (unchanged)
     if (user) {
       setName(user.name);
       setEmail(user.email);
@@ -120,7 +120,6 @@ export default function CarDetailPage() {
   }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    // ... (unchanged logic)
     e.preventDefault();
     if (!car || !selectedRange?.from || !selectedRange?.to) {
       toast.error("Please select a valid start and end date.");
@@ -130,29 +129,23 @@ export default function CarDetailPage() {
       toast.error("Please log in to book a car.");
       return;
     }
-    // ✅ FIX: Also check for pickupTime
+    
     if (!phone || !pickupLocation || !pickupTime) {
       toast.error("Please fill in all booking details.");
       return;
     }
 
-
     setIsSubmitting(true);
-    // This calculation is fine for display, but we won't send it.
-    // The backend calculates the final price.
-    const numberOfDays =
-      differenceInDays(selectedRange.to, selectedRange.from) + 1;
-    const totalPrice = numberOfDays * parseFloat(car.price_per_day);
 
     try {
-      // ✅ 3. FIXED THE PAYLOAD to match your backend controller
+      // ✅ 3. Kirim discount_code ke API
       const response = await api.post(`/car-rentals/${car.id}/book`, {
         start_date: selectedRange.from.toISOString().split("T")[0],
         end_date: selectedRange.to.toISOString().split("T")[0],
         phone_number: phone,
         pickup_location: pickupLocation,
         pickup_time: pickupTime,
-        // We no longer send total_price. The backend calculates it.
+        discount_code: discountCode || null, 
       });
 
       if (response.status === 201) {
@@ -166,6 +159,7 @@ export default function CarDetailPage() {
         setPhone("");
         setPickupLocation("");
         setPickupTime("");
+        setDiscountCode(""); // Reset voucher input
       }
     } catch (err: unknown) {
       let message = "Booking failed. Please try again.";
@@ -183,12 +177,11 @@ export default function CarDetailPage() {
     new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
-      minimumFractionDigits: 0, // Ensure no decimal places for IDR
+      minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
 
   const { availableDays, bookedDays, maintenanceDays } = useMemo(() => {
-    // ... (unchanged)
     const available: Date[] = [];
     const booked: Date[] = [];
     const maintenance: Date[] = [];
@@ -238,7 +231,6 @@ export default function CarDetailPage() {
         <div className="grid lg:grid-cols-2 gap-10">
           {/* --- LEFT: Gallery + Info --- */}
           <div>
-            {/* Gallery (unchanged) */}
             <div className="relative w-full h-80 rounded-lg overflow-hidden shadow-lg mb-4">
               <Image
                 src={activeImage}
@@ -276,7 +268,7 @@ export default function CarDetailPage() {
               {car.description || "No description available."}
             </p>
 
-            {/* --- Car Details Section (unchanged) --- */}
+            {/* --- Car Details Section --- */}
             <div className="mt-8 border-t pt-6">
               <h3 className="text-xl font-bold mb-4">{t('details.title')}</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
@@ -318,7 +310,7 @@ export default function CarDetailPage() {
               </div>
             </div>
 
-            {/* --- Car Features Section (unchanged) --- */}
+            {/* --- Car Features Section --- */}
             {car.features && car.features.length > 0 && (
               <div className="mt-8 border-t pt-6">
                 <h3 className="text-xl font-bold mb-4">{t('details.features')}</h3>
@@ -329,12 +321,10 @@ export default function CarDetailPage() {
                 </ul>
               </div>
             )}
-            {/* --- END ADDITIONS --- */}
-
           </div>
 
-          {/* --- RIGHT: Booking Form (unchanged logic, updated UI) --- */}
-          <div className="bg-card shadow-lg rounded-lg p-6 sticky top-8"> {/* Added sticky */}
+          {/* --- RIGHT: Booking Form --- */}
+          <div className="bg-card shadow-lg rounded-lg p-6 sticky top-8">
             <h3 className="text-xl font-bold mb-4">{t("form.title")}</h3>
             <div className="mb-4 p-4 bg-background border rounded-lg">
               <span className="text-2xl font-bold text-primary">
@@ -381,7 +371,6 @@ export default function CarDetailPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                  {/* Form fields (unchanged) */}
                   <input
                     type="text"
                     placeholder={t("form.name")}
@@ -416,7 +405,7 @@ export default function CarDetailPage() {
                     required
                     className="w-full border rounded-lg px-4 py-2 bg-background"
                   />
-                   {/* ✅ MODIFIED PICKUP TIME INPUT WITH LABEL */}
+                  
                   <div>
                     <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">
                       {t("form.pickupTime")}
@@ -432,14 +421,36 @@ export default function CarDetailPage() {
                         value={pickupTime}
                         onChange={(e) => setPickupTime(e.target.value)}
                         required
-                        className="w-full border border-gray-300 rounded-lg pl-4 pr-10 py-2 bg-white focus:ring-2 focus:ring-blue-500 outline-none placeholder:text-gray-400 text-gray-800 transition-all"
+                        className="w-full border border-gray-300 rounded-lg pl-4 pr-10 py-2 bg-background focus:ring-2 focus:ring-primary outline-none placeholder:text-gray-400 text-foreground transition-all"
                       />
-                      {/* Icon Jam absolute positioning */}
                       {!pickupTime && (
                          <Clock className="absolute right-3 top-2.5 h-5 w-5 text-gray-400 pointer-events-none" />
                       )}
                     </div>
                   </div>
+
+                  {/* ✅ 4. KOLOM VOUCHER DISKON */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">
+                      {t("form.voucher") || "Voucher / Discount Code"}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="e.g. SUMMER2024"
+                        value={discountCode}
+                        onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                        className="w-full border border-gray-300 rounded-lg pl-4 pr-10 py-2 bg-background focus:ring-2 focus:ring-primary outline-none placeholder:text-gray-400 text-foreground transition-all uppercase"
+                      />
+                      <TicketPercent className="absolute right-3 top-2.5 h-5 w-5 text-gray-400 pointer-events-none" />
+                    </div>
+                    {discountCode && (
+                        <p className="text-xs text-primary mt-1">
+                          Voucher will be applied at payment step.
+                        </p>
+                    )}
+                  </div>
+
                   <button
                     type="submit"
                     disabled={

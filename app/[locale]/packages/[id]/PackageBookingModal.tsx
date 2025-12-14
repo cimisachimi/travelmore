@@ -14,7 +14,7 @@ import { HolidayPackage, TFunction, AuthUser } from "./page";
 interface PackageBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  pkg: HolidayPackage; // ✅ Uses correct interface with addons
+  pkg: HolidayPackage; 
   user: AuthUser | null;
   t: TFunction;
 }
@@ -259,7 +259,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
           pickup_location: pickupLocation,
           flight_number: flightNumber || null,
           special_request: specialRequest || null,
-          // ✅ Send Addons to API
+        
           selected_addons: selectedAddons,
         }
       );
