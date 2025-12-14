@@ -14,7 +14,6 @@ export interface LocalizedContent {
   timeline: ItineraryDay[];
 }
 
-
 export interface PriceTier {
   pax: string;   
   price: string; 
@@ -23,7 +22,7 @@ export interface PriceTier {
 export interface Itinerary {
   id: number;
   slug: string;
-  image: string;
+  image: string; // Ensure this starts with "/"
   duration: string;
   price: string; 
   priceList: PriceTier[]; 
@@ -39,7 +38,8 @@ export const itinerariesData: Record<string, Itinerary> = {
   "gateway-of-java": {
     id: 1,
     slug: "gateway-of-java",
-    image: "/jogja2.webp",
+
+    image: "/jogja2.webp", 
     duration: "2 Days 1 Night",
     price: "Start from IDR 2,150,000 /pax", 
     
@@ -76,6 +76,7 @@ export const itinerariesData: Record<string, Itinerary> = {
   "gems-of-yogyakarta": {
     id: 2,
     slug: "gems-of-yogyakarta",
+
     image: "/jogja1.webp",
     duration: "3 Days 2 Nights",
     price: "Start from IDR 3,250,000 /pax",
@@ -115,6 +116,7 @@ export const itinerariesData: Record<string, Itinerary> = {
   "viral-in-jogja": {
     id: 3,
     slug: "viral-in-jogja",
+    
     image: "/jogja3.webp",
     duration: "1 Day",
     price: "Start from IDR 950,000 /pax",

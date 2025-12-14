@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation"; 
 import { useTranslations } from "next-intl"; 
 import { 
-  Calendar, ArrowRight, Clock, Compass, CalendarDays, ChevronDown, Check
+  Calendar, ArrowRight, Clock, Compass, CalendarDays, ChevronDown, Check, Lock // Import Lock Icon
 } from "lucide-react";
 
 // --- TIPE DATA ---
@@ -19,8 +19,6 @@ export default function HeroSlider() {
   const t = useTranslations("HeroSlider");
   const router = useRouter(); 
 
-  // Mengambil data slides dari translation file
-  // Pastikan file translation (en.json/id.json) memiliki key "slides" berbentuk array
   const slides = t.raw("slides") as ISlide[];
   
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -31,7 +29,8 @@ export default function HeroSlider() {
   const [isStyleOpen, setIsStyleOpen] = useState(false); 
   const [duration, setDuration] = useState("");
   const [travelDate, setTravelDate] = useState("");
-  
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // 1. State Login
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const styleOptions = [
@@ -41,13 +40,19 @@ export default function HeroSlider() {
     "Festival & Events", "Sports & Outdoor"
   ];
 
+  // 2. Cek Status Login saat Component Mount
+  useEffect(() => {
+    // Sesuaikan key token dengan yang ada di aplikasi Anda
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    setIsLoggedIn(!!token);
+  }, []);
+
   const toggleStyle = (style: string) => {
     setSelectedStyles((prev) => 
       prev.includes(style) ? prev.filter((s) => s !== style) : [...prev, style] 
     );
   };
 
-  // Close dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -71,30 +76,31 @@ export default function HeroSlider() {
     if (slides && slides.length > 0) changeSlide((currentSlideIndex + 1) % slides.length);
   }, [currentSlideIndex, changeSlide, slides]);
 
-  const goToPrevSlide = () => {
-    if (slides && slides.length > 0) changeSlide((currentSlideIndex - 1 + slides.length) % slides.length);
-  };
-
   useEffect(() => {
     const interval = setInterval(goToNextSlide, 7000);
     return () => clearInterval(interval);
   }, [goToNextSlide]);
 
-  // ✅ LOGIC PENGIRIMAN DATA KE PLANNER
+  // ✅ 3. LOGIKA TOMBOL CREATE PLAN (DIPERBARUI)
   const handleStartPlanning = () => {
     const params = new URLSearchParams();
     
-    // Menggabungkan array styles menjadi string koma (ex: "Nature,Culture")
     if (selectedStyles.length > 0) params.set("style", selectedStyles.join(","));
     if (duration) params.set("days", duration);
     if (travelDate) params.set("date", travelDate);
     
-    // Redirect ke planner dengan query params
-    // ✅ KARENA MOCK SUDAH DIHAPUS, INI AKAN BENAR-BENAR PINDAH HALAMAN
-    router.push(`/planner?${params.toString()}`);
+    const plannerUrl = `/planner?${params.toString()}`;
+
+    if (isLoggedIn) {
+      // KONDISI A: SUDAH LOGIN -> Langsung ke Planner
+      router.push(plannerUrl);
+    } else {
+      // KONDISI B: BELUM LOGIN -> Ke Login bawa "oleh-oleh" link planner
+      const target = encodeURIComponent(plannerUrl);
+      router.push(`/login?redirect=${target}`);
+    }
   };
 
-  // Fallback jika slides belum terload
   const currentSlide = slides?.[currentSlideIndex] || { subtitle: "", title: "" };
 
   return (
@@ -114,7 +120,6 @@ export default function HeroSlider() {
 
       <div className="absolute inset-0 bg-black/40 z-10"></div>
       
-      {/* Content & Form */}
       <div className="relative z-50 flex flex-col justify-center items-center h-full w-full px-4 text-white pb-24 md:pb-0">
         
         {/* Title */}
@@ -141,7 +146,6 @@ export default function HeroSlider() {
                         <Compass className="absolute left-3 top-8 text-gray-500 h-4 w-4" />
                     </button>
 
-                    {/* Dropdown Menu */}
                     {isStyleOpen && (
                         <div className="absolute top-full left-0 mt-2 w-full max-h-60 overflow-y-auto bg-white rounded-lg shadow-xl border border-gray-100 z-[60] p-2 custom-scrollbar">
                             {styleOptions.map((style) => {
@@ -194,14 +198,16 @@ export default function HeroSlider() {
                     </div>
                 </div>
 
-                {/* 4. Action Button */}
+                {/* 4. Action Button (Disesuaikan Tampilannya) */}
                 <div className="md:col-span-3">
                     <button
                         onClick={handleStartPlanning}
-                        className="w-full h-10 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg shadow-lg hover:shadow-primary/50 transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-[1.02] active:scale-95 text-sm"
+                        // Jika belum login, ubah warna jadi abu-abu agar terlihat beda (Opsional, hapus ternary class jika ingin warna tetap sama)
+                        className={`w-full h-10 font-bold rounded-lg shadow-lg hover:shadow-primary/50 transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-[1.02] active:scale-95 text-sm 
+                          ${isLoggedIn ? "bg-primary hover:bg-primary/90 text-white" : "bg-gray-600 hover:bg-gray-700 text-white"}`}
                     >
-                        <span>Create Plan</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <span>{isLoggedIn ? "Create Plan" : "Login to Plan"}</span>
+                        {isLoggedIn ? <ArrowRight className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                     </button>
                 </div>
             </div>

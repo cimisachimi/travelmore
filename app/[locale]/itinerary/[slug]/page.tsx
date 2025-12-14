@@ -17,13 +17,11 @@ import CustomizeButton from "./CustomizeButton";
 
 // --- HELPER FUNCTIONS ---
 
-// Mengambil angka durasi dari string (misal: "3 Days" -> "3")
 const getDaysFromDuration = (durationStr: string) => {
   const match = durationStr.match(/(\d+)\s*Days?/i);
   return match ? match[1] : "1";
 };
 
-// Memilih ikon berdasarkan kata kunci aktivitas
 const getActivityIcon = (act: string) => {
   const lower = act.toLowerCase();
   
@@ -58,30 +56,24 @@ export default async function ItineraryDetailPage({
 }) {
   const { slug, locale } = await params;
   
-  // Load Translations
   const t = await getTranslations("Itinerary");
   const tData = await getTranslations("ItineraryData");
 
-  // Load Data
   const rawData = itinerariesData[slug];
 
   if (!rawData) {
     notFound();
   }
 
-  // Tentukan konten berdasarkan bahasa (id/en)
   const currentLang = (locale === "id" ? "id" : "en") as keyof typeof rawData.content;
   const content = rawData.content[currentLang];
 
-  // Siapkan parameter untuk link Custom Planner
   const daysValue = getDaysFromDuration(rawData.duration);
   const styleParams = rawData.styles.join(",");
   const personalityParams = rawData.personalities.join(",");
 
-  // ✅ BUAT URL TARGET UNTUK PLANNER
   const plannerUrl = `/planner?dest=Yogyakarta&days=${daysValue}&base=${slug}&style=${styleParams}&personality=${personalityParams}&mode=custom`;
 
-  // ✅ LOGIKA WHATSAPP
   const waNumber = "6282224291148"; 
   const waMessage = currentLang === "id"
     ? `Halo, saya tertarik dengan paket wisata "${content.title}". Bolehkah saya bertanya lebih lanjut?`
@@ -97,6 +89,9 @@ export default async function ItineraryDetailPage({
           src={rawData.image}
           alt={content.title}
           fill
+          // ✅ PERBAIKAN: Menambahkan properti sizes agar warning hilang
+          // Karena ini gambar Hero (lebar penuh), kita set 100vw (100% viewport width)
+          sizes="100vw"
           className="object-cover"
           priority
         />
@@ -131,7 +126,6 @@ export default async function ItineraryDetailPage({
           
           {/* === LEFT COLUMN: CONTENT === */}
           <div className="lg:col-span-2 space-y-8">
-            
             {/* 1. Overview Box */}
             <div className="bg-white rounded-2xl p-6 md:p-8 shadow-xl border border-gray-100">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 pb-8 border-b border-gray-100">
@@ -145,7 +139,6 @@ export default async function ItineraryDetailPage({
                   </div>
                   <p className="font-bold text-gray-900">{rawData.duration}</p>
                 </div>
-
                 {/* Region */}
                 <div>
                   <div className="flex items-center gap-2 text-green-600 mb-1.5">
@@ -156,7 +149,6 @@ export default async function ItineraryDetailPage({
                   </div>
                   <p className="font-bold text-gray-900">Yogyakarta</p>
                 </div>
-
                 {/* Genre */}
                 <div className="col-span-2 md:col-span-1">
                   <div className="flex items-center gap-2 text-purple-600 mb-1.5">
@@ -173,7 +165,6 @@ export default async function ItineraryDetailPage({
                     ))}
                   </div>
                 </div>
-
                 {/* Vibe */}
                 <div className="col-span-2 md:col-span-1">
                   <div className="flex items-center gap-2 text-red-500 mb-1.5">
@@ -192,7 +183,6 @@ export default async function ItineraryDetailPage({
                 </div>
               </div>
 
-              {/* Description */}
               <div className="mb-8">
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">{t("overview")}</h3>
                 <p className="text-gray-600 leading-relaxed whitespace-pre-line text-base md:text-lg">
@@ -200,7 +190,6 @@ export default async function ItineraryDetailPage({
                 </p>
               </div>
 
-              {/* Highlights */}
               <div>
                 <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                    <span className="w-1 h-6 bg-primary rounded-full block"></span>
@@ -302,7 +291,7 @@ export default async function ItineraryDetailPage({
                   </p>
                 </div>
 
-                {/* ✅ TOMBOL CUSTOMIZE (YANG SUDAH DIPERBARUI) */}
+                {/* ✅ TOMBOL CUSTOMIZE */}
                 <CustomizeButton 
                    url={plannerUrl}
                    btnText={t("customizeBtn")}
@@ -324,7 +313,7 @@ export default async function ItineraryDetailPage({
                 </div>
               </div>
 
-              {/* ✅ HELP BOX (LINK WA DIPERTAHANKAN) */}
+              {/* ✅ HELP BOX */}
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 flex gap-4 items-start border border-blue-100">
                 <div className="p-2.5 bg-white rounded-full text-blue-600 shadow-sm shrink-0">
                   <Users size={20} />
@@ -336,14 +325,7 @@ export default async function ItineraryDetailPage({
                   <p className="text-xs text-blue-700/80 leading-relaxed mb-2">
                     {t("chatExpert")}
                   </p>
-                  
-                  {/* Link WA */}
-                  <a 
-                    href={waLink} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 transition-colors"
-                  >
+                  <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 transition-colors">
                     Chat via WhatsApp →
                   </a>
                 </div>

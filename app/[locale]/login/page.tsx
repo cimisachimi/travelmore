@@ -1,9 +1,10 @@
+// app/[locale]/login/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Tambah useEffect
 import { useAuth } from "@/contexts/AuthContext";
 import { isAxiosError } from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation"; // 1. Import useSearchParams
 import Image from "next/image";
 import Link from "next/link";
 import GoogleLoginButton from "@/components/ui/GoogleLoginButton";
@@ -14,7 +15,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  
   const router = useRouter();
+  const searchParams = useSearchParams(); // 2. Ambil parameter URL
+
+  // 3. Ambil target redirect (jika ada)
+  const redirectTarget = searchParams.get("redirect");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,9 +29,15 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      // On successful login, AuthContext updates the user.
-      // We can then redirect.
-      router.push("/profile");
+      
+      // ✅ 4. LOGIKA REDIRECT DINAMIS (SAAT LOGIN SUKSES)
+      if (redirectTarget) {
+        // Decode URI component untuk keamanan karakter URL
+        router.push(decodeURIComponent(redirectTarget));
+      } else {
+        router.push("/profile"); // Default jika tidak ada redirect
+      }
+
     } catch (err: unknown) {
       if (isAxiosError(err) && typeof err.response?.data?.message === "string") {
         setError(err.response.data.message);
@@ -39,14 +51,25 @@ export default function LoginPage() {
     }
   };
 
-  // If user is already logged in, redirect to profile
+  // ✅ 5. LOGIKA REDIRECT JIKA SUDAH LOGIN (SAAT HALAMAN DIBUKA)
+  // Gunakan useEffect agar tidak terjadi hydration mismatch
+  useEffect(() => {
+    if (user && !loading) {
+      if (redirectTarget) {
+        router.push(decodeURIComponent(redirectTarget));
+      } else {
+        router.push("/profile");
+      }
+    }
+  }, [user, loading, router, redirectTarget]);
+
+  // Jika user sudah ada, tampilkan loading state sementara redirect berjalan
   if (user && !loading) {
-    router.push("/profile");
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <p className="text-foreground">Welcome back, {user.name}!</p>
         <p className="text-sm text-center text-foreground/70">
-          Redirecting you to your profile...
+          Redirecting...
         </p>
       </div>
     );
@@ -72,11 +95,10 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* ✅ 2. Add both social login buttons */}
         <div className="space-y-3">
+          {/* Note: Google Login mungkin perlu penanganan khusus untuk redirect param */}
           <GoogleLoginButton />
         </div>
-
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
