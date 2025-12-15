@@ -8,7 +8,6 @@ import { useTheme } from "@/components/ThemeProvider";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { AxiosError } from "axios";
-// Import icons dari lucide-react sesuai desain
 import { ChevronLeft, ChevronRight, Search, Tag, SlidersHorizontal, X } from "lucide-react"; 
 
 // --- Interfaces ---
@@ -16,7 +15,7 @@ import { ChevronLeft, ChevronRight, Search, Tag, SlidersHorizontal, X } from "lu
 interface PackagePriceTier {
   min_pax: number;
   max_pax: number;
-  price: number;
+  price: number | string; 
 }
 
 interface Addon {
@@ -32,53 +31,43 @@ interface PackageListItem {
   rating?: number | null;
   category?: string | null; 
   thumbnail_url: string | null; 
-
-  // Pricing & Addons
   price_tiers: PackagePriceTier[];
-  starting_from_price: number | null; 
+  starting_from_price: number | string | null; 
   addons?: Addon[];
 }
 
 interface ApiResponse {
   data: PackageListItem[];
-  links?: {
-    first: string | null;
-    last: string | null;
-    prev: string | null;
-    next: string | null;
-  };
   meta?: {
     current_page: number;
-    from: number;
     last_page: number;
-    links: { url: string | null; label: string; active: boolean }[];
-    path: string;
-    per_page: number;
-    to: number;
     total: number;
+    per_page: number;
   };
 }
 
 // --- Helper Functions ---
 
+const parsePrice = (value: string | number | null | undefined): number => {
+    if (!value) return 0;
+    if (typeof value === 'number') return value;
+    const cleanString = value.toString().replace(/\D/g, ''); 
+    const result = Number(cleanString);
+    return isNaN(result) ? 0 : result;
+};
+
 const calculateDisplayPrice = (pkg: PackageListItem): number => {
-  if (pkg.starting_from_price && pkg.starting_from_price > 0) {
-    return pkg.starting_from_price;
-  }
+  const startingPrice = parsePrice(pkg.starting_from_price);
+  if (startingPrice > 0) return startingPrice;
   
   const priceTiers = pkg.price_tiers || [];
   if (priceTiers.length > 0) {
-    const sortedTiers = [...priceTiers].sort((a, b) => a.min_pax - b.min_pax);
-    const smallGroupTier = sortedTiers.find(
-      (tier) => tier.min_pax <= 4 && (tier.max_pax || 4) >= 2
-    );
-    
-    if (smallGroupTier) return smallGroupTier.price;
-    
-    const medianIndex = Math.floor(sortedTiers.length / 2);
-    return sortedTiers[medianIndex]?.price || 0;
+    const validTiers = priceTiers.filter((tier) => parsePrice(tier.price) > 0);
+    if (validTiers.length > 0) {
+        const sortedTiers = validTiers.sort((a, b) => Number(a.min_pax) - Number(b.min_pax));
+        return parsePrice(sortedTiers[0].price);
+    }
   }
-  
   return 0;
 };
 
@@ -90,17 +79,15 @@ export default function PackagesPage() {
   const [apiPackages, setApiPackages] = useState<PackageListItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   
   // State Filter
-  const [searchQuery, setSearchQuery] = useState(""); // State untuk Search
-  const [maxPrice, setMaxPrice] = useState<number>(10000000); 
-  const [priceSliderMax, setPriceSliderMax] = useState<number>(10000000); 
-  
+  const [searchQuery, setSearchQuery] = useState(""); 
+  const [maxPrice, setMaxPrice] = useState<number>(50000000); // Default tinggi
+  const [priceSliderMax, setPriceSliderMax] = useState<number>(50000000); 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  // State Pagination
+  // State Pagination (Client Side)
   const [currentPage, setCurrentPage] = useState<number>(1);
   const ITEMS_PER_PAGE = 6; 
 
@@ -108,35 +95,75 @@ export default function PackagesPage() {
   const loadingString = useMemo(() => t("status.loading"), [t]);
   const noCategoriesString = useMemo(() => t("status.noCategories"), [t]);
   
-  
-
+  // --- STRATEGI FETCHING: AGRESSIVE LOOP ---
   useEffect(() => {
     let isMounted = true; 
-    const fetchPackages = async () => {
+
+    const fetchAllPackages = async () => {
       setLoading(true);
       setError(null);
-      try {
-        const response = await api.get<ApiResponse>("/public/packages?per_page=100");
-        
-        if (isMounted) {
-          const packagesData = response.data.data || [];
-          setApiPackages(packagesData);
+      
+      let allData: PackageListItem[] = [];
+      let page = 1;
+      let hasMore = true;
+      // NAIKKAN LIMIT SAFETY KE 100 HALAMAN (5000 item)
+      const MAX_PAGES_SAFETY = 100; 
 
-          if (packagesData.length > 0) {
-            const allPrices = packagesData.map((p) => calculateDisplayPrice(p));
+      try {
+        while (hasMore && page <= MAX_PAGES_SAFETY) {
+            console.log(`Mengambil halaman ${page}...`);
+            
+            const response = await api.get<ApiResponse>(`/public/packages`, {
+                params: { per_page: 50, page: page }
+            });
+            
+            if (!isMounted) return;
+
+            const newData = response.data.data || [];
+            
+            // Jika API mengembalikan array kosong, berarti data habis
+            if (newData.length === 0) {
+                hasMore = false;
+            } else {
+                allData = [...allData, ...newData];
+                
+                // Cek Meta untuk memastikan apakah ini halaman terakhir
+                const meta = response.data.meta;
+                if (meta && meta.current_page >= meta.last_page) {
+                    hasMore = false;
+                }
+                
+                // Lanjut halaman berikutnya
+                page++;
+            }
+        }
+
+        // --- HAPUS DUPLIKAT (PENTING) ---
+        // Kadang pagination API mengembalikan item yang sama di halaman berbeda
+        const uniqueData = Array.from(new Map(allData.map(item => [item.id, item])).values());
+
+        console.log("Total Paket Bersih (Unique):", uniqueData.length);
+        setApiPackages(uniqueData);
+
+        // Kalkulasi Slider
+        if (uniqueData.length > 0) {
+            const allPrices = uniqueData.map((p) => calculateDisplayPrice(p));
             const numericPrices = allPrices.filter((p) => p > 0);
 
             if (numericPrices.length > 0) {
-              const calculatedMax = Math.max(...numericPrices);
-              const niceMax = Math.ceil(calculatedMax / 1000000) * 1000000;
-              
-              setPriceSliderMax(niceMax);
-              setMaxPrice((prev) => prev === 10000000 ? niceMax : prev);
+                const calculatedMax = Math.max(...numericPrices);
+                // Ceiling ke kelipatan 1 juta terdekat
+                const niceMax = Math.ceil(calculatedMax / 1000000) * 1000000;
+                
+                console.log("Max Price Detected:", calculatedMax, "Slider set to:", niceMax);
+                
+                setPriceSliderMax(niceMax);
+                setMaxPrice(niceMax);
             }
-          }
         }
+
       } catch (err: unknown) {
-        console.error("Failed to fetch packages:", err);
+        console.error("Fetch error:", err);
         if (isMounted) {
           const axiosError = err as AxiosError;
           setError(axiosError.message || fetchErrorString);
@@ -148,7 +175,7 @@ export default function PackagesPage() {
       }
     };
 
-    fetchPackages();
+    fetchAllPackages();
 
     return () => {
       isMounted = false;
@@ -187,15 +214,12 @@ export default function PackagesPage() {
     return apiPackages.filter((pkg) => {
       const realPrice = calculateDisplayPrice(pkg);
       
-      // Filter Harga
-      const priceMatch = realPrice <= maxPrice;
+      const priceMatch = realPrice > 0 && realPrice <= maxPrice;
       
-      // Filter Kategori
       const categoryMatch =
         selectedCategories.length === 0 ||
         (pkg.category && selectedCategories.includes(pkg.category));
 
-      // Filter Search (Case Insensitive)
       const searchMatch = 
         searchQuery === "" || 
         (pkg.name && pkg.name.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -225,7 +249,6 @@ export default function PackagesPage() {
     }).format(numericAmount);
   };
 
-  
   const mainBgClass = useMemo(() => (theme === "regular" ? "bg-gray-50" : "bg-black"), [theme]);
   const cardBgClass = useMemo(() => (theme === "regular" ? "bg-white border-gray-100" : "bg-gray-900 border-gray-800"), [theme]);
   const textClass = useMemo(() => (theme === "regular" ? "text-gray-900" : "text-white"), [theme]);
@@ -233,7 +256,6 @@ export default function PackagesPage() {
   const headerBgClass = useMemo(() => (theme === "regular" ? "bg-white" : "bg-gray-900"), [theme]);
   const borderClass = useMemo(() => (theme === "regular" ? "border-gray-200" : "border-gray-700"), [theme]);
   
-  // Button styles
   const activePageClass = "bg-primary text-white border-primary";
   const inactivePageClass = theme === "regular" ? "bg-white text-gray-700 border-gray-300 hover:bg-gray-50" : "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700";
 
@@ -253,7 +275,6 @@ export default function PackagesPage() {
       <div className="container mx-auto px-4 lg:px-8 py-12">
         <div className="flex flex-col md:flex-row gap-8 items-start">
           
-          {/* --- Filters Sidebar (Redesigned) --- */}
           <aside
             id="filter-sidebar"
             aria-hidden={!isFilterOpen && typeof window !== "undefined" && window.innerWidth < 768}
@@ -265,7 +286,7 @@ export default function PackagesPage() {
           >
             <div className={`${cardBgClass} border p-6 rounded-2xl shadow-sm sticky top-24 space-y-8`}>
               
-              {/* 1. SEARCH SECTION */}
+              {/* Search */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
                     <Search className="w-5 h-5 text-blue-600" />
@@ -296,7 +317,7 @@ export default function PackagesPage() {
 
               <hr className={borderClass} />
 
-              {/* 2. PRICE RANGE SECTION */}
+              {/* Price Range */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
                     <Tag className="w-5 h-5 text-blue-600" />
@@ -312,7 +333,6 @@ export default function PackagesPage() {
                         value={maxPrice}
                         onChange={(e) => setMaxPrice(Number(e.target.value))}
                         disabled={loading || apiPackages.length === 0}
-                        
                         className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-primary"
                     />
                 </div>
@@ -325,7 +345,7 @@ export default function PackagesPage() {
 
               <hr className={borderClass} />
 
-              {/* 3. CATEGORY SECTION */}
+              {/* Category */}
               <div>
                   <div className="flex items-center gap-2 mb-4">
                     <SlidersHorizontal className="w-5 h-5 text-blue-600" />
@@ -357,7 +377,6 @@ export default function PackagesPage() {
                     )}
                   </div>
               </div>
-
             </div>
           </aside>
 
@@ -378,7 +397,10 @@ export default function PackagesPage() {
             {loading && (
               <div className="text-center py-20">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className={`${textMutedClass} text-lg`}>{loadingString}</p>
+                <p className={`${textMutedClass} text-lg`}>
+                   {loadingString}...
+                </p>
+                <p className="text-xs text-gray-400 mt-2">Sedang memuat {apiPackages.length > 0 ? apiPackages.length + "..." : "data..."}</p>
               </div>
             )}
             
@@ -400,7 +422,6 @@ export default function PackagesPage() {
 
                       return (
                         <Link key={pkg.id} href={`/packages/${pkg.id}`} className="block group h-full">
-                        
                           <div className={`h-full flex flex-col rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border ${cardBgClass}`}>
                             <div className="relative h-56 w-full overflow-hidden bg-gray-200">
                               <Image
@@ -426,18 +447,15 @@ export default function PackagesPage() {
                                   {pkg.category}
                                 </p>
                               )}
-
                               <h2 className={`text-lg font-bold mb-2 ${textClass} line-clamp-2 leading-tight group-hover:text-primary transition-colors`}>
                                 {pkg.name?.split(": ")[1] || pkg.name || "Unnamed Package"}
                               </h2>
-
                               {pkg.location && (
                                 <p className={`text-xs ${textMutedClass} mb-4 flex items-center gap-1.5`}>
                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                                    {pkg.location}
                                 </p>
                               )}
-
                               <div className={`flex justify-between items-end mt-auto pt-4 border-t ${borderClass}`}>
                                 <div>
                                   <span className={`text-xs ${textMutedClass} block mb-0.5 font-medium`}>{t("from")}</span>
@@ -445,7 +463,6 @@ export default function PackagesPage() {
                                     {formatCurrency(startingPrice)}
                                   </p>
                                 </div>
-                                
                                 <span className={`w-9 h-9 rounded-full flex items-center justify-center bg-gray-50 text-gray-400 group-hover:bg-primary group-hover:text-white transition-all duration-300`}>
                                   <ChevronRight size={18} strokeWidth={2.5} />
                                 </span>
@@ -461,7 +478,6 @@ export default function PackagesPage() {
                             <Search className="w-8 h-8 text-gray-400" />
                         </div>
                       <h3 className={`text-xl font-bold ${textClass} mb-2`}>{t("noResults")}</h3>
-                      {/* 👇 PERBAIKAN DI SINI: Gunakan &apos; untuk pengganti ' */}
                       <p className={textMutedClass}>We couldn&apos;t find any packages matching your filters.</p>
                       <button 
                         onClick={() => {
