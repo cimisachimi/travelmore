@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
+import { AxiosError } from "axios";
 import { 
   MapPin, 
   Clock, 
@@ -16,7 +17,7 @@ import {
   ChevronRight, 
   ChevronLeft,
   Tag,
-  CheckCircle // ✅ (1) Icon baru untuk tombol mobile
+  CheckCircle 
 } from "lucide-react";
 
 // --- Types ---
@@ -31,7 +32,7 @@ interface Activity {
   category: string | null;
   description: string | null;
   location: string | null;
-  price: number;
+  price: number | string;
   duration: string | null; 
   addons?: Addon[];
   thumbnail_url: string | null;
@@ -45,6 +46,25 @@ interface ApiResponse {
     total: number;
   };
 }
+
+// --- Helper Functions (✅ PERBAIKAN DI SINI) ---
+const parsePrice = (value: string | number | null | undefined): number => {
+    if (!value) return 0;
+    if (typeof value === 'number') return value;
+
+    // 1. Coba konversi langsung dulu (untuk menangani string desimal backend seperti "2999999.00")
+    // Jika value adalah "2999999.00", Number() akan membacanya sebagai 2999999 (Benar)
+    // Kode lama menghapus titiknya sehingga menjadi 299999900 (Salah)
+    const directParse = Number(value);
+    if (!isNaN(directParse)) {
+        return directParse;
+    }
+
+    // 2. Jika gagal (misal formatnya teks "Rp 2.999.999"), baru gunakan cara cleaning regex
+    const cleanString = value.toString().replace(/\D/g, ''); 
+    const result = Number(cleanString);
+    return isNaN(result) ? 0 : result;
+};
 
 // --- Skeleton Component ---
 const ActivitySkeleton = () => (
@@ -74,33 +94,96 @@ export default function ActivitiesPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters
+  // Filters State
   const [searchQuery, setSearchQuery] = useState("");
-  const [maxPrice, setMaxPrice] = useState<number>(2000000); 
+  const [maxPrice, setMaxPrice] = useState<number>(5000000); // Nilai awal
+  const [priceSliderMax, setPriceSliderMax] = useState<number>(5000000); // Dynamic Limit
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // Pagination State
+  // Pagination State (Client Side)
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // --- Fetch Data ---
+  // --- Fetch Data Logic (Aggressive Loop) ---
   useEffect(() => {
+    let isMounted = true; 
+
     const fetchActivities = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      let allData: Activity[] = [];
+      let page = 1;
+      let hasMore = true;
+      const MAX_PAGES_SAFETY = 50; // Safety break
+
       try {
-        setIsLoading(true);
-        const response = await api.get<ApiResponse>("/activities");
-        const data = Array.isArray(response.data) ? response.data : response.data.data;
-        setAllActivities(data || []);
-      } catch (err) {
+        while (hasMore && page <= MAX_PAGES_SAFETY) {
+            console.log(`Fetching Activities Page ${page}...`);
+            
+            const response = await api.get<ApiResponse>("/activities", {
+                params: { per_page: 50, page: page }
+            });
+            
+            if (!isMounted) return;
+
+            // Handle struktur response
+            const responseData = Array.isArray(response.data) ? response.data : response.data.data;
+            const newData = responseData || [];
+
+            if (newData.length === 0) {
+                hasMore = false;
+            } else {
+                allData = [...allData, ...newData];
+
+                // Cek Meta Pagination dari API
+                const meta = !Array.isArray(response.data) ? response.data.meta : null;
+                if (meta && meta.current_page >= meta.last_page) {
+                    hasMore = false;
+                } else if (!meta && newData.length < 10) {
+                    hasMore = false;
+                }
+                
+                page++;
+            }
+        }
+
+        // 1. Hapus Duplikat (Deduplication)
+        const uniqueActivities = Array.from(new Map(allData.map(item => [item.id, item])).values());
+        
+        console.log("Total Activities Fetched:", uniqueActivities.length);
+        setAllActivities(uniqueActivities);
+
+        // 2. Kalkulasi Max Price untuk Slider
+        if (uniqueActivities.length > 0) {
+            const prices = uniqueActivities.map(act => parsePrice(act.price));
+            const highestPrice = Math.max(...prices);
+            
+            if (highestPrice > 0) {
+                // Bulatkan ke atas kelipatan 500rb atau 1jt agar slider rapi
+                const niceMax = Math.ceil(highestPrice / 500000) * 500000;
+                setPriceSliderMax(niceMax);
+                setMaxPrice(niceMax); // Set default filter ke max
+            }
+        }
+
+      } catch (err: unknown) {
         console.error("Failed to fetch activities:", err);
-        setError(t("empty.fetchError", { defaultMessage: "Could not load activities." }));
+        if (isMounted) {
+             const axiosError = err as AxiosError;
+             setError(axiosError.message || t("empty.fetchError", { defaultMessage: "Could not load activities." }));
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
     fetchActivities();
+
+    return () => {
+        isMounted = false;
+    };
   }, [t]);
 
   // --- Derived Data ---
@@ -111,10 +194,15 @@ export default function ActivitiesPage() {
 
   const filteredActivities = useMemo(() => {
     return allActivities.filter((act) => {
-      const priceMatch = act.price <= maxPrice;
+      // Gunakan parsePrice agar perbandingan angka valid
+      const actPrice = parsePrice(act.price);
+      
+      const priceMatch = actPrice <= maxPrice;
       const categoryMatch = selectedCategories.length === 0 || (act.category && selectedCategories.includes(act.category));
+      
       const searchMatch = act.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (act.location && act.location.toLowerCase().includes(searchQuery.toLowerCase()));
+      
       return priceMatch && categoryMatch && searchMatch;
     });
   }, [allActivities, maxPrice, selectedCategories, searchQuery]);
@@ -124,7 +212,7 @@ export default function ActivitiesPage() {
     setCurrentPage(1);
   }, [searchQuery, maxPrice, selectedCategories]);
 
-  // Pagination Logic
+  // Pagination Logic (Client Side)
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentActivities = filteredActivities.slice(indexOfFirstItem, indexOfLastItem);
@@ -142,13 +230,14 @@ export default function ActivitiesPage() {
     );
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | string) => {
+    const num = parsePrice(amount); // Pastikan angka
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount);
+    }).format(num);
   };
 
   // --- Styles ---
@@ -158,13 +247,12 @@ export default function ActivitiesPage() {
   const textMutedClass = isExclusive ? "text-gray-400" : "text-gray-500";
   const cardBgClass = isExclusive ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100";
   const accentColor = isExclusive ? "text-yellow-500" : "text-blue-600";
-  
+   
   return (
     <div className={`min-h-screen ${mainBgClass} transition-colors duration-300`}>
       {/* --- Hero Header --- */}
       <div className={`relative py-16 lg:py-24 overflow-hidden ${isExclusive ? "bg-gray-900" : "bg-white border-b border-gray-200"}`}>
         
-        {/* ✅ (2) FIX: Menggunakan CSS Pattern agar tidak error "Image not found" */}
         <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#888_1px,transparent_1px)] [background-size:16px_16px]" />
         
         <div className="container mx-auto px-4 text-center relative z-10">
@@ -191,7 +279,7 @@ export default function ActivitiesPage() {
 
       <div className="container mx-auto px-4 py-12">
         <div className="flex flex-col lg:flex-row gap-10">
-          
+           
           {/* --- Mobile Filter Trigger Button --- */}
           <button 
             onClick={() => setShowMobileFilters(true)}
@@ -207,7 +295,6 @@ export default function ActivitiesPage() {
             ${showMobileFilters ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
             ${isExclusive ? "bg-black lg:bg-transparent" : "bg-white lg:bg-transparent"}
           `}>
-            {/* ✅ (3) Layout Flex agar tombol bisa Sticky di bawah */}
             <div className={`flex flex-col h-full lg:h-auto lg:block ${isExclusive ? "lg:bg-gray-900/50" : "lg:bg-white"} lg:rounded-2xl lg:shadow-sm lg:border ${isExclusive ? "lg:border-gray-800" : "lg:border-gray-200"} lg:sticky lg:top-24`}>
               
               {/* Header Mobile (Title + Close) */}
@@ -244,10 +331,11 @@ export default function ActivitiesPage() {
                   <input
                     type="range"
                     min="0"
-                    max="5000000"
-                    step="50000"
+                    max={priceSliderMax} // Dynamic Max
+                    step={priceSliderMax / 100} // Step dinamis
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(Number(e.target.value))}
+                    disabled={isLoading}
                     className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${isExclusive ? "bg-gray-700 accent-yellow-500" : "bg-gray-200 accent-primary"}`}
                   />
                   <div className="flex justify-between mt-2 text-sm">
@@ -262,7 +350,7 @@ export default function ActivitiesPage() {
                     <SlidersHorizontal size={16} className={accentColor} />
                     {t("filters.categories", { defaultMessage: "Categories" })}
                   </h4>
-                  <div className="space-y-2.5">
+                  <div className="space-y-2.5 max-h-60 overflow-y-auto custom-scrollbar">
                     {allCategories.map((category) => (
                       <label key={category} className="flex items-center group cursor-pointer">
                         <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${selectedCategories.includes(category) ? (isExclusive ? "bg-yellow-500 border-yellow-500" : "bg-primary border-primary") : "border-gray-400 bg-transparent"}`}>
@@ -279,13 +367,16 @@ export default function ActivitiesPage() {
                         </span>
                       </label>
                     ))}
+                    {allCategories.length === 0 && !isLoading && (
+                        <p className={`text-xs ${textMutedClass}`}>No categories available</p>
+                    )}
                   </div>
                 </div>
 
-                {/* Reset Button (Hanya muncul jika ada filter aktif) */}
-                {(selectedCategories.length > 0 || maxPrice < 2000000 || searchQuery) && (
+                {/* Reset Button */}
+                {(selectedCategories.length > 0 || maxPrice < priceSliderMax || searchQuery) && (
                   <button 
-                    onClick={() => { setSelectedCategories([]); setMaxPrice(5000000); setSearchQuery(""); }}
+                    onClick={() => { setSelectedCategories([]); setMaxPrice(priceSliderMax); setSearchQuery(""); }}
                     className={`w-full py-2 text-sm font-semibold rounded-lg transition-colors ${isExclusive ? "bg-gray-800 text-gray-300 hover:bg-gray-700" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                   >
                     Reset Filters
@@ -293,7 +384,7 @@ export default function ActivitiesPage() {
                 )}
               </div>
 
-              {/* ✅ (4) Tombol STICKY "Show Results" (Hanya di Mobile) */}
+              {/* Tombol STICKY "Show Results" (Mobile) */}
               <div className={`p-4 border-t lg:hidden mt-auto ${isExclusive ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"}`}>
                 <button 
                   onClick={() => setShowMobileFilters(false)}
@@ -447,7 +538,7 @@ export default function ActivitiesPage() {
                 <h3 className={`text-xl font-bold mb-2 ${textClass}`}>No activities found</h3>
                 <p className={textMutedClass}>Try adjusting your filters or search query.</p>
                 <button 
-                  onClick={() => { setSelectedCategories([]); setMaxPrice(5000000); setSearchQuery(""); }}
+                  onClick={() => { setSelectedCategories([]); setMaxPrice(priceSliderMax); setSearchQuery(""); }}
                   className={`mt-6 px-6 py-2 rounded-lg font-medium text-sm transition-colors ${isExclusive ? "bg-white text-black hover:bg-gray-200" : "bg-black text-white hover:bg-gray-800"}`}
                 >
                   Clear all filters
