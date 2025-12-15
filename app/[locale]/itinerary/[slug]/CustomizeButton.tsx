@@ -1,10 +1,13 @@
 // app/[locale]/itinerary/[slug]/CustomizeButton.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react"; // Hapus useEffect dan useState manual
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Lock } from "lucide-react";
+
+// ✅ 1. Import Auth Context (Agar satu sumber kebenaran dengan Login & Hero)
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CustomizeButtonProps {
   url: string;
@@ -20,19 +23,14 @@ export default function CustomizeButton({
   description 
 }: CustomizeButtonProps) {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  // ✅ 2. Gunakan User dari Context, bukan cek localStorage manual
+  const { user } = useAuth();
+  
+  // Cek status login
+  const isLoggedIn = !!user;
 
-  useEffect(() => {
-    // --- CEK STATUS LOGIN ---
-    // Ganti logika ini dengan cara pengecekan Auth asli di aplikasi Anda
-    // Contoh: Cek apakah ada token di localStorage atau cookies
-    const token = localStorage.getItem("token") || localStorage.getItem("auth_token"); 
-    // Atau jika pakai hook: const { user } = useAuth(); setIsLoggedIn(!!user);
-    
-    setIsLoggedIn(!!token); 
-  }, []);
-
-  // KONDISI 1: SUDAH LOGIN -> Tampilkan Tombol Link Biasa
+  
   if (isLoggedIn) {
     return (
       <div className="space-y-3">
@@ -50,12 +48,12 @@ export default function CustomizeButton({
     );
   }
 
-  // KONDISI 2: BELUM LOGIN -> Tampilkan Tombol Terkunci (Lock)
+  
   return (
     <div className="space-y-3">
       <button
         onClick={() => {
-          // Arahkan ke login, lalu redirect balik ke halaman planner tujuan
+          // ✅ 3. Logika Redirect yang sudah cocok dengan LoginPage Anda
           const targetUrl = encodeURIComponent(url); 
           router.push(`/login?redirect=${targetUrl}`);
         }}

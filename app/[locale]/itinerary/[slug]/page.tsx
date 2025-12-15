@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { itinerariesData, ItineraryDay } from "@/data/itineraries";
 
-// ✅ IMPORT KOMPONEN TOMBOL BARU
+
 import CustomizeButton from "./CustomizeButton";
 
 // --- HELPER FUNCTIONS ---
@@ -89,8 +89,7 @@ export default async function ItineraryDetailPage({
           src={rawData.image}
           alt={content.title}
           fill
-          // ✅ PERBAIKAN: Menambahkan properti sizes agar warning hilang
-          // Karena ini gambar Hero (lebar penuh), kita set 100vw (100% viewport width)
+          
           sizes="100vw"
           className="object-cover"
           priority

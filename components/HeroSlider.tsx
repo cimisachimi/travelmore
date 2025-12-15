@@ -6,10 +6,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation"; 
 import { useTranslations } from "next-intl"; 
 import { 
-  Calendar, ArrowRight, Clock, Compass, CalendarDays, ChevronDown, Check, Lock // Import Lock Icon
+  Calendar, ArrowRight, Clock, Compass, CalendarDays, ChevronDown, Check, Lock 
 } from "lucide-react";
 
-// --- TIPE DATA ---
+// ✅ 1. Import useAuth (PENTING: Gunakan ini daripada cek localStorage manual)
+import { useAuth } from "@/contexts/AuthContext"; 
+
 interface ISlide {
   subtitle: string;
   title: string;
@@ -18,6 +20,13 @@ interface ISlide {
 export default function HeroSlider() {
   const t = useTranslations("HeroSlider");
   const router = useRouter(); 
+
+  // ✅ 2. Gunakan User dari Context agar status login akurat
+  const { user } = useAuth();
+  
+  // ✅ 3. Tentukan status login berdasarkan keberadaan user
+  // Jika user ada datanya, berarti isLoggedIn = true
+  const isLoggedIn = !!user; 
 
   const slides = t.raw("slides") as ISlide[];
   
@@ -29,7 +38,6 @@ export default function HeroSlider() {
   const [isStyleOpen, setIsStyleOpen] = useState(false); 
   const [duration, setDuration] = useState("");
   const [travelDate, setTravelDate] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // 1. State Login
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -39,13 +47,6 @@ export default function HeroSlider() {
     "Religious/Spiritual Travel", "Local Village & Green Travel", 
     "Festival & Events", "Sports & Outdoor"
   ];
-
-  // 2. Cek Status Login saat Component Mount
-  useEffect(() => {
-    // Sesuaikan key token dengan yang ada di aplikasi Anda
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    setIsLoggedIn(!!token);
-  }, []);
 
   const toggleStyle = (style: string) => {
     setSelectedStyles((prev) => 
@@ -81,7 +82,6 @@ export default function HeroSlider() {
     return () => clearInterval(interval);
   }, [goToNextSlide]);
 
-  // ✅ 3. LOGIKA TOMBOL CREATE PLAN (DIPERBARUI)
   const handleStartPlanning = () => {
     const params = new URLSearchParams();
     
@@ -95,7 +95,7 @@ export default function HeroSlider() {
       // KONDISI A: SUDAH LOGIN -> Langsung ke Planner
       router.push(plannerUrl);
     } else {
-      // KONDISI B: BELUM LOGIN -> Ke Login bawa "oleh-oleh" link planner
+      // KONDISI B: BELUM LOGIN -> Ke Login bawa link planner
       const target = encodeURIComponent(plannerUrl);
       router.push(`/login?redirect=${target}`);
     }
@@ -198,16 +198,25 @@ export default function HeroSlider() {
                     </div>
                 </div>
 
-                {/* 4. Action Button (Disesuaikan Tampilannya) */}
+                {/* 4. Action Button (✅ DIPERBARUI LOGIKA UI-NYA) */}
                 <div className="md:col-span-3">
                     <button
                         onClick={handleStartPlanning}
-                        // Jika belum login, ubah warna jadi abu-abu agar terlihat beda (Opsional, hapus ternary class jika ingin warna tetap sama)
-                        className={`w-full h-10 font-bold rounded-lg shadow-lg hover:shadow-primary/50 transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-[1.02] active:scale-95 text-sm 
-                          ${isLoggedIn ? "bg-primary hover:bg-primary/90 text-white" : "bg-gray-600 hover:bg-gray-700 text-white"}`}
+                        className={`w-full h-10 font-bold rounded-lg shadow-lg transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-[1.02] active:scale-95 text-sm
+                          ${isLoggedIn 
+                            ? "bg-primary hover:bg-primary/90 text-white shadow-primary/30" // SUDAH LOGIN: Warna Primary
+                            : "bg-gray-600 hover:bg-gray-700 text-white shadow-gray-600/30" // BELUM LOGIN: Warna Abu
+                          }`}
                     >
+                        {/* Teks Berubah */}
                         <span>{isLoggedIn ? "Create Plan" : "Login to Plan"}</span>
-                        {isLoggedIn ? <ArrowRight className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                        
+                        {/* Icon Berubah: Panah jika login, Gembok jika belum */}
+                        {isLoggedIn ? (
+                            <ArrowRight className="w-4 h-4" />
+                        ) : (
+                            <Lock className="w-4 h-4" />
+                        )}
                     </button>
                 </div>
             </div>
