@@ -280,7 +280,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
             </div>
 
             {/* Price Tier Info Bubble */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg flex items-start gap-2 text-sm text-gray-900 dark:text-blue-200">
                 <AlertCircle size={16} className="mt-0.5 shrink-0" />
                 <div>
                     <p className="font-bold">Price Tier Applied:</p>
