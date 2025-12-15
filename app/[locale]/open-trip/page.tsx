@@ -6,9 +6,10 @@ import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api"; 
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, Filter, X } from "lucide-react";
+import { AxiosError } from "axios";
 
-// ✅ DEFINED LOCALLY: Matches your Laravel API Response
+// ✅ Interfaces
 interface OpenTrip {
   id: number;
   name: string;
@@ -16,12 +17,36 @@ interface OpenTrip {
   location?: string;
   duration?: number;
   rating?: number;
-  starting_from_price?: number; // Matches $appends in OpenTrip.php
-  thumbnail_url?: string;       // Matches $appends in OpenTrip.php
+  starting_from_price?: number | string; // ✅ Allow string for safety parsing
+  thumbnail_url?: string;       
   is_active?: boolean;
 }
 
-// Icon Filter (Optional for mobile)
+interface ApiResponse {
+  data: OpenTrip[];
+  meta?: {
+    current_page: number;
+    last_page: number;
+    total: number;
+  };
+}
+
+// ✅ HELPER: Sanitasi Harga (PENTING)
+const parsePrice = (value: string | number | null | undefined): number => {
+    if (!value) return 0;
+    if (typeof value === 'number') return value;
+
+    // 1. Coba konversi langsung (atasi "3000000.00")
+    const directParse = Number(value);
+    if (!isNaN(directParse)) return directParse;
+
+    // 2. Fallback regex (atasi "Rp 3.000.000")
+    const cleanString = value.toString().replace(/\D/g, ''); 
+    const result = Number(cleanString);
+    return isNaN(result) ? 0 : result;
+};
+
+// Icon Filter
 const FilterIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
     <path fillRule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.59L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z" clipRule="evenodd" />
@@ -35,8 +60,8 @@ export default function OpenTripPage() {
   const [apiPackages, setApiPackages] = useState<OpenTrip[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   
-  const [maxPrice, setMaxPrice] = useState<number>(0);
-  const [priceSliderMax, setPriceSliderMax] = useState<number>(10000000); 
+  const [maxPrice, setMaxPrice] = useState<number>(5000000);
+  const [priceSliderMax, setPriceSliderMax] = useState<number>(5000000); 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]); 
   const [isFilterOpen, setIsFilterOpen] = useState(false); 
 
@@ -46,42 +71,78 @@ export default function OpenTripPage() {
   const textMutedClass = theme === "regular" ? "text-gray-600" : "text-gray-300";
   const borderClass = theme === "regular" ? "border-gray-200" : "border-gray-700";
 
+  // ✅ FETCHING AGGRESSIVE LOOP
   useEffect(() => {
+    let isMounted = true;
+
     const fetchOpenTrips = async () => {
       setLoading(true);
+      
+      let allData: OpenTrip[] = [];
+      let page = 1;
+      let hasMore = true;
+      const MAX_PAGES_SAFETY = 50; 
+
       try {
-        const response = await api.get('/open-trips'); 
-        
-        // Handle both simple array and Laravel Paginated response (data.data)
-        const data: OpenTrip[] = Array.isArray(response.data) 
-            ? response.data 
-            : (response.data.data || []);
-
-        // Filter only active trips if the backend sends everything
-        const activeTrips = data.filter(trip => trip.is_active !== false); 
-
-        setApiPackages(activeTrips);
-
-        // Initialize Price Slider based on highest price found
-        if (activeTrips.length > 0) {
-          const allPrices = activeTrips
-            .map((p) => p.starting_from_price)
-            .filter((p): p is number => typeof p === 'number');
+        while (hasMore && page <= MAX_PAGES_SAFETY) {
+            console.log(`Fetching Open Trip Page ${page}...`);
             
-          if (allPrices.length > 0) {
-            const max = Math.max(...allPrices);
-            setPriceSliderMax(max);
-            setMaxPrice(max);
+            const response = await api.get<ApiResponse>('/open-trips', {
+                params: { per_page: 50, page: page }
+            });
+            
+            if (!isMounted) return;
+
+            // Handle struktur response
+            const responseData = Array.isArray(response.data) ? response.data : response.data.data;
+            const newData = responseData || [];
+
+            if (newData.length === 0) {
+                hasMore = false;
+            } else {
+                allData = [...allData, ...newData];
+
+                // Cek Meta Pagination
+                const meta = !Array.isArray(response.data) ? response.data.meta : null;
+                if (meta && meta.current_page >= meta.last_page) {
+                    hasMore = false;
+                } else if (!meta && newData.length < 10) {
+                    hasMore = false;
+                }
+                
+                page++;
+            }
+        }
+
+        // 1. Filter Active & Deduplikasi
+        const activeTrips = allData.filter(trip => trip.is_active !== false);
+        const uniqueTrips = Array.from(new Map(activeTrips.map(item => [item.id, item])).values());
+        
+        console.log("Total Open Trips:", uniqueTrips.length);
+        setApiPackages(uniqueTrips);
+
+        // 2. Kalkulasi Max Price Slider
+        if (uniqueTrips.length > 0) {
+          const prices = uniqueTrips.map((p) => parsePrice(p.starting_from_price));
+          const highestPrice = Math.max(...prices);
+          
+          if (highestPrice > 0) {
+            const niceMax = Math.ceil(highestPrice / 500000) * 500000;
+            setPriceSliderMax(niceMax);
+            setMaxPrice(niceMax);
           }
         }
+
       } catch (error) {
         console.error("Failed to fetch open trips:", error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchOpenTrips();
+
+    return () => { isMounted = false; };
   }, []);
 
   const allCategories = useMemo(() => {
@@ -97,13 +158,15 @@ export default function OpenTripPage() {
     );
   };
 
-  const formatCurrency = (amount: number | null | undefined): string => {
-    return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Number(amount) || 0);
+  const formatCurrency = (amount: number | string | null | undefined): string => {
+    const num = parsePrice(amount);
+    return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num);
   };
 
   const filteredPackages = useMemo(() => {
     return apiPackages.filter((pkg) => {
-      const matchPrice = (pkg.starting_from_price || 0) <= maxPrice;
+      const price = parsePrice(pkg.starting_from_price);
+      const matchPrice = price <= maxPrice;
       const matchCategory = selectedCategories.length === 0 || (pkg.category && selectedCategories.includes(pkg.category));
       return matchPrice && matchCategory;
     });
@@ -173,7 +236,13 @@ export default function OpenTripPage() {
                 ${cardBgClass} p-6 rounded-lg shadow-md lg:sticky lg:top-24 border ${borderClass}
                 ${isFilterOpen ? "block" : "hidden lg:block"} 
               `}>
-                <h3 className={`text-xl font-bold mb-6 ${textClass}`}>{t("filters")}</h3>
+                <div className="flex justify-between items-center mb-6 lg:mb-4">
+                     <h3 className={`text-xl font-bold ${textClass}`}>{t("filters")}</h3>
+                     {/* Close button for mobile only */}
+                     <button onClick={() => setIsFilterOpen(false)} className="lg:hidden">
+                        <X className={textClass} />
+                     </button>
+                </div>
 
                 {/* Price Filter */}
                 <div className="mb-8">
@@ -182,6 +251,7 @@ export default function OpenTripPage() {
                       type="range"
                       min={0}
                       max={priceSliderMax}
+                      step={priceSliderMax / 100}
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(Number(e.target.value))}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
@@ -218,6 +288,14 @@ export default function OpenTripPage() {
                     {allCategories.length === 0 && <p className={`text-sm ${textMutedClass}`}>No categories found.</p>}
                   </div>
                 </div>
+
+                {/* Reset Button */}
+                <button 
+                  onClick={() => { setMaxPrice(priceSliderMax); setSelectedCategories([]); }}
+                  className="w-full mt-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Reset Filters
+                </button>
               </div>
             </aside>
 
@@ -272,18 +350,18 @@ export default function OpenTripPage() {
               </div>
               
               {filteredPackages.length === 0 && (
-                    <div className={`text-center py-20 border-2 border-dashed ${borderClass} rounded-xl`}>
-                        <p className={`text-lg ${textMutedClass}`}>{t("noResults")}</p>
-                        <button 
-                          onClick={() => {
-                            setMaxPrice(priceSliderMax);
-                            setSelectedCategories([]);
-                          }}
-                          className="mt-4 text-primary font-bold hover:underline"
-                        >
-                          Reset Filters
-                        </button>
-                    </div>
+                  <div className={`text-center py-20 border-2 border-dashed ${borderClass} rounded-xl`}>
+                    <p className={`text-lg ${textMutedClass}`}>{t("noResults")}</p>
+                    <button 
+                      onClick={() => {
+                        setMaxPrice(priceSliderMax);
+                        setSelectedCategories([]);
+                      }}
+                      className="mt-4 text-primary font-bold hover:underline"
+                    >
+                      Reset Filters
+                    </button>
+                  </div>
               )}
             </main>
           </div>
