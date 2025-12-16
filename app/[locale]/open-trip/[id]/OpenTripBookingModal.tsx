@@ -4,7 +4,7 @@ import React, { useState, FormEvent, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { X, MapPin, AlertCircle, Tag } from "lucide-react"; // ✅ Added Tag icon
+import { X, MapPin, AlertCircle, Tag, TicketPercent, Loader2, CheckCircle2 } from "lucide-react"; 
 import { useTheme } from "@/components/ThemeProvider";
 import { AxiosError } from "axios";
 
@@ -22,7 +22,6 @@ interface PriceTier {
   price: number;
 }
 
-// ✅ ADDED: Addon Interface
 interface Addon {
   name: string;
   price: number;
@@ -34,13 +33,19 @@ interface TripDetail {
   starting_from_price: number | null;
   price_tiers?: PriceTier[];
   meeting_points?: MeetingPoint[];
-  addons?: Addon[]; // ✅ ADDED: Addons Array
+  addons?: Addon[];
 }
 
 interface User {
   name?: string;
   email?: string;
   phone?: string;
+}
+
+interface ApiCheckPriceResponse {
+  discount_amount: number;
+  total_amount: number;
+  message?: string;
 }
 
 interface OpenTripBookingModalProps {
@@ -65,7 +70,12 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
   const [startDate, setStartDate] = useState("");
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
+  
+  // Discount States
   const [discountCode, setDiscountCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
+  const [isCheckingCode, setIsCheckingCode] = useState(false);
+  const [discountMessage, setDiscountMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -74,8 +84,6 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
   const [specialRequest, setSpecialRequest] = useState("");
   
   const [selectedMeetingPoint, setSelectedMeetingPoint] = useState("");
-  
-  // ✅ ADDED: State for selected addons
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,7 +103,9 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
       setNationality("");
       setSpecialRequest("");
       setDiscountCode("");
-      setSelectedAddons([]); // ✅ Reset addons
+      setAppliedDiscount(0); 
+      setDiscountMessage(null);
+      setSelectedAddons([]); 
       setErrors({});
       
       document.body.style.overflow = 'hidden';
@@ -108,7 +118,57 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
     };
   }, [isOpen, user]);
 
-  // ✅ HELPER: Toggle Addon Selection
+  // --- DISCOUNT HANDLER ---
+  const handleApplyCode = async () => {
+    if (!discountCode.trim()) return;
+    setIsCheckingCode(true);
+    // Don't clear message immediately
+    
+    try {
+      const response = await api.post<ApiCheckPriceResponse>('/booking/check-price', {
+        type: 'open_trip',
+        id: pkg.id,
+        discount_code: discountCode,
+        adults,
+        children,
+        selected_addons: selectedAddons
+      });
+
+      if (response.data.discount_amount > 0) {
+        setAppliedDiscount(response.data.discount_amount);
+        setDiscountMessage({ 
+          type: 'success', 
+          text: `Code applied! You saved ${formatPrice(response.data.discount_amount)}` 
+        });
+      } else {
+        setAppliedDiscount(0);
+        setDiscountMessage({ type: 'error', text: "Code valid but no discount applicable." });
+      }
+    } catch (err: unknown) {
+      const error = err as AxiosError<{message: string}>;
+      setAppliedDiscount(0);
+      setDiscountMessage({ 
+        type: 'error', 
+        text: error.response?.data?.message || "Invalid or expired discount code." 
+      });
+    } finally {
+      setIsCheckingCode(false);
+    }
+  };
+
+  // ✅ AUTO-RECALCULATE DISCOUNT (Debounced)
+  useEffect(() => {
+    // Only auto-recalculate if we already have a valid discount applied
+    if (appliedDiscount > 0 && discountCode) {
+      const timer = setTimeout(() => {
+        handleApplyCode();
+      }, 500); // Wait 500ms after last change
+
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adults, children, selectedAddons]);
+
   const toggleAddon = (addonName: string) => {
     setSelectedAddons((prev) => 
       prev.includes(addonName) 
@@ -146,22 +206,24 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
         }
     }
 
-    // ✅ 2. Addons Calculation
+    // 2. Addons Calculation
     const addonsCost = selectedAddons.reduce((sum, addonName) => {
         const addon = pkg.addons?.find(a => a.name === addonName);
         return sum + (addon ? Number(addon.price) : 0);
     }, 0);
 
-    const total = (finalPrice * count) + addonsCost;
+    // 3. Grand Total (Subtract Discount)
+    const baseTotal = (finalPrice * count) + addonsCost;
+    const total = Math.max(0, baseTotal - appliedDiscount);
 
     return { 
         pricePerPax: finalPrice, 
         totalPax: count, 
         activeTier: foundTier, 
-        addonsTotal: addonsCost, // ✅ Return addons total
+        addonsTotal: addonsCost, 
         grandTotal: total 
     };
-  }, [adults, children, pkg, selectedAddons]); // ✅ Re-run when addons change
+  }, [adults, children, pkg, selectedAddons, appliedDiscount]);
 
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(amount);
@@ -176,6 +238,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
+  // --- SUBMIT ---
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -196,8 +259,8 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
         participant_nationality: nationality,
         pickup_location: selectedMeetingPoint, 
         special_request: specialRequest || null,
-        discount_code: discountCode.trim() === "" ? null : discountCode,
-        selected_addons: selectedAddons, // ✅ Send selected addons to backend
+        discount_code: appliedDiscount > 0 ? discountCode : null,
+        selected_addons: selectedAddons, 
       };
 
       const response = await api.post(`/open-trips/${pkg.id}/book`, payload);
@@ -209,10 +272,8 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
       }
     } catch (error: unknown) {
       console.error(error);
-      
       if (error instanceof AxiosError && error.response?.status === 422) {
         const serverErrors = error.response.data.errors;
-        
         if (serverErrors.discount_code) {
            toast.error(serverErrors.discount_code[0]);
         } else if (serverErrors.start_date) {
@@ -292,7 +353,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
                 </div>
             </div>
 
-            {/* ✅ ADD-ONS CHECKLIST SECTION */}
+            {/* Add-ons */}
             {pkg.addons && pkg.addons.length > 0 && (
               <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
                 <h4 className={`text-sm font-bold flex items-center gap-2 mb-3 ${textColor}`}>
@@ -347,10 +408,6 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
                         className={inputClass}
                     />
                 )}
-                
-                <p className="text-xs text-gray-500 mt-1">
-                    *Peserta wajib berkumpul di titik ini sesuai jam yang ditentukan.
-                </p>
                 {errors.meetingPoint && <p className="text-red-500 text-xs mt-1">{errors.meetingPoint}</p>}
             </div>
 
@@ -385,28 +442,59 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
 
             {/* Discount Code */}
             <div>
-                <label className={`block text-sm font-medium ${textColor}`}>Discount Code (Optional)</label>
-                <input 
-                type="text" 
-                value={discountCode} 
-                onChange={(e) => setDiscountCode(e.target.value)} 
-                className={inputClass} 
-                />
+                <label className={`block text-sm font-medium ${textColor} flex items-center gap-1`}>
+                    <TicketPercent size={14} /> Discount Code
+                </label>
+                <div className="flex gap-2 mt-1">
+                    <input 
+                        type="text" 
+                        value={discountCode} 
+                        onChange={(e) => {
+                            setDiscountCode(e.target.value.toUpperCase());
+                            setAppliedDiscount(0);
+                            setDiscountMessage(null);
+                        }}
+                        className={`${inputClass} uppercase`} 
+                        placeholder="e.g. SALE10"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleApplyCode}
+                        disabled={!discountCode.trim() || isCheckingCode}
+                        className="bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded transition disabled:opacity-50 min-w-[80px] flex items-center justify-center"
+                    >
+                        {isCheckingCode ? <Loader2 size={16} className="animate-spin" /> : "Apply"}
+                    </button>
+                </div>
+                {discountMessage && (
+                    <div className={`mt-2 text-sm flex items-center gap-1.5 ${discountMessage.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
+                        {discountMessage.type === 'success' ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
+                        {discountMessage.text}
+                    </div>
+                )}
             </div>
 
-            {/* ✅ TOTAL PRICE SUMMARY */}
-            <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg sticky bottom-0 z-10 space-y-1">
+            {/* Price Summary */}
+            <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg sticky bottom-0 z-10 space-y-1 mt-4">
                 <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
                     <span>Base Price ({totalPax} pax)</span>
                     <span>{formatPrice(pricePerPax * totalPax)}</span>
                 </div>
-                {/* Show Add-on total if any selected */}
+                
                 {addonsTotal > 0 && (
                     <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
                         <span>Add-ons Total</span>
                         <span>+ {formatPrice(addonsTotal)}</span>
                     </div>
                 )}
+
+                {appliedDiscount > 0 && (
+                    <div className="flex justify-between items-center text-xs text-green-600 font-semibold">
+                        <span>Discount Applied</span>
+                        <span>- {formatPrice(appliedDiscount)}</span>
+                    </div>
+                )}
+
                 <div className="flex justify-between items-center pt-2 border-t border-gray-300 dark:border-gray-600 mt-2">
                     <span className="font-semibold text-gray-700 dark:text-gray-200">Grand Total</span>
                     <span className="text-xl font-bold text-primary">{formatPrice(grandTotal)}</span>
@@ -416,7 +504,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
             <button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed mt-4"
             >
                 {isSubmitting ? "Booking..." : "Join Open Trip"}
             </button>

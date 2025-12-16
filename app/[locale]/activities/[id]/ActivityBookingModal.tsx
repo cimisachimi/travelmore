@@ -1,12 +1,10 @@
-// app/[locale]/activities/[id]/ActivityBookingModal.tsx
 "use client";
 
 import React, { useState, FormEvent, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
-// ✅ 1. Import TicketPercent icon
-import { X, CalendarDays, Users, Clock, Camera, Plus, TicketPercent } from "lucide-react";
+import { X, CalendarDays, Users, Clock, Camera, Plus, TicketPercent, Loader2, CheckCircle2, AlertCircle, MapPin } from "lucide-react";
 import { AxiosError } from "axios";
 import { useTheme } from "@/components/ThemeProvider";
 import { Activity, TFunction, AuthUser } from "./page";
@@ -44,6 +42,13 @@ interface ApiErrorResponse {
   errors?: Record<string, string[]>;
 }
 
+// ✅ Added API Response Type for checking price
+interface ApiCheckPriceResponse {
+  discount_amount: number;
+  total_amount: number;
+  message?: string;
+}
+
 type FormErrors = {
   booking_date?: string;
   activity_time?: string;
@@ -54,7 +59,6 @@ type FormErrors = {
   phone_number?: string;
   pickup_location?: string;
   general?: string;
-  // ✅ 2. Add discount_code to error types
   discount_code?: string;
 };
 
@@ -89,8 +93,11 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   const [pickupLocation, setPickupLocation] = useState<string>("");
   const [specialRequest, setSpecialRequest] = useState<string>("");
   
-  // ✅ 3. Add Discount Code State
+  // ✅ 3. Updated Discount States
   const [discountCode, setDiscountCode] = useState<string>("");
+  const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
+  const [isCheckingCode, setIsCheckingCode] = useState(false);
+  const [discountMessage, setDiscountMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [phoneCode, setPhoneCode] = useState("+62");
@@ -124,11 +131,61 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
       setPickupLocation("");
       setSpecialRequest("");
       setSelectedAddons([]);
-      // ✅ 4. Reset Discount Code
+      
+      // ✅ Reset Discount
       setDiscountCode("");
+      setAppliedDiscount(0);
+      setDiscountMessage(null);
       setErrors({});
     }
   }, [isOpen, user]);
+
+  // --- HELPER: Discount Handler ---
+  const handleApplyCode = async () => {
+    if (!discountCode.trim()) return;
+    setIsCheckingCode(true);
+    
+    try {
+      const response = await api.post<ApiCheckPriceResponse>('/booking/check-price', {
+        type: 'activity',
+        id: activity.id,
+        discount_code: discountCode,
+        quantity: quantity,
+        selected_addons: selectedAddons
+      });
+
+      if (response.data.discount_amount > 0) {
+        setAppliedDiscount(response.data.discount_amount);
+        setDiscountMessage({ 
+          type: 'success', 
+          text: `Code applied! You saved ${formatPrice(response.data.discount_amount)}` 
+        });
+      } else {
+        setAppliedDiscount(0);
+        setDiscountMessage({ type: 'error', text: "Code valid but no discount applicable." });
+      }
+    } catch (err: unknown) {
+      const error = err as AxiosError<{message: string}>;
+      setAppliedDiscount(0);
+      setDiscountMessage({ 
+        type: 'error', 
+        text: error.response?.data?.message || "Invalid or expired discount code." 
+      });
+    } finally {
+      setIsCheckingCode(false);
+    }
+  };
+
+  // ✅ Auto-Recalculate Discount (Debounced)
+  useEffect(() => {
+    if (appliedDiscount > 0 && discountCode) {
+      const timer = setTimeout(() => {
+        handleApplyCode();
+      }, 500); 
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quantity, selectedAddons]);
 
   // --- CALCULATIONS ---
   const baseSubtotal = useMemo(() => {
@@ -145,7 +202,8 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     }, 0);
   }, [selectedAddons, activity.addons]);
 
-  const grandTotal = baseSubtotal + addonsTotal;
+  // ✅ Updated Grand Total Calculation
+  const grandTotal = Math.max(0, baseSubtotal + addonsTotal - appliedDiscount);
 
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -175,7 +233,8 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     if (!bookingDate) newErrors.booking_date = t("booking.errors.noDate");
     if (!activityTime) newErrors.activity_time = t("booking.errors.noTime");
     if (!quantity || quantity < 1) newErrors.quantity = t("booking.errors.noParticipants");
-    if (grandTotal <= 0) newErrors.general = t("booking.errors.noPrice");
+    // Check base price, not grandTotal (which might be 0)
+    if ((baseSubtotal + addonsTotal) <= 0) newErrors.general = t("booking.errors.noPrice");
     if (!nationality) newErrors.participant_nationality = t("booking.errors.noNationality");
     if (!fullName) newErrors.full_name = t("booking.errors.noName");
     if (!email) {
@@ -219,8 +278,8 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
         pickup_location: pickupLocation,
         special_request: specialRequest || null,
         selected_addons: selectedAddons,
-        // ✅ 5. Send Discount Code to API
-        discount_code: discountCode || null,
+        // ✅ Send Discount Code Only if Valid
+        discount_code: appliedDiscount > 0 ? discountCode : null,
       };
 
       const response = await api.post<ApiBookingSuccessResponse>(
@@ -249,7 +308,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
         if (validationErrors.email) newApiErrors.email = validationErrors.email[0];
         if (validationErrors.phone_number) newApiErrors.phone_number = validationErrors.phone_number[0];
         if (validationErrors.pickup_location) newApiErrors.pickup_location = validationErrors.pickup_location[0];
-        // ✅ 6. Handle Discount Code Error
         if (validationErrors.discount_code) newApiErrors.discount_code = validationErrors.discount_code[0];
 
         setErrors(newApiErrors);
@@ -436,21 +494,44 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
           </div>
 
           
+          {/* ✅ UPDATED DISCOUNT CODE SECTION */}
           <div>
-            <label htmlFor="discount-code" className={`block text-sm font-medium ${mutedTextColor}`}>
-              <TicketPercent size={14} className="inline mr-1 mb-0.5" /> {t("booking.discountCode") || "Discount Code"}
+            <label htmlFor="discount-code" className={`block text-sm font-medium ${mutedTextColor} flex items-center gap-1`}>
+              <TicketPercent size={14} /> {t("booking.discountCode") || "Discount Code"}
             </label>
-            <input
-              id="discount-code"
-              type="text"
-              value={discountCode}
-              onChange={(e) => {
-                setDiscountCode(e.target.value.toUpperCase());
-                if (errors.discount_code) setErrors((p) => ({ ...p, discount_code: undefined }));
-              }}
-              placeholder="e.g., SALE10"
-              className={`${baseInputClass} ${errors.discount_code ? errorBorderClass : ""}`}
-            />
+            <div className="flex gap-2 mt-1">
+                <input
+                id="discount-code"
+                type="text"
+                value={discountCode}
+                onChange={(e) => {
+                    setDiscountCode(e.target.value.toUpperCase());
+                    // Reset if typing to force re-check
+                    setAppliedDiscount(0);
+                    setDiscountMessage(null);
+                    if (errors.discount_code) setErrors((p) => ({ ...p, discount_code: undefined }));
+                }}
+                placeholder="e.g., SALE10"
+                className={`block w-full rounded-md shadow-sm ${inputBgClass} ${focusRingClass} ${textColor} placeholder:${mutedTextColor} ${errors.discount_code ? errorBorderClass : inputBorderClass} py-2 px-3`}
+                />
+                <button
+                    type="button"
+                    onClick={handleApplyCode}
+                    disabled={!discountCode.trim() || isCheckingCode}
+                    className="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded transition disabled:opacity-50 min-w-[80px] flex items-center justify-center"
+                >
+                    {isCheckingCode ? <Loader2 size={16} className="animate-spin" /> : "Apply"}
+                </button>
+            </div>
+            
+            {/* Discount Status Message */}
+            {discountMessage && (
+                <div className={`mt-2 text-sm flex items-center gap-1.5 ${discountMessage.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
+                    {discountMessage.type === 'success' ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
+                    {discountMessage.text}
+                </div>
+            )}
+            
             {errors.discount_code && <p className="text-red-600 text-sm mt-1">{errors.discount_code}</p>}
           </div>
 
@@ -465,12 +546,19 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               <span className={`text-sm font-medium ${textColor}`}>x {quantity}</span>
             </div>
             
-            {/* Show Add-ons total if any selected */}
             {addonsTotal > 0 && (
-               <div className="flex justify-between items-center mb-1 pb-1 border-b border-gray-300 dark:border-gray-600">
+               <div className="flex justify-between items-center mb-1">
                 <span className={`text-sm ${mutedTextColor}`}>Add-ons</span>
                 <span className={`text-sm font-medium ${textColor}`}>+ {formatPrice(addonsTotal)}</span>
               </div>
+            )}
+
+            {/* ✅ Show Applied Discount */}
+            {appliedDiscount > 0 && (
+                <div className="flex justify-between items-center mb-1 text-green-600 font-medium">
+                    <span className="text-sm">Discount</span>
+                    <span className="text-sm">- {formatPrice(appliedDiscount)}</span>
+                </div>
             )}
 
             <div className={`flex justify-between items-center border-t ${inputBorderClass} pt-2 mt-2`}>

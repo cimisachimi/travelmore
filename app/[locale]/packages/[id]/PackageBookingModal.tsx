@@ -1,11 +1,10 @@
-// app/[locale]/packages/[id]/PackageBookingModal.tsx
 "use client";
 
 import React, { useState, FormEvent, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { X, CalendarDays, Users, TicketPercent, Camera, Plus } from "lucide-react";
+import { X, CalendarDays, Users, TicketPercent, Camera, Plus, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { AxiosError } from "axios";
 import { useTheme } from "@/components/ThemeProvider";
 
@@ -25,6 +24,11 @@ interface ApiErrorResponse {
 }
 interface ApiBookingSuccessResponse {
   id: number;
+}
+interface ApiCheckPriceResponse {
+  discount_amount: number;
+  total_amount: number;
+  message?: string;
 }
 
 type FormErrors = {
@@ -65,7 +69,12 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
   const [startDate, setStartDate] = useState<string>("");
   const [adults, setAdults] = useState<number>(1);
   const [children, setChildren] = useState<number>(0);
+  
+  // Discount States
   const [discountCode, setDiscountCode] = useState<string>("");
+  const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
+  const [isCheckingCode, setIsCheckingCode] = useState(false);
+  const [discountMessage, setDiscountMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const [nationality, setNationality] = useState<string>("");
   const [fullName, setFullName] = useState<string>("");
@@ -74,7 +83,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
   const [flightNumber, setFlightNumber] = useState<string>("");
   const [specialRequest, setSpecialRequest] = useState<string>("");
   
-  // New State for Add-ons
+  // Add-ons State
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
 
   const [phoneCode, setPhoneCode] = useState("+62");
@@ -114,6 +123,8 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
       setAdults(1);
       setChildren(0);
       setDiscountCode("");
+      setAppliedDiscount(0);
+      setDiscountMessage(null);
       setNationality("");
       setPickupLocation("");
       setFlightNumber("");
@@ -122,6 +133,57 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
       setErrors({});
     }
   }, [isOpen, user]);
+
+  // --- DISCOUNT HANDLER ---
+  const handleApplyCode = async () => {
+    if (!discountCode.trim()) return;
+    setIsCheckingCode(true);
+    // Don't clear message immediately to prevent flicker during auto-update
+    
+    try {
+      const response = await api.post<ApiCheckPriceResponse>('/booking/check-price', {
+        type: 'holiday_package',
+        id: pkg.id,
+        discount_code: discountCode,
+        adults,
+        children,
+        selected_addons: selectedAddons
+      });
+
+      if (response.data.discount_amount > 0) {
+        setAppliedDiscount(response.data.discount_amount);
+        setDiscountMessage({ 
+          type: 'success', 
+          text: `Code applied! You saved ${formatPrice(response.data.discount_amount)}` 
+        });
+      } else {
+        setAppliedDiscount(0);
+        setDiscountMessage({ type: 'error', text: "Code valid but no discount applicable." });
+      }
+    } catch (err: unknown) {
+      const error = err as AxiosError<{message: string}>;
+      setAppliedDiscount(0);
+      setDiscountMessage({ 
+        type: 'error', 
+        text: error.response?.data?.message || "Invalid or expired discount code." 
+      });
+    } finally {
+      setIsCheckingCode(false);
+    }
+  };
+
+  // ✅ AUTO-RECALCULATE DISCOUNT (Debounced)
+  useEffect(() => {
+    // Only auto-recalculate if we already have a valid discount applied
+    if (appliedDiscount > 0 && discountCode) {
+      const timer = setTimeout(() => {
+        handleApplyCode();
+      }, 500); // Wait 500ms after last change
+
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adults, children, selectedAddons]);
 
   // --- CALCULATIONS ---
   const { pricePerPax, totalPax } = useMemo(() => {
@@ -148,12 +210,12 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
     return { pricePerPax: foundPrice, totalPax };
   }, [adults, children, pkg.price_tiers, pkg.starting_from_price]);
 
-  // 1. Base Subtotal (Price x Pax)
+  // 1. Base Subtotal
   const baseSubtotal = useMemo(() => {
     return pricePerPax * totalPax;
   }, [pricePerPax, totalPax]);
 
-  // 2. Add-ons Total (Fixed price per booking)
+  // 2. Add-ons Total
   const addonsTotal = useMemo(() => {
     if (!pkg.addons || selectedAddons.length === 0) return 0;
     
@@ -164,7 +226,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
   }, [selectedAddons, pkg.addons]);
 
   // 3. Grand Total
-  const grandTotal = baseSubtotal + addonsTotal;
+  const grandTotal = Math.max(0, baseSubtotal + addonsTotal - appliedDiscount);
 
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -202,7 +264,8 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
       newErrors.children = t("booking.errors.invalidChildren");
     }
     
-    if (grandTotal <= 0 || pricePerPax <= 0) {
+    // Check base price
+    if ((baseSubtotal + addonsTotal) <= 0) {
       newErrors.general = t("booking.errors.noPrice");
     }
 
@@ -251,7 +314,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
           start_date: startDate,
           adults: adults,
           children: children,
-          discount_code: discountCode || null,
+          discount_code: appliedDiscount > 0 ? discountCode : null,
           participant_nationality: nationality,
           full_name: fullName,
           email: email,
@@ -259,7 +322,6 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
           pickup_location: pickupLocation,
           flight_number: flightNumber || null,
           special_request: specialRequest || null,
-        
           selected_addons: selectedAddons,
         }
       );
@@ -574,17 +636,38 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
             <label htmlFor="discount-code" className={`block text-sm font-medium ${mutedTextColor}`}>
               <TicketPercent size={14} className="inline mr-1 mb-0.5" /> {t("booking.discountCode")}
             </label>
-            <input
-              id="discount-code"
-              type="text"
-              value={discountCode}
-              onChange={(e) => {
-                setDiscountCode(e.target.value.toUpperCase());
-                if (errors.discountCode) setErrors((p) => ({ ...p, discountCode: undefined }));
-              }}
-              placeholder="e.g., SALE10"
-              className={`${baseInputClass} ${errors.discountCode ? errorBorderClass : inputBorderClass}`}
-            />
+            <div className="flex gap-2 mt-1">
+              <input
+                id="discount-code"
+                type="text"
+                value={discountCode}
+                onChange={(e) => {
+                  setDiscountCode(e.target.value.toUpperCase());
+                  setAppliedDiscount(0); // Reset applied if typing
+                  setDiscountMessage(null);
+                  if (errors.discountCode) setErrors((p) => ({ ...p, discountCode: undefined }));
+                }}
+                placeholder="e.g., SALE10"
+                className={`block w-full rounded-md shadow-sm ${inputBgClass} ${focusRingClass} ${textColor} placeholder:${mutedTextColor} ${errors.discountCode ? errorBorderClass : inputBorderClass}`}
+              />
+              <button
+                type="button"
+                onClick={handleApplyCode}
+                disabled={!discountCode.trim() || isCheckingCode}
+                className="bg-primary hover:bg-primary/90 text-black font-semibold py-2 px-4 rounded-md transition-colors disabled:opacity-50 min-w-[80px] flex items-center justify-center"
+              >
+                {isCheckingCode ? <Loader2 size={16} className="animate-spin" /> : "Apply"}
+              </button>
+            </div>
+            
+            {/* Status Message */}
+            {discountMessage && (
+              <div className={`mt-2 text-sm flex items-center gap-1.5 ${discountMessage.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600'}`}>
+                {discountMessage.type === 'success' ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
+                {discountMessage.text}
+              </div>
+            )}
+            
             {errors.discountCode && <p className="text-red-600 text-sm mt-1">{errors.discountCode}</p>}
           </div>
 
@@ -599,13 +682,23 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
             
             {/* Show Add-ons if selected */}
             {addonsTotal > 0 && (
-               <div className="flex justify-between items-center pb-1 border-b border-gray-300 dark:border-gray-600">
+               <div className="flex justify-between items-center">
                 <span className={`text-sm ${mutedTextColor}`}>Add-ons</span>
                 <span className={`text-sm font-medium ${textColor}`}>+ {formatPrice(addonsTotal)}</span>
               </div>
             )}
 
-            <div className={`flex justify-between items-center border-t ${inputBorderClass} pt-2`}>
+            {/* Show Discount if Applied */}
+            {appliedDiscount > 0 && (
+              <div className="flex justify-between items-center text-green-600 dark:text-green-400">
+                <span className="text-sm font-medium flex items-center gap-1">
+                  <TicketPercent size={14} /> Discount
+                </span>
+                <span className="text-sm font-bold">- {formatPrice(appliedDiscount)}</span>
+              </div>
+            )}
+
+            <div className={`flex justify-between items-center border-t ${inputBorderClass} pt-2 mt-2`}>
               <p className={`text-lg font-semibold ${textColor}`}>{t("booking.subtotal")}:</p>
               <p className="text-2xl font-bold text-primary">{formatPrice(grandTotal)}</p>
             </div>
