@@ -2,66 +2,42 @@
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import Link from "next/link"; 
+import Link from "next/link";
 import { useLocale } from "next-intl"; 
 import { formatCurrency, formatDate, getStatusChip } from "@/lib/utils";
 import {
-  User,
-  Phone,
-  MapPin,
-  Clock,
-  Users,
-  Package,
-  Plane,
-  ArrowRight,
-  RefreshCcw,
-  Calendar,
-  Car,
-  Map,
-  Ticket,
-  LucideIcon,
+  User, Phone, MapPin, Clock, Users, Package, Plane, ArrowRight,
+  RefreshCcw, Calendar, Car, Map, Ticket, LucideIcon, CreditCard
 } from "lucide-react";
 
 // Import Shared Types
 import { SimpleBooking } from "../types";
-
-// Import Modal
+// Import Modal (Assuming this component exists and works)
 import RefundModal from "./RefundModal"; 
 
-
+// --- TYPES & HELPERS ---
 interface BookingDetailsJSON {
- 
   service_name?: string;
-  
-  // Common
   full_name?: string;
   phone_number?: string;
   email?: string;
   special_request?: string;
-
-  // Car Rental
   pickup_location?: string;
   pickup_time?: string;
   return_location?: string;
   return_time?: string;
   driver_details?: string;
-
-  // Activity / Open Trip / Package
   quantity?: number;
   num_participants?: number;
   adults?: number;
   children?: number;
   meeting_point?: string;
-  
-  // Trip Planner
   destination?: string;
   budget?: string;
   trip_type?: string;
-
   [key: string]: unknown;
 }
 
-// --- 2. HELPER COMPONENTS ---
 interface DetailRowProps {
   icon: LucideIcon;
   label: string;
@@ -81,14 +57,11 @@ const DetailRow = ({ icon: Icon, label, value }: DetailRowProps) => {
   );
 };
 
-// --- 3. SERVICE HANDLER FUNCTION ---
 function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
   const details = booking.details as unknown as BookingDetailsJSON;
   const { bookable_type, bookable } = booking;
-  
   const type = bookable_type?.split('\\').pop() || "";
 
-  // A. Car Rental
   if (type === "CarRental") {
     return (
       <div className="space-y-3">
@@ -105,8 +78,6 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
       </div>
     );
   }
-
-  // B. Activity
   if (type === "Activity") {
     return (
       <div className="space-y-3">
@@ -123,8 +94,6 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
       </div>
     );
   }
-
-  // C. Holiday Package & Open Trip
   if (type === "HolidayPackage" || type === "OpenTrip") {
     const paxCount = (details?.adults || 0) + (details?.children || 0) + (details?.num_participants || 0);
     return (
@@ -141,8 +110,6 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
       </div>
     );
   }
-
-  // D. Trip Planner (Custom)
   if (type === "TripPlanner") {
     return (
       <div className="space-y-3">
@@ -159,7 +126,6 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
       </div>
     );
   }
-
   return <p className="text-sm text-foreground/60 italic">Service details not available.</p>;
 }
 
@@ -176,7 +142,6 @@ export default function BookingsTab() {
 
   const fetchData = async () => {
     setLoading(true);
-    setError(null);
     try {
       const response = await api.get("/my-bookings");
       setBookings(response.data);
@@ -197,133 +162,111 @@ export default function BookingsTab() {
     setIsRefundModalOpen(true);
   };
 
-  const renderBookingList = () =>
-    !bookings || bookings.length === 0 ? (
-      <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed border-border">
-          <Calendar size={48} className="mb-4 opacity-20" />
-          <p>You have no active bookings.</p>
-          <p className="text-xs">Your confirmed trips and services will appear here.</p>
-      </div>
-    ) : (
-      bookings.map((booking) => {
-        const bookable = booking?.bookable;
-        const details = booking.details as unknown as BookingDetailsJSON;
-        
-
-        const serviceName = (
-          details?.service_name ||
-          bookable?.name ||
-          (bookable?.brand ? `${bookable.brand} ${bookable.car_model}` : null) ||
-          "Service Booking"
-        ) as string;
-
-        const startDate = booking?.start_date;
-        const endDate = booking?.end_date;
-        
-        let dateDisplay = "Date Not Set";
-        if (startDate) {
-          dateDisplay = formatDate(startDate);
-          if (endDate && endDate !== startDate) {
-            dateDisplay += ` - ${formatDate(endDate)}`;
-          }
-        }
-
-        const detailUrl = `/${locale}/profile/bookings/${booking.id}`;
-        
-        const canRefund = 
-            booking.status === 'confirmed' || 
-            booking.status === 'pending';
-
-        return (
-          <div
-            key={booking.id}
-            className="bg-card border border-border rounded-xl overflow-hidden transition-all hover:shadow-md flex flex-col"
-          >
-            {/* 1. Header with Status */}
-            <div className="p-4 flex justify-between items-start bg-muted/20 border-b border-border/50">
-              <div>
-                <h3 className="font-bold text-lg text-foreground">{serviceName}</h3>
-                <p className="text-sm text-foreground/60 flex items-center gap-1 mt-1">
-                   <Clock size={14}/> {dateDisplay}
-                </p>
-              </div>
-              <span className={getStatusChip(booking.status)}>
-                {booking.status.toUpperCase()}
-              </span>
-            </div>
-
-            {/* 2. Dynamic Service Details */}
-            <div className="p-4">
-                 <ServiceSpecificDetails booking={booking} />
-            </div>
-
-            {/* 3. Footer Actions */}
-            <div className="bg-muted/10 p-4 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="flex flex-col w-full sm:w-auto text-left">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Total Price</span>
-                    <span className="font-bold text-lg text-primary">{formatCurrency(booking.total_price)}</span>
-                </div>
-
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                    {/* Refund Button */}
-                    {canRefund && (
-                      <button 
-                          onClick={() => handleOpenRefund(booking)}
-                          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-border bg-background text-foreground text-sm font-semibold rounded-full hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all cursor-pointer"
-                      >
-                          <RefreshCcw size={16} /> Request Refund
-                      </button>
-                    )}
-
-                    {/* View Voucher / Details Button */}
-                    <Link 
-                        href={detailUrl}
-                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-full hover:brightness-110 shadow-sm transition-all"
-                    >
-                        View Voucher <ArrowRight size={16} />
-                    </Link>
-                </div>
-            </div>
-          </div>
-        );
-      })
-    );
-
-  if (loading) return (
-     <div className="flex justify-center py-12">
-        <div className="animate-pulse flex flex-col items-center gap-2">
-            <div className="h-8 w-8 bg-muted rounded-full"></div>
-            <span className="text-muted-foreground text-sm">Loading bookings...</span>
-        </div>
-     </div>
-  );
-  
-  if (error) return (
-    <div className="text-center py-10">
-        <p className="text-red-500 mb-2">{error}</p>
-        <button onClick={() => fetchData()} className="text-sm underline">Try Again</button>
-    </div>
-  );
+  if (loading) return <div className="text-center py-10">Loading...</div>;
+  if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
 
   return (
     <div className="animate-fadeIn space-y-6 relative">
       <div className="flex justify-between items-center border-b border-border pb-4">
-        {/* Updated Title to reflect intent */}
         <h2 className="text-2xl font-bold">My Bookings</h2>
         <span className="text-xs text-muted-foreground hidden sm:block">
            Manage your trips and vouchers
         </span>
       </div>
-      <div className="space-y-4">{renderBookingList()}</div>
+
+      <div className="space-y-4">
+        {bookings.map((booking) => {
+            const details = booking.details as unknown as BookingDetailsJSON;
+            const bookable = booking.bookable;
+            const serviceName = details?.service_name || bookable?.name || "Service Booking";
+            
+            // Link to Booking Detail (Voucher)
+            const detailUrl = `/${locale}/profile/bookings/${booking.id}`;
+            // Link to History (For Payment)
+            const historyUrl = `/${locale}/profile?tab=history`;
+
+            // ✅ Logic: Is the booking fully paid?
+            const isPaid = booking.payment_status === 'paid';
+            
+            // ✅ Logic: Can we refund? (Only if paid AND status is valid)
+            const canRefund = isPaid && (booking.status === 'confirmed' || booking.status === 'pending');
+
+            return (
+              <div key={booking.id} className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+                <div className="p-4 flex justify-between items-start bg-muted/20 border-b border-border/50">
+                  <h3 className="font-bold text-lg">{serviceName}</h3>
+                  <div className="flex flex-col items-end gap-1">
+                      <span className={getStatusChip(booking.status)}>{booking.status.toUpperCase()}</span>
+                      
+                      {/* Show 'UNPAID' badge if not paid */}
+                      {!isPaid && (
+                          <span className="text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full border border-red-200">
+                              {booking.payment_status?.toUpperCase() || 'UNPAID'}
+                          </span>
+                      )}
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  <ServiceSpecificDetails booking={booking} />
+                </div>
+
+                <div className="bg-muted/10 p-4 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
+                   <div className="flex flex-col">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Total Price</span>
+                      <span className="font-bold text-lg text-primary">{formatCurrency(booking.total_price)}</span>
+                   </div>
+
+                   <div className="flex items-center gap-3">
+                      
+                      {/* 1. REFUND BUTTON (Only if Paid) */}
+                      {canRefund && (
+                        <button 
+                            onClick={() => handleOpenRefund(booking)}
+                            className="flex items-center gap-2 px-4 py-2 border border-border bg-background text-sm font-semibold rounded-full hover:bg-red-50 hover:text-red-600 transition-all"
+                        >
+                            <RefreshCcw size={16} /> Request Refund
+                        </button>
+                      )}
+
+                      {/* 2. MAIN ACTION BUTTON */}
+                      {isPaid ? (
+                          // ✅ PAID: Show View Voucher (Link)
+                          <Link 
+                              href={detailUrl}
+                              className="flex items-center gap-2 px-5 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-full hover:brightness-110 shadow-sm transition-all"
+                          >
+                              View Voucher <ArrowRight size={16} />
+                          </Link>
+                      ) : (
+                          // ❌ UNPAID: Show Pay Now (Link to History)
+                          <Link 
+                              href={historyUrl}
+                              className="flex items-center gap-2 px-5 py-2 bg-orange-500 text-white text-sm font-bold rounded-full hover:bg-orange-600 shadow-sm transition-all"
+                          >
+                              <CreditCard size={16} /> Pay Now
+                          </Link>
+                      )}
+                   </div>
+                </div>
+              </div>
+            );
+        })}
+        
+        {bookings.length === 0 && !loading && (
+            <div className="text-center py-10 text-muted-foreground">
+  You don&apos;t have any bookings yet.
+</div>
+
+        )}
+      </div>
 
       {selectedBookingForRefund && (
         <RefundModal 
           isOpen={isRefundModalOpen}
           onClose={() => setIsRefundModalOpen(false)}
           booking={selectedBookingForRefund}
-          onSuccess={() => {
-              fetchData(); 
-          }}
+          onSuccess={fetchData}
         />
       )}
     </div>

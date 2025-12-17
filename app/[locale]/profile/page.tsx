@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 // ✅ Correct import for locale-aware navigation
 import { useRouter } from "@/i18n/navigation"; 
+import { useSearchParams } from "next/navigation"; // ✅ ADD THIS
 import { toast } from "sonner";
 
 // Import components
@@ -20,7 +21,17 @@ type ProfileTab = "profile" | "bookings" | "history" | "refunds";
 export default function ProfilePage() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams(); // ✅ Get URL params
+  
   const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
+
+  // ✅ NEW: Sync Tab with URL Parameter
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && ["profile", "bookings", "history", "refunds"].includes(tabParam)) {
+      setActiveTab(tabParam as ProfileTab);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Redirect to login if not authenticated
@@ -32,6 +43,15 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await logout();
     toast.info("You have been logged out.");
+  };
+
+  // ✅ OPTIONAL: Update URL when clicking tabs manually (so reloading keeps the tab)
+  const switchTab = (tab: ProfileTab) => {
+    setActiveTab(tab);
+    // Use window.history to update URL without full reload
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set("tab", tab);
+    window.history.pushState({}, "", newUrl);
   };
 
   // Show loading skeleton or spinner while checking auth
@@ -58,11 +78,9 @@ export default function ProfilePage() {
         return <SettingsTab />;
       
       case "bookings":
-        // ✅ Correct: "My Bookings" shows specific bookings
         return <BookingsTab />; 
 
       case "history":
-        // ✅ Correct: "Purchase History" shows orders/transactions
         return <HistoryTab />;
 
       case "refunds":
@@ -95,7 +113,7 @@ export default function ProfilePage() {
 
               <nav className="flex flex-col space-y-1">
                 <button
-                  onClick={() => setActiveTab("profile")}
+                  onClick={() => switchTab("profile")} // ✅ Updated to use switchTab
                   className={`${tabClasses} ${
                     activeTab === "profile"
                       ? activeTabClasses
@@ -105,7 +123,7 @@ export default function ProfilePage() {
                   My Profile
                 </button>
                 <button
-                  onClick={() => setActiveTab("bookings")}
+                  onClick={() => switchTab("bookings")} // ✅ Updated
                   className={`${tabClasses} ${
                     activeTab === "bookings"
                       ? activeTabClasses
@@ -115,7 +133,7 @@ export default function ProfilePage() {
                   My Bookings
                 </button>
                 <button
-                  onClick={() => setActiveTab("history")}
+                  onClick={() => switchTab("history")} // ✅ Updated
                   className={`${tabClasses} ${
                     activeTab === "history"
                       ? activeTabClasses
@@ -125,7 +143,7 @@ export default function ProfilePage() {
                   Purchase History
                 </button>
                 <button
-                  onClick={() => setActiveTab("refunds")}
+                  onClick={() => switchTab("refunds")} // ✅ Updated
                   className={`${tabClasses} ${
                     activeTab === "refunds"
                       ? activeTabClasses
