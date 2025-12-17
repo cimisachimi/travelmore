@@ -17,6 +17,9 @@ export default function OrderPaymentActions({
 }: OrderPaymentActionsProps) {
   const status = order.status;
 
+  // ✅ ADDED: Identify if this is a Trip Planner order
+  const isTripPlanner = order.booking?.bookable_type?.includes("TripPlanner");
+
   if (status === "pending" || status === "processing") {
     const isDeadlinePast =
       order.payment_deadline && new Date(order.payment_deadline) < new Date();
@@ -45,20 +48,29 @@ export default function OrderPaymentActions({
             </span>
           </p>
         )}
-        <div className="text-sm flex justify-between">
-          <span className="text-foreground/80">Down Payment (50%):</span>
-          <span className="font-semibold">
-            {formatCurrency(order.down_payment_amount)}
-          </span>
-        </div>
+        
+        {/* ✅ CHANGED: Hide Down Payment info for Trip Planner */}
+        {!isTripPlanner && (
+          <div className="text-sm flex justify-between">
+            <span className="text-foreground/80">Down Payment (50%):</span>
+            <span className="font-semibold">
+              {formatCurrency(order.down_payment_amount)}
+            </span>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={() => onPay(order, "down_payment")}
-            disabled={isPaying}
-            className="flex-1 px-4 py-2 font-semibold text-white bg-primary rounded-md hover:bg-primary/90 disabled:opacity-50"
-          >
-            {isPaying ? "Loading..." : "Pay 50% DP"}
-          </button>
+          {/* ✅ CHANGED: Hide Down Payment button for Trip Planner */}
+          {!isTripPlanner && (
+            <button
+              onClick={() => onPay(order, "down_payment")}
+              disabled={isPaying}
+              className="flex-1 px-4 py-2 font-semibold text-white bg-primary rounded-md hover:bg-primary/90 disabled:opacity-50"
+            >
+              {isPaying ? "Loading..." : "Pay 50% DP"}
+            </button>
+          )}
+          
           <button
             onClick={() => onPay(order, "full_payment")}
             disabled={isPaying}
