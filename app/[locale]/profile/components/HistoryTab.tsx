@@ -1,3 +1,4 @@
+// app/[locale]/profile/components/HistoryTab.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -31,57 +32,63 @@ import {
 // --- LOCAL TYPES FOR SAFETY ---
 interface BookingDetails {
   // Common
-  name?: string; 
-  brand?: string;
-  car_model?: string;
-  plate_number?: string;
-  total_days?: number;
-  pickup_location?: string;
-  pickup_time?: string;
-  phone_number?: string;
-  email?: string;
-  full_name?: string;
+  name?: string | null; 
+  brand?: string | null;
+  car_model?: string | null;
+  plate_number?: string | null;
+  total_days?: number | null;
+  pickup_location?: string | null;
+  pickup_time?: string | null;
+  phone_number?: string | null;
+  email?: string | null;
+  full_name?: string | null;
   
-  // Trip Planner & Packages
-  type?: string;
-  company_name?: string;
-  brand_name?: string;
-  trip_type?: string;
-  city?: string;
-  destination?: string; 
-  province?: string;
-  country?: string;
-  travel_type?: string;
-  departure_date?: string;
-  booking_date?: string; 
-  start_date?: string;   
-  end_date?: string;     
-  duration?: string | number;
-  days?: string | number;
-  budget_pack?: string;
-  addons?: string[] | string;
-  must_visit?: string;
+  // Trip Planner & Packages & Open Trip
+  type?: string | null;
+  company_name?: string | null;
+  brand_name?: string | null;
+  trip_type?: string | null;
+  city?: string | null;
+  destination?: string | null; 
+  province?: string | null;
+  country?: string | null;
+  travel_type?: string | null;
+  
+  // VARIABEL TANGGAL
+  departure_date?: string | null;
+  booking_date?: string | null; 
+  start_date?: string | null;    
+  end_date?: string | null;      
+  date?: string | null;          
+  time?: string | null;
+  
+  duration?: string | number | null;
+  days?: string | number | null;
+  budget_pack?: string | null;
+  addons?: string[] | string | null;
+  must_visit?: string | null;
   
   // Pax Info
-  adults?: number;
-  children?: number;
-  pax_adults?: string | number;
-  pax_teens?: string | number;
-  pax_kids?: string | number;
-  pax_seniors?: string | number;
-  total_pax?: number;
-  participant_nationality?: string;
+  adults?: number | null;
+  children?: number | null;
+  pax_adults?: string | number | null;
+  pax_teens?: string | number | null;
+  pax_kids?: string | number | null;
+  pax_seniors?: string | number | null;
+  total_pax?: number | null;
+  participant_nationality?: string | null;
   
   // Flights & Activities & Services
-  flight_number?: string;
-  special_request?: string;
-  quantity?: number;
-  activity_time?: string;
-  service_name?: string;
-  notes?: string;
+  flight_number?: string | null;
+  special_request?: string | null;
+  quantity?: number | null;
+  activity_time?: string | null;
+  service_name?: string | null;
+  notes?: string | null;
   
   // Catch-all
-  [key: string]: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
 }
 
 // --- HELPER: Service Type Badge ---
@@ -128,6 +135,18 @@ const CarRentalDetails = ({ details }: { details: BookingDetails }) => (
           <span className="font-medium">{details.brand} {details.car_model}</span>
           {details.plate_number && <div className="text-xs text-muted-foreground">{details.plate_number}</div>}
         </div>
+
+        {/* --- Bagian Tanggal Sewa --- */}
+        <div>
+           <span className="text-xs text-muted-foreground block">Rental Dates</span>
+           <span className="font-medium flex items-center gap-1">
+              <Calendar size={12} /> 
+              {details.start_date ? formatDate(details.start_date) : "-"} 
+              {details.end_date ? ` - ${formatDate(details.end_date)}` : ""}
+           </span>
+        </div>
+        {/* --------------------------- */}
+
         <div>
           <span className="text-xs text-muted-foreground block">Duration</span>
           <span className="font-medium flex items-center gap-1"><Clock size={12} /> {details.total_days} Day(s)</span>
@@ -148,7 +167,7 @@ const CarRentalDetails = ({ details }: { details: BookingDetails }) => (
 );
 
 const TripPlannerDetails = ({ details }: { details: BookingDetails }) => {
-    const safeInt = (val: string | number | undefined) => {
+    const safeInt = (val: string | number | undefined | null) => {
         const parsed = parseInt(String(val || "0"));
         return isNaN(parsed) ? 0 : parsed;
     };
@@ -162,6 +181,7 @@ const TripPlannerDetails = ({ details }: { details: BookingDetails }) => {
     if (details.trip_type === "foreign") location = `🌐 ${details.city}, ${details.country}`;
 
     const durationDisplay = details.duration || details.days || "";
+    const displayDate = details.departure_date || details.start_date || details.booking_date || details.date || "-";
 
     return (
         <div className="space-y-4 text-sm animate-fadeIn">
@@ -177,12 +197,12 @@ const TripPlannerDetails = ({ details }: { details: BookingDetails }) => {
                     <div>
                         <span className="text-xs text-muted-foreground block">Date & Duration</span>
                         <span className="font-medium flex items-center gap-1">
-                             <Calendar size={12}/> {details.departure_date} ({durationDisplay} days)
+                             <Calendar size={12}/> {displayDate !== "-" ? formatDate(displayDate) : "-"} ({durationDisplay} days)
                         </span>
                     </div>
                 </div>
                 <div className="space-y-3">
-                     <div>
+                      <div>
                         <span className="text-xs text-muted-foreground block">Budget & Type</span>
                         <span className="font-medium capitalize flex items-center gap-1">
                              <Wallet size={12}/> {String(details.budget_pack || "").replace("_", " ")}
@@ -191,7 +211,7 @@ const TripPlannerDetails = ({ details }: { details: BookingDetails }) => {
                              <Plane size={10}/> {String(details.travel_type || "").replace("_", " ")}
                          </div>
                     </div>
-                     <div>
+                      <div>
                         <span className="text-xs text-muted-foreground block">Contact ({type})</span>
                         <span className="font-medium truncate block max-w-[150px]">
                             {type === 'company' ? details.company_name : details.full_name}
@@ -203,8 +223,11 @@ const TripPlannerDetails = ({ details }: { details: BookingDetails }) => {
     );
 };
 
+// --- HOLIDAY PACKAGE DETAILS ---
 const HolidayPackageDetails = ({ details }: { details: BookingDetails }) => {
   const totalPax = details.total_pax || (Number(details.adults || 0) + Number(details.children || 0));
+  
+  const displayDate = details.date || details.start_date || details.departure_date || details.booking_date || "-";
 
   return (
     <div className="space-y-4 text-sm animate-fadeIn">
@@ -216,7 +239,7 @@ const HolidayPackageDetails = ({ details }: { details: BookingDetails }) => {
           <div>
             <span className="text-xs text-muted-foreground block">Schedule</span>
             <span className="font-medium flex items-center gap-1">
-              <Calendar size={12} /> {details.departure_date || details.booking_date || "-"}
+              <Calendar size={12} /> {displayDate !== "-" ? formatDate(displayDate) : "-"}
             </span>
             {details.duration && (
               <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
@@ -240,6 +263,11 @@ const HolidayPackageDetails = ({ details }: { details: BookingDetails }) => {
             <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
               <Phone size={10} /> {details.phone_number || "-"}
             </div>
+             {details.pickup_location && (
+               <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <MapPin size={10} /> {details.pickup_location}
+               </div>
+            )}
           </div>
           {details.special_request && (
             <div>
@@ -253,99 +281,111 @@ const HolidayPackageDetails = ({ details }: { details: BookingDetails }) => {
   );
 };
 
-const ActivityDetails = ({ details }: { details: BookingDetails }) => (
-  <div className="space-y-4 text-sm animate-fadeIn">
-    <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
-      <Ticket size={16} /> Activity Details
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div className="space-y-3">
-        <div>
-          <span className="text-xs text-muted-foreground block">Date & Time</span>
-          <span className="font-medium flex items-center gap-1">
-            <Calendar size={12} /> {details.booking_date || details.departure_date || "-"}
-          </span>
-          <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-            <Clock size={10} /> {details.activity_time || details.pickup_time || "TBA"}
-          </div>
-        </div>
-        <div>
-          <span className="text-xs text-muted-foreground block">Participants</span>
-          <span className="font-medium flex items-center gap-1">
-            <Users size={12} /> {details.quantity} Pax
-          </span>
-          {details.participant_nationality && (
-             <span className="text-xs text-muted-foreground block mt-0.5">
-               ({details.participant_nationality})
-             </span>
-          )}
-        </div>
-      </div>
-      <div className="space-y-3">
-        <div>
-          <span className="text-xs text-muted-foreground block">Pickup Location</span>
-          <span className="font-medium flex items-center gap-1">
-            <MapPin size={12} /> {details.pickup_location || "Meeting Point"}
-          </span>
-        </div>
-        {details.special_request && (
-          <div>
-            <span className="text-xs text-muted-foreground block">Special Request</span>
-            <span className="font-medium italic text-xs">&quot;{details.special_request}&quot;</span>
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
-);
+// --- ACTIVITY DETAILS ---
+const ActivityDetails = ({ details }: { details: BookingDetails }) => {
+  const displayDate = details.booking_date || details.start_date || details.date || details.departure_date || "-";
 
-
-const OpenTripDetails = ({ details }: { details: BookingDetails }) => (
-  <div className="space-y-4 text-sm animate-fadeIn">
-    <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
-      <Flag size={16} /> Open Trip Details
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div className="space-y-3">
-        <div>
-          <span className="text-xs text-muted-foreground block">Destination</span>
-          <span className="font-medium flex items-center gap-1">
-           
-            <MapPin size={12} /> {details.destination || details.city || "-"}
-          </span>
-        </div>
-        <div>
-          <span className="text-xs text-muted-foreground block">Schedule</span>
-          <div className="font-medium flex items-center gap-1">
-            <Calendar size={12} /> {details.start_date}
-          </div>
-          {details.end_date && (
-             <div className="text-xs text-muted-foreground mt-0.5 ml-4">
-                to {details.end_date}
-             </div>
-          )}
-        </div>
+  return (
+    <div className="space-y-4 text-sm animate-fadeIn">
+      <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
+        <Ticket size={16} /> Activity Details
       </div>
-      <div className="space-y-3">
-        <div>
-          <span className="text-xs text-muted-foreground block">Participants</span>
-          <span className="font-medium flex items-center gap-1">
-            <Users size={12} /> {details.quantity || 1} Pax
-          </span>
-        </div>
-        {details.full_name && (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-3">
           <div>
-            <span className="text-xs text-muted-foreground block">Contact</span>
+            <span className="text-xs text-muted-foreground block">Date & Time</span>
             <span className="font-medium flex items-center gap-1">
-              <User size={12} /> {details.full_name}
+              <Calendar size={12} /> {displayDate !== "-" ? formatDate(displayDate) : "-"}
+            </span>
+            <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+              <Clock size={10} /> {details.activity_time || details.pickup_time || details.time || "TBA"}
+            </div>
+          </div>
+          <div>
+            <span className="text-xs text-muted-foreground block">Participants</span>
+            <span className="font-medium flex items-center gap-1">
+              <Users size={12} /> {details.quantity} Pax
+            </span>
+            {details.participant_nationality && (
+                <span className="text-xs text-muted-foreground block mt-0.5">
+                  ({details.participant_nationality})
+                </span>
+            )}
+          </div>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <span className="text-xs text-muted-foreground block">Pickup Location</span>
+            <span className="font-medium flex items-center gap-1">
+              <MapPin size={12} /> {details.pickup_location || "Meeting Point"}
             </span>
           </div>
-        )}
+          {details.special_request && (
+            <div>
+              <span className="text-xs text-muted-foreground block">Special Request</span>
+              <span className="font-medium italic text-xs">&quot;{details.special_request}&quot;</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
+// --- OPEN TRIP DETAILS ---
+const OpenTripDetails = ({ details }: { details: BookingDetails }) => {
+  const displayDate = details.start_date || details.departure_date || details.booking_date || details.date || "-";
+  
+  const displayLocation = details.destination || details.city || details.pickup_location || "-";
+  
+  return (
+    <div className="space-y-4 text-sm animate-fadeIn">
+      <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
+        <Flag size={16} /> Open Trip Details
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-3">
+          <div>
+            <span className="text-xs text-muted-foreground block">Destination / Meeting Point</span>
+            <span className="font-medium flex items-center gap-1">
+              <MapPin size={12} /> {displayLocation}
+            </span>
+          </div>
+          <div>
+            <span className="text-xs text-muted-foreground block">Schedule</span>
+            <div className="font-medium flex items-center gap-1">
+              <Calendar size={12} /> {displayDate !== "-" ? formatDate(displayDate) : "-"}
+            </div>
+            {details.end_date && (
+               <div className="text-xs text-muted-foreground mt-0.5 ml-4">
+                  to {formatDate(details.end_date)}
+               </div>
+            )}
+          </div>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <span className="text-xs text-muted-foreground block">Participants</span>
+            <span className="font-medium flex items-center gap-1">
+              <Users size={12} /> {details.quantity || (Number(details.adults || 0) + Number(details.children || 0)) || 1} Pax
+            </span>
+          </div>
+          {details.full_name && (
+            <div>
+              <span className="text-xs text-muted-foreground block">Contact</span>
+              <span className="font-medium flex items-center gap-1">
+                <User size={12} /> {details.full_name}
+              </span>
+               <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                <Phone size={10} /> {details.phone_number || "-"}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ServiceDetails = ({ details }: { details: BookingDetails }) => (
   <div className="space-y-4 text-sm animate-fadeIn">
@@ -489,8 +529,12 @@ export default function HistoryTab() {
             const bookable = booking?.bookable;
             const bookableType = booking?.bookable_type || "";
             
-            // Merge details safely
-            const details: BookingDetails = { ...(bookable || {}), ...(booking?.details || {}) };
+            // --- GABUNGKAN 3 SUMBER DATA (Booking, Bookable, Details) ---
+            const details: BookingDetails = { 
+                ...(booking || {}),          // Data Induk (Root)
+                ...(bookable || {}),         // Data Produk
+                ...(booking?.details || {})  // Data Detail
+            };
             
             // Determine Service Name display
             const serviceName = details.service_name || 
@@ -519,8 +563,8 @@ export default function HistoryTab() {
                 {/* Content */}
                 <div className="border-t border-border pt-3">
                   <div className="flex justify-between items-center mb-3">
-                     <span className="font-medium text-sm">{serviceName}</span>
-                     <button
+                      <span className="font-medium text-sm">{serviceName}</span>
+                      <button
                         onClick={() => toggleDetails(order.id)}
                         className="text-xs font-semibold text-primary flex items-center gap-1 hover:underline"
                       >
@@ -547,7 +591,7 @@ export default function HistoryTab() {
                          !bookableType.includes("OpenTrip") &&
                          !bookableType.includes("Service") && (
                              <div className="text-sm text-muted-foreground italic">
-                                 Specific details for this service type are not yet supported in this view.
+                                  Specific details for this service type are not yet supported in this view.
                              </div>
                         )}
                     </div>
