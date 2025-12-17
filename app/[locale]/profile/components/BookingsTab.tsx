@@ -7,34 +7,70 @@ import { useLocale } from "next-intl";
 import { formatCurrency, formatDate, getStatusChip } from "@/lib/utils";
 import {
   User, Phone, MapPin, Clock, Users, Package, Plane, ArrowRight,
-  RefreshCcw, Calendar, Car, Map, Ticket, LucideIcon, CreditCard
+  RefreshCcw, Calendar, Car, Map, Ticket, LucideIcon, CreditCard,
+  Wallet, CalendarDays, MapPinned
 } from "lucide-react";
 
 // Import Shared Types
 import { SimpleBooking } from "../types";
-// Import Modal (Assuming this component exists and works)
 import RefundModal from "./RefundModal"; 
 
 // --- TYPES & HELPERS ---
+
 interface BookingDetailsJSON {
   service_name?: string;
   full_name?: string;
+  fullName?: string;
   phone_number?: string;
+  phone?: string; 
   email?: string;
   special_request?: string;
+
+  // Car Rental
   pickup_location?: string;
   pickup_time?: string;
   return_location?: string;
   return_time?: string;
-  driver_details?: string;
+
+  // Activity / Package
   quantity?: number;
   num_participants?: number;
   adults?: number;
   children?: number;
   meeting_point?: string;
-  destination?: string;
-  budget?: string;
+  destination?: string; 
+
+  // Trip Planner Specific
   trip_type?: string;
+  tripType?: string;
+  budget_pack?: string; 
+  budgetPack?: string;
+  departure_date?: string;
+  departureDate?: string;
+  duration?: string | number;
+  
+  // Location
+  city?: string;
+  province?: string;
+  country?: string;
+  address?: string;
+
+  // Pax Variations
+  pax_adults?: number | string;
+  paxAdults?: number | string;
+  pax_teens?: number | string;
+  paxTeens?: number | string;
+  pax_kids?: number | string;
+  paxKids?: number | string;
+  pax_seniors?: number | string;
+  paxSeniors?: number | string;
+  
+  travel_type?: string;
+  travelType?: string;
+  
+  travel_style?: string[];
+  travelStyle?: string[];
+
   [key: string]: unknown;
 }
 
@@ -45,14 +81,16 @@ interface DetailRowProps {
 }
 
 const DetailRow = ({ icon: Icon, label, value }: DetailRowProps) => {
-  if (!value) return null;
+  if (!value || value === "-" || value === "0 Pax" || value === "0") return null;
   return (
     <div className="flex items-center gap-3 text-sm">
       <div className="min-w-[20px] text-primary">
         <Icon size={16} />
       </div>
-      <span className="text-foreground/70 text-xs uppercase font-bold tracking-wider">{label}:</span>
-      <span className="font-medium text-foreground">{value}</span>
+      <div className="flex flex-col">
+        <span className="text-foreground/70 text-[10px] uppercase font-bold tracking-wider leading-tight">{label}</span>
+        <span className="font-medium text-foreground text-sm">{value}</span>
+      </div>
     </div>
   );
 };
@@ -62,6 +100,18 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
   const { bookable_type, bookable } = booking;
   const type = bookable_type?.split('\\').pop() || "";
 
+  // Helper Kuat untuk ambil data
+  const getVal = (keySnake: string, keyCamel: string) => {
+      const valSnake = details[keySnake];
+      if (valSnake !== undefined && valSnake !== null && valSnake !== "null" && valSnake !== "") return valSnake;
+      
+      const valCamel = details[keyCamel];
+      if (valCamel !== undefined && valCamel !== null && valCamel !== "null" && valCamel !== "") return valCamel;
+      
+      return null;
+  };
+
+  // --- 1. CAR RENTAL ---
   if (type === "CarRental") {
     return (
       <div className="space-y-3">
@@ -78,6 +128,8 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
       </div>
     );
   }
+
+  // --- 2. ACTIVITY / TICKET ---
   if (type === "Activity") {
     return (
       <div className="space-y-3">
@@ -88,14 +140,21 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <DetailRow icon={Ticket} label="Activity Name" value={bookable?.name} />
             <DetailRow icon={Users} label="Participants" value={details?.quantity || details?.num_participants} />
-            <DetailRow icon={MapPin} label="Meeting Point" value={details?.meeting_point || details?.pickup_location} />
+            {/* Fix: Prioritaskan pickup_location juga untuk activity */}
+            <DetailRow icon={MapPin} label="Meeting Point" value={details?.pickup_location || details?.meeting_point} />
             <DetailRow icon={Calendar} label="Date" value={formatDate(booking.start_date)} />
         </div>
       </div>
     );
   }
+
+  // --- 3. HOLIDAY PACKAGE / OPEN TRIP ---
   if (type === "HolidayPackage" || type === "OpenTrip") {
-    const paxCount = (details?.adults || 0) + (details?.children || 0) + (details?.num_participants || 0);
+    const paxCount = (Number(details?.adults) || 0) + (Number(details?.children) || 0) + (Number(details?.num_participants) || 0) || 1;
+    
+    // ✅ FIX DI SINI: Cek pickup_location dulu, baru meeting_point
+    const meetingPointDisplay = details?.pickup_location || details?.meeting_point || "See Voucher";
+
     return (
       <div className="space-y-3">
          <div className="flex items-center gap-2 mb-2 pb-2 border-b border-dashed border-border/50">
@@ -105,27 +164,78 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
              <DetailRow icon={Map} label="Destination" value={bookable?.name} />
              <DetailRow icon={Users} label="Travelers" value={`${paxCount} Pax`} />
-             <DetailRow icon={MapPin} label="Meeting Point" value={details?.meeting_point || "See Voucher"} />
+             {/* ✅ Gunakan variable meetingPointDisplay yg sudah diperbaiki */}
+             <DetailRow icon={MapPin} label="Meeting Point" value={meetingPointDisplay} />
         </div>
       </div>
     );
   }
+
+  // --- 4. TRIP PLANNER (CUSTOM TRIP) ---
   if (type === "TripPlanner") {
+    const adults = Number(details.pax_adults || details.paxAdults || 0);
+    const teens = Number(details.pax_teens || details.paxTeens || 0);
+    const kids = Number(details.pax_kids || details.paxKids || 0);
+    const seniors = Number(details.pax_seniors || details.paxSeniors || 0);
+    
+    let totalPax = adults + teens + kids + seniors;
+    if (totalPax === 0) {
+        totalPax = Number(details.quantity) || Number(details.num_participants) || 1;
+    }
+
+    const city = getVal('city', 'city') as string;
+    const province = getVal('province', 'province') as string;
+    const country = getVal('country', 'country') as string;
+    let locationDisplay = (getVal('destination', 'destination') as string) || "Custom Destination";
+
+    if (city) {
+        const tripType = getVal('trip_type', 'tripType');
+        if (tripType === 'domestic') {
+            locationDisplay = `🇮🇩 ${city}${province ? `, ${province}` : ''}`;
+        } else {
+            locationDisplay = `🌐 ${city}${country ? `, ${country}` : ''}`;
+        }
+    }
+
+    const rawDate = (getVal('departure_date', 'departureDate') as string) || booking.start_date;
+    const duration = getVal('duration', 'duration') || 1;
+    
+    const dateDisplay = rawDate 
+      ? `${formatDate(rawDate)} (${duration} Days)`
+      : "Date TBA";
+
+    const contactDisplay = (getVal('phone', 'phone_number') as string) || "-";
+    const bookedBy = (getVal('full_name', 'fullName') as string) || "-";
+
+    const budget = (getVal('budget_pack', 'budgetPack') as string) || "Standard";
+    const travelType = (getVal('travel_type', 'travelType') as string) || "Personal";
+    
+    const travelStyles = (details.travel_style || details.travelStyle || []) as string[];
+
     return (
       <div className="space-y-3">
          <div className="flex items-center gap-2 mb-2 pb-2 border-b border-dashed border-border/50">
            <Plane size={18} className="text-purple-500" />
            <span className="font-semibold text-purple-700">Custom Trip Plan</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <DetailRow icon={Map} label="Destination" value={details?.destination || booking?.bookable?.name || "Custom"} />
-            <DetailRow icon={User} label="Booked For" value={details?.full_name} />
-            <DetailRow icon={Plane} label="Trip Type" value={details?.trip_type} />
-            <DetailRow icon={RefreshCcw} label="Budget" value={details?.budget} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+            <DetailRow icon={MapPinned} label="Destination" value={locationDisplay} />
+            <DetailRow icon={CalendarDays} label="Date & Duration" value={dateDisplay} />
+            <DetailRow icon={User} label="Booked For" value={bookedBy} />
+            <DetailRow icon={Phone} label="Contact" value={contactDisplay} />
+            <DetailRow icon={Users} label="Travelers" value={`${totalPax} Pax (${travelType})`} />
+            <DetailRow icon={Wallet} label="Budget Tier" value={budget.toUpperCase()} />
         </div>
+
+        {travelStyles.length > 0 && (
+            <div className="mt-3 pt-2 border-t border-dashed border-border/40 text-xs text-foreground/80">
+                <span className="font-bold mr-1">Requested Style:</span> {travelStyles.join(", ")}
+            </div>
+        )}
       </div>
     );
   }
+
   return <p className="text-sm text-foreground/60 italic">Service details not available.</p>;
 }
 
@@ -170,7 +280,7 @@ export default function BookingsTab() {
       <div className="flex justify-between items-center border-b border-border pb-4">
         <h2 className="text-2xl font-bold">My Bookings</h2>
         <span className="text-xs text-muted-foreground hidden sm:block">
-           Manage your trips and vouchers
+            Manage your trips and vouchers
         </span>
       </div>
 
@@ -180,25 +290,19 @@ export default function BookingsTab() {
             const bookable = booking.bookable;
             const serviceName = details?.service_name || bookable?.name || "Service Booking";
             
-            // Link to Booking Detail (Voucher)
             const detailUrl = `/${locale}/profile/bookings/${booking.id}`;
-            // Link to History (For Payment)
             const historyUrl = `/${locale}/profile?tab=history`;
 
-            // ✅ Logic: Is the booking fully paid?
             const isPaid = booking.payment_status === 'paid';
-            
-            // ✅ Logic: Can we refund? (Only if paid AND status is valid)
             const canRefund = isPaid && (booking.status === 'confirmed' || booking.status === 'pending');
 
             return (
-              <div key={booking.id} className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+              <div key={booking.id} className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                 <div className="p-4 flex justify-between items-start bg-muted/20 border-b border-border/50">
                   <h3 className="font-bold text-lg">{serviceName}</h3>
                   <div className="flex flex-col items-end gap-1">
                       <span className={getStatusChip(booking.status)}>{booking.status.toUpperCase()}</span>
                       
-                      {/* Show 'UNPAID' badge if not paid */}
                       {!isPaid && (
                           <span className="text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full border border-red-200">
                               {booking.payment_status?.toUpperCase() || 'UNPAID'}
@@ -218,8 +322,6 @@ export default function BookingsTab() {
                    </div>
 
                    <div className="flex items-center gap-3">
-                      
-                      {/* 1. REFUND BUTTON (Only if Paid) */}
                       {canRefund && (
                         <button 
                             onClick={() => handleOpenRefund(booking)}
@@ -229,9 +331,7 @@ export default function BookingsTab() {
                         </button>
                       )}
 
-                      {/* 2. MAIN ACTION BUTTON */}
                       {isPaid ? (
-                          // ✅ PAID: Show View Voucher (Link)
                           <Link 
                               href={detailUrl}
                               className="flex items-center gap-2 px-5 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-full hover:brightness-110 shadow-sm transition-all"
@@ -239,7 +339,6 @@ export default function BookingsTab() {
                               View Voucher <ArrowRight size={16} />
                           </Link>
                       ) : (
-                          // ❌ UNPAID: Show Pay Now (Link to History)
                           <Link 
                               href={historyUrl}
                               className="flex items-center gap-2 px-5 py-2 bg-orange-500 text-white text-sm font-bold rounded-full hover:bg-orange-600 shadow-sm transition-all"
@@ -255,9 +354,8 @@ export default function BookingsTab() {
         
         {bookings.length === 0 && !loading && (
             <div className="text-center py-10 text-muted-foreground">
-  You don&apos;t have any bookings yet.
-</div>
-
+              You don&apos;t have any bookings yet.
+            </div>
         )}
       </div>
 

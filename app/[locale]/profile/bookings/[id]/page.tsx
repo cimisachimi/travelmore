@@ -40,6 +40,9 @@ interface BookingDetails {
   type?: string;
   companyName?: string;
   paxAdults?: string | number;
+  paxTeens?: string | number;
+  paxKids?: string | number;
+  paxSeniors?: string | number;
   city?: string;
   province?: string;
   country?: string;
@@ -140,7 +143,7 @@ export default function BookingDetailPage() {
   const [booking, setBooking] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // --- FETCHING LOGIC (Using the Fixed Version) ---
+  // --- FETCHING LOGIC ---
   useEffect(() => {
     if (!id) return;
     const fetchDetail = async () => {
@@ -201,17 +204,15 @@ export default function BookingDetailPage() {
   const getVal = (key: string, ...alts: string[]) => {
     const keys = [key, ...alts];
     for (const k of keys) {
-        if (details[k] !== undefined && details[k] !== null && details[k] !== "") return details[k] as string;
+       if (details[k] !== undefined && details[k] !== null && details[k] !== "" && details[k] !== "null") return details[k] as string;
     }
     return null;
   };
 
   // ✅ WHATSAPP HELPER FUNCTION
   const openWhatsApp = (reason: string) => {
-    // 1. Set Admin Phone Number (Replace with your actual number)
     const phoneNumber = "6282224291148"; 
 
-    // 2. Construct Message
     const bookingRef = `Booking ID: #${actualBooking.id} (Order: ${booking.order_number})`;
     const text = `Hello Admin, I need help with my booking.\n\n` +
                  `📌 *${bookingRef}*\n` +
@@ -220,22 +221,50 @@ export default function BookingDetailPage() {
                  `--------------------------\n` +
                  `[Please explain your issue in detail here...]`;
 
-    // 3. Open WhatsApp
     const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   };
 
   // --- RENDERERS ---
+
+  // ✅ FIX: Improved Trip Planner Renderer
   const renderTripPlanner = () => {
       const type = getVal('type') || 'personal';
       const contactName = type === 'company' ? getVal('companyName', 'company_name') : getVal('fullName', 'full_name');
-      const adults = parseInt((getVal('paxAdults', 'pax_adults') || "0") as string);
       
+      // Calculate Total Pax from all categories
+      const adults = parseInt((getVal('paxAdults', 'pax_adults') || "0") as string);
+      const teens = parseInt((getVal('paxTeens', 'pax_teens') || "0") as string);
+      const kids = parseInt((getVal('paxKids', 'pax_kids') || "0") as string);
+      const seniors = parseInt((getVal('paxSeniors', 'pax_seniors') || "0") as string);
+      
+      const totalPax = (adults + teens + kids + seniors) || details.quantity || 1;
+
+      // Handle Location Nulls
       const city = getVal('city');
+      const province = getVal('province');
+      const country = getVal('country');
       const tripType = getVal('tripType', 'trip_type');
-      let location = city;
-      if (tripType === 'domestic') location = `🇮🇩 ${city}, ${getVal('province')}`;
-      if (tripType === 'foreign') location = `🌐 ${city}, ${getVal('country')}`;
+      const destinationLegacy = getVal('destination');
+
+      let location = "Custom Destination"; // Fallback text
+
+      if (city) {
+          if (tripType === 'domestic') {
+             location = `🇮🇩 ${city}${province ? `, ${province}` : ''}`;
+          } else {
+             location = `🌐 ${city}${country ? `, ${country}` : ''}`;
+          }
+      } else if (destinationLegacy) {
+          location = destinationLegacy;
+      }
+
+      // Handle Duration & Budget defaults
+      const durationVal = getVal('duration');
+      const durationDisplay = durationVal ? `${durationVal} Days` : "1 Day";
+      
+      const budgetVal = getVal('budgetPack', 'budget_pack');
+      const budgetDisplay = budgetVal ? budgetVal.toUpperCase() : "STANDARD";
 
       return (
         <div className="grid md:grid-cols-2 gap-8">
@@ -243,9 +272,9 @@ export default function BookingDetailPage() {
                <SectionTitle icon={<Compass size={18}/>} title="Trip Overview" />
                <div className="space-y-1">
                   <InfoRow icon={<MapPin size={14}/>} label="Destination" value={location} />
-                  <InfoRow icon={<Calendar size={14}/>} label="Dates" value={`${dateDisplay} (${getVal('duration') || '-'})`} />
-                  <InfoRow icon={<Plane size={14}/>} label="Travel Type" value={(getVal('travelType', 'travel_type') || '-').replace(/_/g, ' ')} />
-                  <InfoRow icon={<Wallet size={14}/>} label="Budget Pack" value={(getVal('budgetPack', 'budget_pack') || '-').toUpperCase()} />
+                  <InfoRow icon={<Calendar size={14}/>} label="Dates" value={`${dateDisplay} (${durationDisplay})`} />
+                  <InfoRow icon={<Plane size={14}/>} label="Travel Type" value={(getVal('travelType', 'travel_type') || 'Personal').replace(/_/g, ' ')} />
+                  <InfoRow icon={<Wallet size={14}/>} label="Budget Pack" value={budgetDisplay} />
                </div>
             </div>
             <div>
@@ -254,7 +283,7 @@ export default function BookingDetailPage() {
                   <InfoRow icon={type === 'company' ? <Building2 size={14}/> : <User size={14}/>} label="Contact Name" value={contactName} />
                   <InfoRow icon={<Mail size={14}/>} label="Email" value={getVal('email')} />
                   <InfoRow icon={<Phone size={14}/>} label="Phone" value={getVal('phone', 'phone_number')} />
-                  <InfoRow icon={<Users size={14}/>} label="Total Participants" value={`${adults} Pax`} />
+                  <InfoRow icon={<Users size={14}/>} label="Total Participants" value={`${totalPax} Pax`} />
                </div>
             </div>
         </div>
@@ -461,7 +490,7 @@ export default function BookingDetailPage() {
                      </div>
                 </div>
 
-                {/* ✅ 3. NEW: HELP / CONTACT ADMIN SECTION */}
+                {/* 3. HELP / CONTACT ADMIN SECTION */}
                 <div className="bg-blue-50/50 rounded-xl p-6 border border-blue-100 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="flex items-start gap-4">
                         <div className="bg-blue-100 p-3 rounded-full text-blue-600 hidden sm:block">
@@ -480,22 +509,22 @@ export default function BookingDetailPage() {
 
                     <div className="flex flex-wrap gap-2 justify-end shrink-0 w-full md:w-auto">
                          <button 
-                            onClick={() => openWhatsApp("Wrong Schedule")}
-                            className="px-4 py-2 text-xs font-semibold bg-white text-blue-700 border border-blue-200 rounded-full hover:bg-blue-50 transition-colors shadow-sm"
+                           onClick={() => openWhatsApp("Wrong Schedule")}
+                           className="px-4 py-2 text-xs font-semibold bg-white text-blue-700 border border-blue-200 rounded-full hover:bg-blue-50 transition-colors shadow-sm"
                          >
-                            Wrong Schedule?
+                           Wrong Schedule?
                          </button>
                          <button 
-                            onClick={() => openWhatsApp("Incorrect Details")}
-                            className="px-4 py-2 text-xs font-semibold bg-white text-blue-700 border border-blue-200 rounded-full hover:bg-blue-50 transition-colors shadow-sm"
+                           onClick={() => openWhatsApp("Incorrect Details")}
+                           className="px-4 py-2 text-xs font-semibold bg-white text-blue-700 border border-blue-200 rounded-full hover:bg-blue-50 transition-colors shadow-sm"
                          >
-                            Wrong Info?
+                           Wrong Info?
                          </button>
                          <button 
-                            onClick={() => openWhatsApp("General Inquiry")}
-                            className="px-5 py-2 text-sm font-bold bg-green-500 text-white rounded-full hover:bg-green-600 shadow-md flex items-center gap-2 transition-all hover:shadow-lg"
+                           onClick={() => openWhatsApp("General Inquiry")}
+                           className="px-5 py-2 text-sm font-bold bg-green-500 text-white rounded-full hover:bg-green-600 shadow-md flex items-center gap-2 transition-all hover:shadow-lg"
                          >
-                            <MessageCircle size={16} /> Chat Admin
+                           <MessageCircle size={16} /> Chat Admin
                          </button>
                     </div>
                 </div>
