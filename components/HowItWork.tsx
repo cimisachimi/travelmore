@@ -4,7 +4,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
-// ✅ 1. Definisikan tipe untuk satu 'step'
+
 interface IStep {
   title: string;
   description: string;
@@ -51,7 +51,7 @@ const AnimatedStep = ({
 const HowItWorks: React.FC = () => {
   const t = useTranslations("HowItWorks");
 
-  // ✅ 2. Beri tahu TypeScript bahwa 'steps' adalah array dari IStep
+  
   const steps = t.raw("steps") as IStep[]; 
 
   const icons = [
@@ -83,7 +83,7 @@ const HowItWorks: React.FC = () => {
           <p className="text-foreground/80">{t("subtitle")}</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
-          {/* ✅ 3. Hapus tipe 'any', TypeScript sekarang sudah tahu tipe 'step' adalah IStep */}
+          
           {steps.map((step, index) => (
             <AnimatedStep 
               key={index} 

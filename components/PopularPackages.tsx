@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-// ✅ 1. Definisikan tipe untuk satu 'package'
+
 interface IPackage {
   id: string;
   title: string;
@@ -49,7 +49,7 @@ const PackageCard = ({
 const PopularPackages: React.FC = () => {
   const t = useTranslations("PopularPackages");
   
-  // ✅ 2. Beri tahu TypeScript bahwa 'packages' adalah array dari IPackage
+  
   const packages = t.raw("packages") as IPackage[];
 
   return (

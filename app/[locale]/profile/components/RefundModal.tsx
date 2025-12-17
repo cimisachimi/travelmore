@@ -9,8 +9,7 @@ import { AxiosError } from "axios";
 // Import shared type
 import { SimpleBooking } from "../types";
 
-// ✅ LOCAL TYPE DEFINITION
-// Extend SimpleBooking to handle potential direct 'order_id' or nested 'order' object
+
 type BookingWithRelations = SimpleBooking & {
   order_id?: number;
   order?: {
@@ -60,10 +59,8 @@ export default function RefundModal({ isOpen, onClose, booking, onSuccess }: Ref
     setIsSubmitting(true);
 
     try {
-      // ✅ FIX: Prioritize real Order relations before falling back to booking.id
-      // 1. Check if there is a nested 'order' object (eager loaded)
-      // 2. Check if there is a direct 'order_id' column
-      // 3. Fallback to 'id' (Booking ID) usually only if they are 1:1 mapped
+      
+ 
       const payloadOrderId = 
           bookingData.order?.id || 
           bookingData.order_id || 

@@ -314,7 +314,7 @@ export default function Navbar() {
   const serviceLinks = [
     { name: t("planner"), href: "/planner" },
     { name: t("packages"), href: "/packages" },
-    { name: t("openTrip"), href: "/open-trip" }, // ✅ Added Open Trip here
+    { name: t("openTrip"), href: "/open-trip" }, 
     { name: t("carRental"), href: "/car-rental" },
     { name: t("activities"), href: "/activities" },
   ];
@@ -330,7 +330,7 @@ export default function Navbar() {
       : "/navbar/logo-exclusive.png";
 
   return (
-    // FIX APPLIED HERE: Changed z-50 to z-[999] to ensure navbar is always on top
+    
     <nav className="bg-background/80 dark:bg-card/80 backdrop-blur-lg shadow-md sticky top-0 z-[999] border-b border-border transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center h-24 gap-6">

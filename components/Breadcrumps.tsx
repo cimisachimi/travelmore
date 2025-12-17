@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useTheme } from "./ThemeProvider";
 
-// ✅ CONFIGURATION: Define custom labels and hidden segments here
+
 const SEGMENT_LABELS: Record<string, string> = {
   profile: "My Profile",
   bookings: "My Bookings",
@@ -14,7 +14,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   "car-rental": "Car Rental",
 };
 
-// Segments to completely skip in the visual breadcrumb
+
 const HIDDEN_SEGMENTS = ["components", "sections", "Booking"]; 
 
 const Breadcrumbs = () => {
@@ -29,10 +29,10 @@ const Breadcrumbs = () => {
   const allSegments = pathname.split("/").filter(Boolean);
   const isLocalePrefixed = allSegments[0] === locale;
   
-  // ✅ FIX 1: Changed 'let' to 'const'
+  
   const rawSegments = isLocalePrefixed ? allSegments.slice(1) : allSegments;
 
-  // ✅ FILTER: Remove hidden segments from the visual array
+ 
   const visibleSegments = rawSegments
     .map((segment, index) => ({ name: segment, originalIndex: index }))
     .filter((item) => !HIDDEN_SEGMENTS.includes(item.name));
@@ -46,7 +46,7 @@ const Breadcrumbs = () => {
   const linkColor = isExclusive ? "hover:text-primary" : "hover:text-primary";
   const currentPageColor = isExclusive ? "text-white" : "text-foreground";
 
-  // ✅ FIX 2: Removed unused 'isLast' parameter
+
   const getDisplayName = (segment: string) => {
     // If it is a number (ID), format it nicely
     if (!isNaN(Number(segment))) {
@@ -80,7 +80,7 @@ const Breadcrumbs = () => {
               : `/${pathSlice.join("/")}`;
 
             const isLast = visualIndex === visibleSegments.length - 1;
-            // ✅ FIX 2: Updated function call
+           
             const displayName = getDisplayName(item.name);
 
             return (

@@ -92,8 +92,7 @@ export default function SettingsTab() {
     setIsSaving(true);
     const toastId = toast.loading("Saving your profile...");
     
-    // --- UPDATED: Combine phone number on submit ---
-    // Remove any non-numeric characters from local part
+   
     const cleanLocalPhone = localPhone.replace(/[^0-9]/g, "");
     const fullPhoneNumber = `${phoneCode}${cleanLocalPhone}`;
     // ---

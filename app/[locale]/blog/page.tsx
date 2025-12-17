@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useTranslations, useLocale } from "next-intl"; // ✅ Import useLocale
+import { useTranslations, useLocale } from "next-intl"; 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
 
@@ -19,7 +19,7 @@ interface Blog {
 
 export default function BlogSection() {
   const t = useTranslations("blogSection");
-  const locale = useLocale(); // ✅ Get current active language (e.g., 'id' or 'en')
+  const locale = useLocale(); 
 
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ export default function BlogSection() {
       try {
         setLoading(true);
         
-        // ✅ ADDED: Header to tell backend which language we want
+       
         const response = await api.get("/public/posts?limit=3", {
           headers: {
             "Accept-Language": locale 
@@ -45,12 +45,12 @@ export default function BlogSection() {
     };
 
     fetchBlogs();
-  }, [locale]); // ✅ Re-fetch if language changes
+  }, [locale]); 
 
   return (
     <section className="bg-card py-20">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Header */}
+      
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-foreground">
             {t("title")}
@@ -60,7 +60,6 @@ export default function BlogSection() {
           </p>
         </div>
 
-        {/* Blog Grid */}
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
           {loading ? (
             Array.from({ length: 3 }).map((_, i) => (
@@ -97,7 +96,7 @@ export default function BlogSection() {
 
                 <div className="p-6 flex flex-col flex-1">
                   <span className="text-sm text-foreground/60">
-                    {/* ✅ Ensure date formatting uses the correct locale */}
+                    
                     {new Date(blog.published_at).toLocaleDateString(locale, {
                       year: 'numeric', month: 'long', day: 'numeric'
                     })}

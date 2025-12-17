@@ -30,8 +30,8 @@ export default function TripPlannerTeaser() {
   const toggleStyle = (style: string) => {
     setSelectedStyles((prev) => 
       prev.includes(style) 
-        ? prev.filter((s) => s !== style) // Hapus jika sudah ada
-        : [...prev, style] // Tambah jika belum ada
+        ? prev.filter((s) => s !== style) 
+        : [...prev, style] 
     );
   };
 

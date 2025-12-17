@@ -21,11 +21,10 @@ interface ItineraryItemProps {
   link: string;
 }
 
-// Tipe untuk fungsi translasi (sederhana)
+
 type TranslateFn = (key: string) => string;
 
-// --- 2. Komponen Kartu ---
-// Sekarang menggunakan tipe spesifik, bukan 'any'
+
 const ItineraryCard = ({ item, t }: { item: ItineraryItemProps; t: TranslateFn }) => (
   <div className="bg-white rounded-xl p-3 shadow-lg border border-gray-100 flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
     

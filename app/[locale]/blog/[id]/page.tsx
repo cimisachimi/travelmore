@@ -123,8 +123,7 @@ export default function BlogDetail() {
     setLightboxOpen(true);
   };
 
-  // --- Theme Helpers (Fixed) ---
-  // We check for "regular" (Light Mode) because 'Theme' type excludes "dark" string literal
+  
   const isLight = theme === "regular";
   const isDark = !isLight; 
 

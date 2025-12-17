@@ -16,7 +16,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-// [NEW] Define the Activity type based on your API response (from activities/page.tsx)
+
 interface Activity {
   id: number;
   name: string;
@@ -27,13 +27,12 @@ interface Activity {
   thumbnail_url: string | null;
 }
 
-// [NEW] Define the API response structure (from activities/page.tsx)
+
 interface ApiResponse {
   data: Activity[];
 }
 
-// [NEW] Helper Component: ApiActivityCard
-// This component is modeled after the card structure in activities/page.tsx
+
 const ApiActivityCard = ({ activity }: { activity: Activity }) => {
   const { theme } = useTheme();
   const t = useTranslations("activities");
@@ -158,7 +157,7 @@ export default function ActivitySlider() {
     };
 
     fetchActivities();
-  }, [errorFetchString]); // Depend on the memoized string
+  }, [errorFetchString]); 
 
   return (
     <section className="py-16 md:py-24">

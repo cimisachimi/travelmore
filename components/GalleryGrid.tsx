@@ -291,7 +291,7 @@ export default function GalleryGrid() {
                     {selectedItem.redirect_url ? (
                         <Link 
                             href={selectedItem.redirect_url} 
-                            // ✅ CHANGED: Now using bg-primary
+                            
                             className="flex items-center justify-center w-full py-3.5 bg-primary hover:bg-primary/90 text-white font-bold text-sm text-center rounded-xl transition shadow-lg hover:shadow-xl gap-2 group"
                         >
                             {selectedItem.redirect_text || "View Package Details"}

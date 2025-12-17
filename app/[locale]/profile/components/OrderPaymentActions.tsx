@@ -49,7 +49,7 @@ export default function OrderPaymentActions({
           </p>
         )}
         
-        {/* ✅ CHANGED: Hide Down Payment info for Trip Planner */}
+       
         {!isTripPlanner && (
           <div className="text-sm flex justify-between">
             <span className="text-foreground/80">Down Payment (50%):</span>
@@ -60,7 +60,7 @@ export default function OrderPaymentActions({
         )}
 
         <div className="flex flex-col sm:flex-row gap-3">
-          {/* ✅ CHANGED: Hide Down Payment button for Trip Planner */}
+          
           {!isTripPlanner && (
             <button
               onClick={() => onPay(order, "down_payment")}
@@ -129,5 +129,5 @@ export default function OrderPaymentActions({
     );
   }
 
-  return null; // No actions for other states
+  return null; 
 }

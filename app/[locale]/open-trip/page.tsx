@@ -9,7 +9,7 @@ import api from "@/lib/api";
 import { CalendarClock, Filter, X } from "lucide-react";
 import { AxiosError } from "axios";
 
-// ✅ Interfaces
+
 interface OpenTrip {
   id: number;
   name: string;
@@ -17,7 +17,7 @@ interface OpenTrip {
   location?: string;
   duration?: number;
   rating?: number;
-  starting_from_price?: number | string; // ✅ Allow string for safety parsing
+  starting_from_price?: number | string; 
   thumbnail_url?: string;       
   is_active?: boolean;
 }
@@ -31,16 +31,15 @@ interface ApiResponse {
   };
 }
 
-// ✅ HELPER: Sanitasi Harga (PENTING)
+
 const parsePrice = (value: string | number | null | undefined): number => {
     if (!value) return 0;
     if (typeof value === 'number') return value;
 
-    // 1. Coba konversi langsung (atasi "3000000.00")
+    
     const directParse = Number(value);
     if (!isNaN(directParse)) return directParse;
 
-    // 2. Fallback regex (atasi "Rp 3.000.000")
     const cleanString = value.toString().replace(/\D/g, ''); 
     const result = Number(cleanString);
     return isNaN(result) ? 0 : result;
@@ -71,7 +70,7 @@ export default function OpenTripPage() {
   const textMutedClass = theme === "regular" ? "text-gray-600" : "text-gray-300";
   const borderClass = theme === "regular" ? "border-gray-200" : "border-gray-700";
 
-  // ✅ FETCHING AGGRESSIVE LOOP
+  
   useEffect(() => {
     let isMounted = true;
 

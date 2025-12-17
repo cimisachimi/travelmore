@@ -138,8 +138,7 @@ export default function PackagesPage() {
             }
         }
 
-        // --- HAPUS DUPLIKAT (PENTING) ---
-        // Kadang pagination API mengembalikan item yang sama di halaman berbeda
+       
         const uniqueData = Array.from(new Map(allData.map(item => [item.id, item])).values());
 
         console.log("Total Paket Bersih (Unique):", uniqueData.length);

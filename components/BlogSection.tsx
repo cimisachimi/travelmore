@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation"; // [1] Import useParams untuk ambil locale
+import { useParams } from "next/navigation"; 
 import api from "@/lib/api";
 
 // Interface to match API response
@@ -21,7 +21,7 @@ interface Blog {
 export default function BlogSection() {
   const t = useTranslations("blogSection");
   const params = useParams(); // [2] Ambil params dari URL
-  const locale = (params.locale as string) || "en"; // Default ke 'en' jika tidak ada
+  const locale = (params.locale as string) || "en"; 
 
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,11 +46,11 @@ export default function BlogSection() {
       }
     };
 
-    // Fetch ulang setiap kali 'locale' berubah
+   
     fetchBlogs();
-  }, [locale]); // [4] Tambahkan dependency 'locale'
+  }, [locale]); 
 
-  // Jika tidak ada blog dan tidak loading, sembunyikan section (opsional)
+ 
   if (!loading && blogs.length === 0) {
     return null; 
   }

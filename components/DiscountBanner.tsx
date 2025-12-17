@@ -13,9 +13,9 @@ export default function DiscountBanner() {
     return null;
   }
 
-  // Format: "20%" or "Rp 50.000"
+
   const discountDisplay = banner.type === 'percent' 
-    ? `${Number(banner.value)}%` // Ensure number format removes extra decimals like 3.00% -> 3%
+    ? `${Number(banner.value)}%` 
     : `Rp ${Number(banner.value).toLocaleString('id-ID')}`;
 
   return (
@@ -42,10 +42,7 @@ export default function DiscountBanner() {
               {t("badge")}
             </span>
             
-            {/* Title Logic: 
-               If t("title") is "Get", result is "Get 3% OFF" 
-               If t("title") is "Dapatkan", result is "Dapatkan 3% OFF"
-            */}
+            
             <h2 className="font-extrabold leading-tight mb-4 text-3xl md:text-3xl lg:text-5xl xl:text-6xl">
               {t("title")} <span className="text-yellow-300 whitespace-nowrap">{discountDisplay} OFF</span>
             </h2>

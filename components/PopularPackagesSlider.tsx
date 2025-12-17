@@ -29,7 +29,6 @@ interface PackageListItem {
   location?: string | null;
   duration: number;
   thumbnail_url: string | null;
-  // KUNCI PERBAIKAN: Gunakan field harga yang benar dari API
   starting_from_price: number | null; 
   price_tiers: PackagePriceTier[];
   category?: string | null;
@@ -64,7 +63,7 @@ const calculateStartingPrice = (pkg: PackageListItem): number => {
 // --- 3. Internal Component Card (Mirip ApiActivityCard tapi untuk Package) ---
 const ApiPackageCard = ({ pkg }: { pkg: PackageListItem }) => {
   const { theme } = useTheme();
-  const tDetail = useTranslations("activityDetail"); // Menggunakan translasi umum activity/package
+  const tDetail = useTranslations("activityDetail"); 
   const t = useTranslations("PopularPackages");
 
   const price = calculateStartingPrice(pkg);

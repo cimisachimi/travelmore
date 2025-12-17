@@ -7,8 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Users, Gauge, Luggage } from "lucide-react";
 import api from "@/lib/api";
 
-// --- API Interface ---
-// UPDATE: Menyesuaikan tipe data agar boleh null (untuk mencegah error jika data kosong)
+
 interface ApiCar {
   id: number;
   car_model: string;
@@ -54,9 +53,7 @@ function CarCard({ car }: { car: ApiCar }) {
     ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/storage/${thumbnail.url}`
     : "/cars/placeholder.jpg";
 
-  // ✅ PERBAIKAN UTAMA DISINI
-  // Gunakan Optional Chaining (?.) dan Default Value (||)
-  // Jika car_type null, dia akan menampilkan "GENERAL" dan TIDAK ERROR.
+
   const displayType = car.car_type?.toUpperCase() || "GENERAL";
 
   return (
@@ -72,7 +69,7 @@ function CarCard({ car }: { car: ApiCar }) {
           />
         </div>
         <div className="p-5 flex flex-col flex-grow">
-          {/* ✅ Gunakan variable displayType yang sudah aman */}
+          
           <p className="text-sm font-semibold text-primary">{displayType}</p>
           
           <h3 className="text-2xl font-bold text-foreground mt-1">{carName}</h3>

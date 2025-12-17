@@ -14,8 +14,7 @@ interface SnapResult {
   [key: string]: unknown;
 }
 
-// 🔹 2. Define a standalone interface (DO NOT extend Window)
-// This avoids the "incorrectly extends interface 'Window'" error.
+
 interface SnapWindow {
   snap: {
     pay: (
@@ -30,7 +29,7 @@ interface SnapWindow {
   };
 }
 
-// 🔹 Reusable Form Input Component
+
 const FormInput: React.FC<{
   label: string;
   name: string;
@@ -80,7 +79,7 @@ const FormInput: React.FC<{
   </div>
 );
 
-// 🔹 Booking Form Component
+
 const BookingForm = () => {
   const t = useTranslations("booking");
   const searchParams = useSearchParams();
@@ -129,8 +128,7 @@ const BookingForm = () => {
         throw new Error("Failed to get payment token");
       }
 
-      // 🔹 FIX: Cast window to 'unknown' first, then to our standalone 'SnapWindow' interface.
-      // This completely bypasses the conflict with the global Window type.
+     
       const snapWindow = window as unknown as SnapWindow;
 
       snapWindow.snap.pay(snap_token, {

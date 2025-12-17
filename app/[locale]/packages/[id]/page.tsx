@@ -133,8 +133,7 @@ export default function PackageDetailPage() {
       setLoading(true);
       setError(null);
       
-      // ✅ Just fetch from API, no local file merging needed.
-      // If package is unpublished, API returns 404, which goes to catch block.
+      
       const response = await api.get(`/public/packages/${id}`);
       const apiData = response.data as HolidayPackage;
       setPkg(apiData);

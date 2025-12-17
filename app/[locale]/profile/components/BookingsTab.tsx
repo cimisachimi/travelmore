@@ -28,10 +28,9 @@ import { SimpleBooking } from "../types";
 // Import Modal
 import RefundModal from "./RefundModal"; 
 
-// --- 1. LOCAL TYPES (Database Alignment) ---
-// This interface matches the 'details' JSON column in your 'bookings' table
+
 interface BookingDetailsJSON {
-  // ✅ FIX: Added service_name here so TypeScript knows it's a string
+ 
   service_name?: string;
   
   // Common
@@ -210,9 +209,7 @@ export default function BookingsTab() {
         const bookable = booking?.bookable;
         const details = booking.details as unknown as BookingDetailsJSON;
         
-        // --- Smart Name Resolution ---
-        // ✅ FIX: TypeScript now knows 'details.service_name' is a string | undefined
-        // We explicitly cast the whole expression to string for safety.
+
         const serviceName = (
           details?.service_name ||
           bookable?.name ||

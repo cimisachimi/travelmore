@@ -1,10 +1,10 @@
 // app/[locale]/login/page.tsx
 "use client";
 
-import { useState, useEffect } from "react"; // Tambah useEffect
+import { useState, useEffect } from "react"; 
 import { useAuth } from "@/contexts/AuthContext";
 import { isAxiosError } from "axios";
-import { useRouter, useSearchParams } from "next/navigation"; // 1. Import useSearchParams
+import { useRouter, useSearchParams } from "next/navigation"; 
 import Image from "next/image";
 import Link from "next/link";
 import GoogleLoginButton from "@/components/ui/GoogleLoginButton";
@@ -17,9 +17,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   
   const router = useRouter();
-  const searchParams = useSearchParams(); // 2. Ambil parameter URL
+  const searchParams = useSearchParams(); 
 
-  // 3. Ambil target redirect (jika ada)
+  
   const redirectTarget = searchParams.get("redirect");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,12 +30,12 @@ export default function LoginPage() {
     try {
       await login(email, password);
       
-      // ✅ 4. LOGIKA REDIRECT DINAMIS (SAAT LOGIN SUKSES)
+      
       if (redirectTarget) {
-        // Decode URI component untuk keamanan karakter URL
+        
         router.push(decodeURIComponent(redirectTarget));
       } else {
-        router.push("/profile"); // Default jika tidak ada redirect
+        router.push("/profile"); 
       }
 
     } catch (err: unknown) {
@@ -51,8 +51,7 @@ export default function LoginPage() {
     }
   };
 
-  // ✅ 5. LOGIKA REDIRECT JIKA SUDAH LOGIN (SAAT HALAMAN DIBUKA)
-  // Gunakan useEffect agar tidak terjadi hydration mismatch
+
   useEffect(() => {
     if (user && !loading) {
       if (redirectTarget) {
@@ -63,7 +62,7 @@ export default function LoginPage() {
     }
   }, [user, loading, router, redirectTarget]);
 
-  // Jika user sudah ada, tampilkan loading state sementara redirect berjalan
+  
   if (user && !loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
@@ -96,7 +95,7 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-3">
-          {/* Note: Google Login mungkin perlu penanganan khusus untuk redirect param */}
+          
           <GoogleLoginButton />
         </div>
 

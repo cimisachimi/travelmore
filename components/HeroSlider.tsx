@@ -9,7 +9,7 @@ import {
   Calendar, ArrowRight, Clock, Compass, CalendarDays, ChevronDown, Check, Lock 
 } from "lucide-react";
 
-// ✅ 1. Import useAuth (PENTING: Gunakan ini daripada cek localStorage manual)
+
 import { useAuth } from "@/contexts/AuthContext"; 
 
 interface ISlide {
@@ -21,11 +21,10 @@ export default function HeroSlider() {
   const t = useTranslations("HeroSlider");
   const router = useRouter(); 
 
-  // ✅ 2. Gunakan User dari Context agar status login akurat
+
   const { user } = useAuth();
   
-  // ✅ 3. Tentukan status login berdasarkan keberadaan user
-  // Jika user ada datanya, berarti isLoggedIn = true
+  
   const isLoggedIn = !!user; 
 
   const slides = t.raw("slides") as ISlide[];
@@ -198,20 +197,20 @@ export default function HeroSlider() {
                     </div>
                 </div>
 
-                {/* 4. Action Button (✅ DIPERBARUI LOGIKA UI-NYA) */}
+                
                 <div className="md:col-span-3">
                     <button
                         onClick={handleStartPlanning}
                         className={`w-full h-10 font-bold rounded-lg shadow-lg transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-[1.02] active:scale-95 text-sm
                           ${isLoggedIn 
-                            ? "bg-primary hover:bg-primary/90 text-white shadow-primary/30" // SUDAH LOGIN: Warna Primary
-                            : "bg-gray-600 hover:bg-gray-700 text-white shadow-gray-600/30" // BELUM LOGIN: Warna Abu
+                            ? "bg-primary hover:bg-primary/90 text-white shadow-primary/30" 
+                            : "bg-gray-600 hover:bg-gray-700 text-white shadow-gray-600/30" 
                           }`}
                     >
                         {/* Teks Berubah */}
                         <span>{isLoggedIn ? "Create Plan" : "Login to Plan"}</span>
                         
-                        {/* Icon Berubah: Panah jika login, Gembok jika belum */}
+                       
                         {isLoggedIn ? (
                             <ArrowRight className="w-4 h-4" />
                         ) : (

@@ -31,7 +31,7 @@ import {
 // --- LOCAL TYPES FOR SAFETY ---
 interface BookingDetails {
   // Common
-  name?: string; // ✅ Added to fix generic access issues
+  name?: string; 
   brand?: string;
   car_model?: string;
   plate_number?: string;
@@ -48,14 +48,14 @@ interface BookingDetails {
   brand_name?: string;
   trip_type?: string;
   city?: string;
-  destination?: string; // ✅ Added to fix the specific error
+  destination?: string; 
   province?: string;
   country?: string;
   travel_type?: string;
   departure_date?: string;
-  booking_date?: string; // Common for Activity
-  start_date?: string;   // Open Trip
-  end_date?: string;     // Open Trip
+  booking_date?: string; 
+  start_date?: string;   
+  end_date?: string;     
   duration?: string | number;
   days?: string | number;
   budget_pack?: string;
@@ -299,7 +299,7 @@ const ActivityDetails = ({ details }: { details: BookingDetails }) => (
   </div>
 );
 
-// ✅ NEW: Open Trip Details
+
 const OpenTripDetails = ({ details }: { details: BookingDetails }) => (
   <div className="space-y-4 text-sm animate-fadeIn">
     <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
@@ -310,7 +310,7 @@ const OpenTripDetails = ({ details }: { details: BookingDetails }) => (
         <div>
           <span className="text-xs text-muted-foreground block">Destination</span>
           <span className="font-medium flex items-center gap-1">
-            {/* ✅ FIXED: details.destination is now typed as string | undefined */}
+           
             <MapPin size={12} /> {details.destination || details.city || "-"}
           </span>
         </div>
@@ -346,7 +346,7 @@ const OpenTripDetails = ({ details }: { details: BookingDetails }) => (
   </div>
 );
 
-// ✅ NEW: Generic Service Details
+
 const ServiceDetails = ({ details }: { details: BookingDetails }) => (
   <div className="space-y-4 text-sm animate-fadeIn">
     <div className="font-semibold text-primary border-b border-border pb-1 flex items-center gap-2">
@@ -536,9 +536,7 @@ export default function HistoryTab() {
                         {bookableType.includes("TripPlanner") && <TripPlannerDetails details={details} />}
                         {bookableType.includes("HolidayPackage") && <HolidayPackageDetails details={details} />}
                         {bookableType.includes("Activity") && <ActivityDetails details={details} />}
-                        {/* ✅ NEW: Open Trip Support */}
                         {bookableType.includes("OpenTrip") && <OpenTripDetails details={details} />}
-                        {/* ✅ NEW: Generic Service Support */}
                         {bookableType.includes("Service") && <ServiceDetails details={details} />}
                         
                         {/* Fallback for others */}

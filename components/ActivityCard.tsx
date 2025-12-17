@@ -37,7 +37,7 @@ const LocationMarkerIcon = () => (
 export default function ActivityCard({ activity }: { activity: Activity }) {
   const { theme } = useTheme();
   
-  // PERBAIKAN: Menggunakan key yang TEPAT sesuai en.json Anda
+
   const tDetail = useTranslations("activityDetail"); 
   const tActivities = useTranslations("activities"); 
   
@@ -98,7 +98,7 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
           {activity.description}
         </p>
 
-        {/* Harga dan Tombol */}
+       
         <div className="flex justify-between items-center mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex flex-col">
             <span
@@ -106,7 +106,7 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
                 theme === "regular" ? "text-gray-500" : "text-gray-400"
               }`}
             >
-              {/* PERBAIKAN: Menggunakan "tDetail" */}
+           
               {tDetail("startingFrom")}
             </span>
             <span className="text-lg font-bold text-primary">
@@ -117,7 +117,7 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
             href={`/${locale}/activities/${activity.id}`}
             className="bg-primary text-black font-bold py-2 px-5 rounded-lg text-sm transition transform hover:scale-105 hover:brightness-90"
           >
-            {/* PERBAIKAN: Menggunakan "tActivities.buttons" */}
+
             {tActivities("buttons.details")}
           </Link>
         </div>

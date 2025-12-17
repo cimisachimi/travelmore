@@ -156,7 +156,6 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({
     }
   };
 
-  // ✅ AUTO-RECALCULATE DISCOUNT (Debounced)
   useEffect(() => {
     // Only auto-recalculate if we already have a valid discount applied
     if (appliedDiscount > 0 && discountCode) {
