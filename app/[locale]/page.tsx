@@ -22,10 +22,6 @@ export default function Home() {
       <SampleItineraries />
 
       
-      <div className="mt-16">
-         {/* <TripPlannerTeaser /> */}
-      </div>
-      
       {/* 4. Banner Diskon */}
       <DiscountBanner />
       
