@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-// HAPUS: import { useTheme } ...
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { AxiosError } from "axios";
@@ -76,11 +75,8 @@ const ActivitySkeleton = () => (
 );
 
 export default function ActivitiesPage() {
-  // HAPUS: const { theme, setTheme } = useTheme();
   const t = useTranslations("activities");
-  // HAPUS: const tNav ... (karena tombol toggle dihapus)
 
-  // --- State ---
   const [allActivities, setAllActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -207,7 +203,6 @@ export default function ActivitiesPage() {
     }).format(num);
   };
 
-  // HAPUS: Variabel isExclusive, mainBgClass, dll. Gunakan class string langsung di JSX.
    
   return (
     <div className="min-h-screen bg-gray-50 transition-colors duration-300">
@@ -223,8 +218,6 @@ export default function ActivitiesPage() {
           <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6 text-gray-900">
             {t("title", { defaultMessage: "Unforgettable Activities" })}
           </h1>
-          
-          {/* HAPUS: Theme Toggle Button Div */}
         </div>
       </div>
 

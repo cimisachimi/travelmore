@@ -22,6 +22,7 @@ interface ApiCar {
   images: { url: string; type: 'thumbnail' | 'gallery' }[];
 }
 
+// --- Reusable Icon Component ---
 function InfoIcon({ icon: Icon, text, colorClass }: { icon: React.ElementType; text: string | number; colorClass?: string }) {
   return (
     <div className={`flex items-center gap-2 ${colorClass || "text-foreground/80"}`}>
@@ -31,6 +32,7 @@ function InfoIcon({ icon: Icon, text, colorClass }: { icon: React.ElementType; t
   );
 }
 
+// --- CarCard Component ---
 function CarCard({ car, isExclusive }: { car: ApiCar; isExclusive: boolean }) {
   const t = useTranslations("carRental");
 
@@ -53,6 +55,7 @@ function CarCard({ car, isExclusive }: { car: ApiCar; isExclusive: boolean }) {
 
   const displayType = car.car_type?.toUpperCase() || "GENERAL";
 
+  // Style Variables
   const cardBgClass = isExclusive ? "bg-gray-900 border border-gray-800" : "bg-card shadow-md";
   const textTitleClass = isExclusive ? "text-white" : "text-foreground";
   const textMutedClass = isExclusive ? "text-gray-400" : "text-foreground/70";
@@ -71,27 +74,20 @@ function CarCard({ car, isExclusive }: { car: ApiCar; isExclusive: boolean }) {
           />
         </div>
         <div className="p-5 flex flex-col flex-grow">
-          
           <p className={`text-sm font-semibold ${accentColor}`}>{displayType}</p>
-          
           <h3 className={`text-2xl font-bold mt-1 ${textTitleClass}`}>{carName}</h3>
-
           <div className={`flex items-center gap-4 mt-4 text-sm ${textMutedClass}`}>
             <InfoIcon icon={Users} text={`${car.capacity} Seats`} colorClass={textMutedClass} />
             <InfoIcon icon={Gauge} text={car.transmission} colorClass={textMutedClass} />
             <InfoIcon icon={Luggage} text={`${car.trunk_size} Bags`} colorClass={textMutedClass} />
           </div>
-
           <p className={`${textMutedClass} mt-4 line-clamp-2 flex-grow h-12`}>
             {car.description || "No description available."}
           </p>
-
           <div className={`mt-5 pt-4 border-t ${isExclusive ? "border-gray-800" : "border-border/50"}`}>
             <p className={`text-xl font-extrabold ${textTitleClass}`}>
               {formatCurrency(price)}
-              <span className={`text-sm font-normal ${textMutedClass}`}>
-                {" "}{t("pricePerDay")}
-              </span>
+              <span className={`text-sm font-normal ${textMutedClass}`}>{" "}{t("pricePerDay")}</span>
             </p>
           </div>
         </div>
@@ -100,21 +96,36 @@ function CarCard({ car, isExclusive }: { car: ApiCar; isExclusive: boolean }) {
   );
 }
 
-
+// --- Main Page Component ---
 export default function CarRentalPage() {
-  
+  // 2. GUNAKAN GLOBAL CONTEXT
+  // HAPUS: const [theme, setTheme] = useState("regular");
   const { theme, setTheme } = useTheme();
+
   const t = useTranslations("carRental");
-  const tNav = useTranslations("Navbar"); 
+  const tNav = useTranslations("Navbar");
   const locale = useLocale();
 
   const [cars, setCars] = useState<ApiCar[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  
+  // 3. TAMBAHKAN AUTO-RESET SAAT UNMOUNT (KELUAR HALAMAN)
+  // Ini adalah kunci agar Exclusive hanya hidup di halaman ini
+  useEffect(() => {
+    // Optional: Pastikan mulai dengan regular saat masuk (jika diinginkan)
+    // setTheme("regular"); 
+
+    return () => {
+      // Saat user meninggalkan halaman Car Rental (pindah ke Home/About),
+      // paksa tema kembali ke Regular.
+      setTheme("regular");
+    };
+  }, [setTheme]);
+
+  // Logic Style (Menggunakan global theme)
   const isExclusive = theme === "exclusive";
-  const mainBgClass = isExclusive ? "bg-black" : "bg-background"; 
+  const mainBgClass = isExclusive ? "bg-black" : "bg-background";
   const textClass = isExclusive ? "text-white" : "text-foreground";
   const textMutedClass = isExclusive ? "text-gray-400" : "text-foreground/60";
 
@@ -129,16 +140,12 @@ export default function CarRentalPage() {
         setCars(response.data);
       } catch (err: unknown) {
         let errorMessage = "An unknown error occurred.";
-        if (err instanceof Error) {
-            errorMessage = err.message;
-        }
+        if (err instanceof Error) errorMessage = err.message;
         setError(errorMessage);
-        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchCars();
   }, [locale]);
 
@@ -159,11 +166,8 @@ export default function CarRentalPage() {
   }
 
   return (
-    
     <div className={`${mainBgClass} min-h-screen transition-colors duration-300`}>
       <div className="container mx-auto px-4 lg:px-8 py-16">
-        
-        
         <div className="text-center mb-12">
           <h1 className={`text-5xl font-extrabold tracking-tight ${textClass}`}>
             {t("title")}
@@ -172,7 +176,7 @@ export default function CarRentalPage() {
             {t("subtitle")}
           </p>
 
-          
+          {/* Toggle Button */}
           <div className="flex justify-center mt-8">
             <div className={`flex items-center p-1.5 rounded-full ${isExclusive ? "bg-gray-800" : "bg-gray-100"}`}>
               <button 
@@ -189,11 +193,8 @@ export default function CarRentalPage() {
               </button>
             </div>
           </div>
-          
-
         </div>
 
-        
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {cars.map((car) => (
             <CarCard key={car.id} car={car} isExclusive={isExclusive} />
