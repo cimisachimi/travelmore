@@ -8,7 +8,7 @@ import { DayPicker, DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { useLocale, useTranslations } from "next-intl";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTheme } from "@/components/ThemeProvider"; // Import the theme hook
+import { useTheme } from "@/components/ThemeProvider";
 import { toast } from "sonner";
 import "@/styles/calendar.css";
 import api from "@/lib/api";
@@ -16,7 +16,8 @@ import Link from "next/link";
 import { AxiosError } from "axios";
 import { 
   Car, Fuel, Luggage, User as UserIcon, Settings, 
-  Clock, TicketPercent, Loader2, CheckCircle2, AlertCircle, MapPin 
+  Clock, TicketPercent, Loader2, CheckCircle2, AlertCircle, MapPin,
+  ArrowLeft // 1. IMPORT ICON PANAH KIRI
 } from 'lucide-react';
 
 // --- Interfaces ---
@@ -34,7 +35,7 @@ interface ApiCar {
   id: number;
   car_model: string;
   brand: string;
-  category: "regular" | "exclusive"; // Added category field
+  category: "regular" | "exclusive";
   car_type: string | null;
   transmission: string | null;
   fuel_type: string | null;
@@ -58,7 +59,7 @@ export default function CarDetailPage() {
   const locale = useLocale();
   const { user } = useAuth();
   const router = useRouter();
-  const { theme, setTheme } = useTheme(); // Use the global theme context
+  const { theme, setTheme } = useTheme();
   
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id ?? "";
 
@@ -95,6 +96,13 @@ export default function CarDetailPage() {
   const inputBgClass = isExclusive ? "bg-gray-950 border-gray-800 text-white" : "bg-background border-gray-300";
   const buttonClass = isExclusive ? "bg-yellow-500 text-black hover:bg-yellow-400" : "bg-primary text-primary-foreground hover:bg-primary/90";
 
+  // 2. LOGIKA WARNA KALENDER
+  // Kita override variabel CSS rdp (React Day Picker) sesuai tema
+  const calendarStyle = {
+    "--rdp-accent-color": isExclusive ? "#eab308" : "var(--primary, #000000)", // Kuning jika exclusive, atau gunakan variable primary
+    "--rdp-background-color": isExclusive ? "#1f2937" : "#e5e7eb", // Warna background range middle
+  } as React.CSSProperties;
+
   const formatDateLocal = (date: Date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -127,7 +135,6 @@ export default function CarDetailPage() {
         const data: ApiCar = carResponse.data;
         setCar(data);
         
-        // AUTO-SET THEME BASED ON API DATA
         setTheme(data.category || "regular");
 
         setAvailabilities(availabilityResponse.data);
@@ -150,7 +157,6 @@ export default function CarDetailPage() {
     fetchCarAndAvailability();
   }, [id, locale, t, setTheme]);
 
-  // RESET THEME ON UNMOUNT
   useEffect(() => {
     return () => {
       setTheme("regular");
@@ -326,7 +332,17 @@ export default function CarDetailPage() {
 
   return (
     <div className={`${mainBgClass} ${textClass} min-h-screen transition-colors duration-300`}>
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8">
+        
+        {/* 3. TOMBOL BACK KE HALAMAN SEBELUMNYA */}
+        <Link 
+            href="/car-rental" 
+            className={`inline-flex items-center gap-2 mb-6 text-sm font-medium hover:underline transition-all ${textMutedClass} hover:${isExclusive ? "text-yellow-500" : "text-primary"}`}
+        >
+            <ArrowLeft size={20} />
+            {t('backToCars', { defaultMessage: "Back to Car List" })} 
+        </Link>
+
         <div className="grid lg:grid-cols-2 gap-10">
           
           {/* --- LEFT: Gallery + Info --- */}
@@ -387,7 +403,8 @@ export default function CarDetailPage() {
               <span className={textMutedClass}> /day</span>
             </div>
 
-            <div className="calendar-container mb-6">
+            {/* 4. PENERAPAN STYLE KALENDER */}
+            <div className="calendar-container mb-6 flex justify-center" style={calendarStyle}>
               <DayPicker
                 mode="range"
                 selected={selectedRange}
@@ -395,6 +412,15 @@ export default function CarDetailPage() {
                 disabled={disabledDays}
                 modifiers={{ available: availableDays, booked: bookedDays, maintenance: maintenanceDays }}
                 modifiersClassNames={{ available: "rdp-day_available", booked: "rdp-day_booked", maintenance: "rdp-day_maintenance" }}
+                // Tambahan: Force styling menggunakan Tailwind classes jika variabel CSS tidak cukup
+                classNames={{
+                    day_selected: isExclusive 
+                        ? "!bg-yellow-500 !text-black hover:!bg-yellow-400" 
+                        : "!bg-primary !text-white hover:!bg-primary/90",
+                    day_range_middle: isExclusive
+                        ? "!bg-yellow-500/20 !text-yellow-500"
+                        : "!bg-gray-100 !text-black",
+                }}
               />
             </div>
 
