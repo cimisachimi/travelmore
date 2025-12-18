@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -12,6 +12,7 @@ interface ApiCar {
   id: number;
   car_model: string;
   brand: string;
+  category: "regular" | "exclusive"; // Added category field from API
   description: string | null;
   price_per_day: string;
   car_type: string | null; 
@@ -98,8 +99,6 @@ function CarCard({ car, isExclusive }: { car: ApiCar; isExclusive: boolean }) {
 
 // --- Main Page Component ---
 export default function CarRentalPage() {
-  // 2. GUNAKAN GLOBAL CONTEXT
-  // HAPUS: const [theme, setTheme] = useState("regular");
   const { theme, setTheme } = useTheme();
 
   const t = useTranslations("carRental");
@@ -110,24 +109,23 @@ export default function CarRentalPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 3. TAMBAHKAN AUTO-RESET SAAT UNMOUNT (KELUAR HALAMAN)
-  // Ini adalah kunci agar Exclusive hanya hidup di halaman ini
+  // Auto-reset theme on unmount
   useEffect(() => {
-    // Optional: Pastikan mulai dengan regular saat masuk (jika diinginkan)
-    // setTheme("regular"); 
-
     return () => {
-      // Saat user meninggalkan halaman Car Rental (pindah ke Home/About),
-      // paksa tema kembali ke Regular.
       setTheme("regular");
     };
   }, [setTheme]);
 
-  // Logic Style (Menggunakan global theme)
+  // Logic Style
   const isExclusive = theme === "exclusive";
   const mainBgClass = isExclusive ? "bg-black" : "bg-background";
   const textClass = isExclusive ? "text-white" : "text-foreground";
   const textMutedClass = isExclusive ? "text-gray-400" : "text-foreground/60";
+
+  // Filter cars based on the current theme (category)
+  const filteredCars = useMemo(() => {
+    return cars.filter((car) => car.category === theme);
+  }, [cars, theme]);
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -196,9 +194,14 @@ export default function CarRentalPage() {
         </div>
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {cars.map((car) => (
+          {filteredCars.map((car) => (
             <CarCard key={car.id} car={car} isExclusive={isExclusive} />
           ))}
+          {filteredCars.length === 0 && (
+            <div className="col-span-full text-center py-20">
+              <p className={textMutedClass}>No cars found in this category.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

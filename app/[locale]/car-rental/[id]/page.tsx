@@ -8,6 +8,7 @@ import { DayPicker, DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { useLocale, useTranslations } from "next-intl";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/components/ThemeProvider"; // Import the theme hook
 import { toast } from "sonner";
 import "@/styles/calendar.css";
 import api from "@/lib/api";
@@ -33,6 +34,7 @@ interface ApiCar {
   id: number;
   car_model: string;
   brand: string;
+  category: "regular" | "exclusive"; // Added category field
   car_type: string | null;
   transmission: string | null;
   fuel_type: string | null;
@@ -56,6 +58,7 @@ export default function CarDetailPage() {
   const locale = useLocale();
   const { user } = useAuth();
   const router = useRouter();
+  const { theme, setTheme } = useTheme(); // Use the global theme context
   
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id ?? "";
 
@@ -82,8 +85,16 @@ export default function CarDetailPage() {
   const [isCheckingCode, setIsCheckingCode] = useState(false);
   const [discountMessage, setDiscountMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  // ✅ HELPER: Format Date as YYYY-MM-DD (Local Time)/page.tsx]
-  // Fixes the issue where booking tomorrow shows as today due to timezone shift
+  // Theme Logic
+  const isExclusive = theme === "exclusive";
+  const mainBgClass = isExclusive ? "bg-black" : "bg-background";
+  const textClass = isExclusive ? "text-white" : "text-foreground";
+  const textMutedClass = isExclusive ? "text-gray-400" : "text-foreground/70";
+  const accentColorClass = isExclusive ? "text-yellow-500" : "text-primary";
+  const cardBgClass = isExclusive ? "bg-gray-900 border-gray-800" : "bg-card shadow-lg";
+  const inputBgClass = isExclusive ? "bg-gray-950 border-gray-800 text-white" : "bg-background border-gray-300";
+  const buttonClass = isExclusive ? "bg-yellow-500 text-black hover:bg-yellow-400" : "bg-primary text-primary-foreground hover:bg-primary/90";
+
   const formatDateLocal = (date: Date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -115,6 +126,10 @@ export default function CarDetailPage() {
         ]);
         const data: ApiCar = carResponse.data;
         setCar(data);
+        
+        // AUTO-SET THEME BASED ON API DATA
+        setTheme(data.category || "regular");
+
         setAvailabilities(availabilityResponse.data);
         const firstImage = data.images?.[0]?.url
           ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/storage/${data.images[0].url}`
@@ -133,7 +148,14 @@ export default function CarDetailPage() {
       }
     };
     fetchCarAndAvailability();
-  }, [id, locale, t]);
+  }, [id, locale, t, setTheme]);
+
+  // RESET THEME ON UNMOUNT
+  useEffect(() => {
+    return () => {
+      setTheme("regular");
+    };
+  }, [setTheme]);
 
   useEffect(() => {
     if (user) {
@@ -187,7 +209,6 @@ export default function CarDetailPage() {
         type: 'car_rental',
         id: car?.id,
         discount_code: discountCode,
-        // ✅ Use Local Date Formatter
         start_date: formatDateLocal(selectedRange.from),
         end_date: formatDateLocal(selectedRange.to),
       });
@@ -242,7 +263,6 @@ export default function CarDetailPage() {
 
     try {
       const response = await api.post(`/car-rentals/${car.id}/book`, {
-        // ✅ Use Local Date Formatter
         start_date: formatDateLocal(selectedRange.from),
         end_date: formatDateLocal(selectedRange.to),
         phone_number: phone,
@@ -285,20 +305,18 @@ export default function CarDetailPage() {
     return { availableDays: available, bookedDays: booked, maintenanceDays: maintenance };
   }, [availabilities]);
 
-  // ✅ FIXED: Enable "Today" by stripping time components
   const today = useMemo(() => {
     const d = new Date();
-    d.setHours(0, 0, 0, 0); // Start of today (00:00:00)
+    d.setHours(0, 0, 0, 0); 
     return d;
   }, []);
 
   const disabledDays = useMemo(() => {
-    // Only disable dates BEFORE today (so today is selectable)
     return [{ before: today }, ...bookedDays, ...maintenanceDays];
   }, [bookedDays, maintenanceDays, today]);
 
-  if (loading) return <div className="p-10 text-center">Loading...</div>;
-  if (error || !car) return <div className="p-10 text-center text-red-500">{error || t("notFound")}</div>;
+  if (loading) return <div className={`p-10 text-center min-h-screen ${mainBgClass} ${textMutedClass}`}>Loading...</div>;
+  if (error || !car) return <div className={`p-10 text-center min-h-screen ${mainBgClass} text-red-500`}>{error || t("notFound")}</div>;
 
   const carName = `${car.brand} ${car.car_model}`;
   const price = parseFloat(car.price_per_day);
@@ -307,13 +325,13 @@ export default function CarDetailPage() {
   })) || [];
 
   return (
-    <div className="bg-background text-foreground min-h-screen">
+    <div className={`${mainBgClass} ${textClass} min-h-screen transition-colors duration-300`}>
       <div className="container mx-auto px-4 py-12">
         <div className="grid lg:grid-cols-2 gap-10">
           
           {/* --- LEFT: Gallery + Info --- */}
           <div>
-            <div className="relative w-full h-80 rounded-lg overflow-hidden shadow-lg mb-4 bg-muted">
+            <div className={`relative w-full h-80 rounded-lg overflow-hidden shadow-lg mb-4 ${isExclusive ? "bg-gray-800 border border-gray-700" : "bg-muted"}`}>
               <Image
                 src={activeImage}
                 alt={carName}
@@ -328,7 +346,7 @@ export default function CarDetailPage() {
                 {gallery.map((img, index) => (
                   <div
                     key={index}
-                    className={`relative w-20 h-20 rounded-lg cursor-pointer border-2 flex-shrink-0 ${img.full === activeImage ? "border-primary" : "border-transparent"}`}
+                    className={`relative w-20 h-20 rounded-lg cursor-pointer border-2 flex-shrink-0 ${img.full === activeImage ? (isExclusive ? "border-yellow-500" : "border-primary") : "border-transparent"}`}
                     onClick={() => setActiveImage(img.full)}
                   >
                     <Image src={img.full} alt={`${carName} ${index}`} fill className="object-cover rounded-lg" sizes="5rem" />
@@ -337,24 +355,24 @@ export default function CarDetailPage() {
               </div>
             )}
             <h2 className="text-3xl font-bold mt-6">{carName}</h2>
-            <p className="mt-2 text-foreground/70">{car.description || "No description available."}</p>
+            <p className={`mt-2 ${textMutedClass}`}>{car.description || "No description available."}</p>
 
             {/* --- Car Details --- */}
-            <div className="mt-8 border-t pt-6">
+            <div className={`mt-8 border-t pt-6 ${isExclusive ? "border-gray-800" : "border-border"}`}>
               <h3 className="text-xl font-bold mb-4">{t('details.title')}</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-                {car.car_type && <div className="flex items-center gap-2"><Car size={16} className="text-primary"/><span className="text-foreground/80">{t('details.type')}:</span><span className="font-semibold">{car.car_type}</span></div>}
-                {car.transmission && <div className="flex items-center gap-2"><Settings size={16} className="text-primary"/><span className="text-foreground/80">{t('details.transmission')}:</span><span className="font-semibold">{car.transmission}</span></div>}
-                {car.fuel_type && <div className="flex items-center gap-2"><Fuel size={16} className="text-primary"/><span className="text-foreground/80">{t('details.fuel')}:</span><span className="font-semibold">{car.fuel_type}</span></div>}
-                {car.capacity && <div className="flex items-center gap-2"><UserIcon size={16} className="text-primary"/><span className="text-foreground/80">{t('details.capacity')}:</span><span className="font-semibold">{car.capacity} {t('details.seats')}</span></div>}
-                {car.trunk_size && <div className="flex items-center gap-2"><Luggage size={16} className="text-primary"/><span className="text-foreground/80">{t('details.trunk')}:</span><span className="font-semibold">{car.trunk_size} {t('details.bags')}</span></div>}
+                {car.car_type && <div className="flex items-center gap-2"><Car size={16} className={accentColorClass}/><span className={textMutedClass}>{t('details.type')}:</span><span className="font-semibold">{car.car_type}</span></div>}
+                {car.transmission && <div className="flex items-center gap-2"><Settings size={16} className={accentColorClass}/><span className={textMutedClass}>{t('details.transmission')}:</span><span className="font-semibold">{car.transmission}</span></div>}
+                {car.fuel_type && <div className="flex items-center gap-2"><Fuel size={16} className={accentColorClass}/><span className={textMutedClass}>{t('details.fuel')}:</span><span className="font-semibold">{car.fuel_type}</span></div>}
+                {car.capacity && <div className="flex items-center gap-2"><UserIcon size={16} className={accentColorClass}/><span className={textMutedClass}>{t('details.capacity')}:</span><span className="font-semibold">{car.capacity} {t('details.seats')}</span></div>}
+                {car.trunk_size && <div className="flex items-center gap-2"><Luggage size={16} className={accentColorClass}/><span className={textMutedClass}>{t('details.trunk')}:</span><span className="font-semibold">{car.trunk_size} {t('details.bags')}</span></div>}
               </div>
             </div>
 
             {car.features && car.features.length > 0 && (
-              <div className="mt-8 border-t pt-6">
+              <div className={`mt-8 border-t pt-6 ${isExclusive ? "border-gray-800" : "border-border"}`}>
                 <h3 className="text-xl font-bold mb-4">{t('details.features')}</h3>
-                <ul className="list-disc list-inside space-y-1 text-foreground/80">
+                <ul className={`list-disc list-inside space-y-1 ${textMutedClass}`}>
                   {car.features.map((feature, index) => <li key={index}>{feature}</li>)}
                 </ul>
               </div>
@@ -362,11 +380,11 @@ export default function CarDetailPage() {
           </div>
 
           {/* --- RIGHT: Booking Form --- */}
-          <div className="bg-card shadow-lg rounded-lg p-6 sticky top-8 h-fit">
+          <div className={`${cardBgClass} rounded-lg p-6 sticky top-8 h-fit`}>
             <h3 className="text-xl font-bold mb-4">{t("form.title")}</h3>
-            <div className="mb-4 p-4 bg-background border rounded-lg">
-              <span className="text-2xl font-bold text-primary">{formatCurrency(price)}</span>
-              <span className="text-foreground/60"> /day</span>
+            <div className={`mb-4 p-4 border rounded-lg ${isExclusive ? "bg-black border-gray-800" : "bg-background"}`}>
+              <span className={`text-2xl font-bold ${accentColorClass}`}>{formatCurrency(price)}</span>
+              <span className={textMutedClass}> /day</span>
             </div>
 
             <div className="calendar-container mb-6">
@@ -382,11 +400,11 @@ export default function CarDetailPage() {
 
             {user ? (
               bookingSuccess ? (
-                <div className="text-center p-6 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
+                <div className={`text-center p-6 rounded-lg border ${isExclusive ? "bg-green-900/20 border-green-800 text-green-200" : "bg-green-50 border-green-200 text-green-800"}`}>
                   <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
-                  <h4 className="font-bold text-lg text-green-800 dark:text-green-200">Booking Successful!</h4>
-                  <p className="text-green-700 dark:text-green-300 mt-1 mb-4">Your car is reserved. Please proceed to payment.</p>
-                  <button onClick={() => router.push('/profile')} className="w-full bg-primary text-primary-foreground font-bold py-3 rounded-lg hover:bg-primary/90">
+                  <h4 className="font-bold text-lg">Booking Successful!</h4>
+                  <p className="mt-1 mb-4">Your car is reserved. Please proceed to payment.</p>
+                  <button onClick={() => router.push('/profile')} className={`w-full font-bold py-3 rounded-lg ${buttonClass}`}>
                     Go to My Profile
                   </button>
                 </div>
@@ -395,27 +413,27 @@ export default function CarDetailPage() {
                   {/* Contact Info */}
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 gap-3">
-                        <input type="text" placeholder={t("form.name")} value={name} disabled className="w-full border rounded-lg px-4 py-2 bg-muted/50 cursor-not-allowed opacity-70" />
-                        <input type="email" placeholder={t("form.email")} value={email} disabled className="w-full border rounded-lg px-4 py-2 bg-muted/50 cursor-not-allowed opacity-70" />
+                        <input type="text" value={name} disabled className={`w-full border rounded-lg px-4 py-2 opacity-70 cursor-not-allowed ${inputBgClass}`} />
+                        <input type="email" value={email} disabled className={`w-full border rounded-lg px-4 py-2 opacity-70 cursor-not-allowed ${inputBgClass}`} />
                     </div>
-                    <input type="tel" placeholder={t("form.phone")} value={phone} onChange={(e) => setPhone(e.target.value)} required className="w-full border rounded-lg px-4 py-2 bg-background focus:ring-2 focus:ring-primary outline-none" />
+                    <input type="tel" placeholder={t("form.phone")} value={phone} onChange={(e) => setPhone(e.target.value)} required className={`w-full border rounded-lg px-4 py-2 focus:ring-2 outline-none ${isExclusive ? "bg-black border-gray-700 focus:ring-yellow-500" : "bg-background focus:ring-primary"}`} />
                     <div className="grid grid-cols-3 gap-3">
                         <div className="col-span-1">
                             <div className="relative">
                                 <Clock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                                <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className="w-full border rounded-lg pl-10 pr-2 py-2 bg-background focus:ring-2 focus:ring-primary outline-none" />
+                                <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className={`w-full border rounded-lg pl-10 pr-2 py-2 focus:ring-2 outline-none ${isExclusive ? "bg-black border-gray-700 focus:ring-yellow-500" : "bg-background focus:ring-primary"}`} />
                             </div>
                         </div>
                         <div className="col-span-2">
                             <div className="relative">
                                 <MapPin className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                                <input type="text" placeholder={t("form.pickup")} value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} required className="w-full border rounded-lg pl-10 pr-4 py-2 bg-background focus:ring-2 focus:ring-primary outline-none" />
+                                <input type="text" placeholder={t("form.pickup")} value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} required className={`w-full border rounded-lg pl-10 pr-4 py-2 focus:ring-2 outline-none ${isExclusive ? "bg-black border-gray-700 focus:ring-yellow-500" : "bg-background focus:ring-primary"}`} />
                             </div>
                         </div>
                     </div>
                   </div>
 
-                  {/* ✅ DISCOUNT CODE */}
+                  {/* DISCOUNT CODE */}
                   <div>
                     <label className="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-1">
                         <TicketPercent size={14} /> Discount Code
@@ -427,51 +445,49 @@ export default function CarDetailPage() {
                             value={discountCode}
                             onChange={(e) => {
                                 setDiscountCode(e.target.value.toUpperCase());
-                                setAppliedDiscount(0); // Reset UI to encourage apply check
+                                setAppliedDiscount(0);
                                 setDiscountMessage(null);
                             }}
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-background focus:ring-2 focus:ring-primary outline-none uppercase"
+                            className={`w-full border rounded-lg px-3 py-2 outline-none uppercase ${isExclusive ? "bg-black border-gray-700 focus:ring-2 focus:ring-yellow-500" : "bg-background border-gray-300 focus:ring-2 focus:ring-primary"}`}
                         />
                         <button
                             type="button"
                             onClick={handleApplyCode}
                             disabled={!discountCode.trim() || isCheckingCode || !selectedRange?.from}
-                            className="bg-primary hover:bg-primary/90 text-white font-bold px-4 rounded-lg disabled:opacity-50 min-w-[80px] flex items-center justify-center transition-colors"
+                            className={`font-bold px-4 rounded-lg disabled:opacity-50 min-w-[80px] flex items-center justify-center transition-colors ${buttonClass}`}
                         >
                             {isCheckingCode ? <Loader2 size={16} className="animate-spin" /> : "Apply"}
                         </button>
                     </div>
-                    {/* Status Message */}
                     {discountMessage && (
-                        <div className={`mt-2 text-xs flex items-center gap-1.5 ${discountMessage.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
+                        <div className={`mt-2 text-xs flex items-center gap-1.5 ${discountMessage.type === 'success' ? 'text-green-500' : 'text-red-500'}`}>
                             {discountMessage.type === 'success' ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />} 
                             {discountMessage.text}
                         </div>
                     )}
                   </div>
 
-                  {/* ✅ PRICE SUMMARY */}
-                  <div className="bg-muted/30 p-4 rounded-lg border border-border space-y-2">
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>Duration</span>
+                  {/* PRICE SUMMARY */}
+                  <div className={`p-4 rounded-lg border space-y-2 ${isExclusive ? "bg-black/50 border-gray-800" : "bg-muted/30 border-border"}`}>
+                    <div className="flex justify-between text-sm">
+                        <span className={textMutedClass}>Duration</span>
                         <span>{totalDays} Days</span>
                     </div>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>Rate</span>
+                    <div className="flex justify-between text-sm">
+                        <span className={textMutedClass}>Rate</span>
                         <span>{formatCurrency(price)}/day</span>
                     </div>
-                    <div className="flex justify-between text-sm text-foreground font-medium pt-2 border-t border-dashed border-border">
+                    <div className={`flex justify-between text-sm font-medium pt-2 border-t border-dashed ${isExclusive ? "border-gray-800" : "border-border"}`}>
                         <span>Subtotal</span>
                         <span>{formatCurrency(baseTotal)}</span>
                     </div>
-                    {/* Discount Row */}
                     {appliedDiscount > 0 && (
-                        <div className="flex justify-between text-sm text-green-600 font-bold">
+                        <div className="flex justify-between text-sm text-green-500 font-bold">
                             <span>Discount</span>
                             <span>- {formatCurrency(appliedDiscount)}</span>
                         </div>
                     )}
-                    <div className="flex justify-between text-lg font-bold text-primary pt-2 border-t border-border mt-2">
+                    <div className={`flex justify-between text-lg font-bold pt-2 border-t mt-2 ${accentColorClass} ${isExclusive ? "border-gray-800" : "border-border"}`}>
                         <span>Total Payment</span>
                         <span>{formatCurrency(grandTotal)}</span>
                     </div>
@@ -480,17 +496,17 @@ export default function CarDetailPage() {
                   <button
                     type="submit"
                     disabled={!selectedRange?.from || !selectedRange?.to || isSubmitting}
-                    className="w-full bg-primary text-primary-foreground font-bold py-3 rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-all shadow-md"
+                    className={`w-full font-bold py-3 rounded-lg disabled:opacity-50 transition-all shadow-md ${buttonClass}`}
                   >
                     {isSubmitting ? <span className="flex items-center justify-center gap-2"><Loader2 size={18} className="animate-spin"/> Processing...</span> : t("form.button")}
                   </button>
                 </form>
               )
             ) : (
-              <div className="mt-6 text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <div className={`mt-6 text-center p-4 rounded-lg border ${isExclusive ? "bg-yellow-900/20 border-yellow-800 text-yellow-200" : "bg-yellow-50 border-yellow-200 text-yellow-800"}`}>
                 <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-                <p className="text-yellow-800 dark:text-yellow-200 text-sm">
-                  Please <Link href="/login" className="font-bold underline hover:text-yellow-900">log in</Link> to book this car.
+                <p className="text-sm">
+                  Please <Link href="/login" className="font-bold underline">log in</Link> to book this car.
                 </p>
               </div>
             )}
