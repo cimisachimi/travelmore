@@ -1,10 +1,9 @@
-// app/[locale]/activities/page.tsx
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useTheme } from "@/components/ThemeProvider";
+// HAPUS: import { useTheme } ...
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { AxiosError } from "axios";
@@ -47,47 +46,39 @@ interface ApiResponse {
   };
 }
 
-// --- Helper Functions (✅ PERBAIKAN DI SINI) ---
+// --- Helper Functions ---
 const parsePrice = (value: string | number | null | undefined): number => {
     if (!value) return 0;
     if (typeof value === 'number') return value;
-
-    // 1. Coba konversi langsung dulu (untuk menangani string desimal backend seperti "2999999.00")
-    // Jika value adalah "2999999.00", Number() akan membacanya sebagai 2999999 (Benar)
-    // Kode lama menghapus titiknya sehingga menjadi 299999900 (Salah)
     const directParse = Number(value);
-    if (!isNaN(directParse)) {
-        return directParse;
-    }
-
-    // 2. Jika gagal (misal formatnya teks "Rp 2.999.999"), baru gunakan cara cleaning regex
+    if (!isNaN(directParse)) return directParse;
     const cleanString = value.toString().replace(/\D/g, ''); 
     const result = Number(cleanString);
     return isNaN(result) ? 0 : result;
 };
 
-// --- Skeleton Component ---
+// --- Skeleton Component (Mode Regular) ---
 const ActivitySkeleton = () => (
-  <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 animate-pulse">
-    <div className="h-56 bg-gray-200 dark:bg-gray-700" />
+  <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
+    <div className="h-56 bg-gray-200" />
     <div className="p-5 space-y-4">
-      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+      <div className="h-6 bg-gray-200 rounded w-3/4" />
       <div className="space-y-2">
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+        <div className="h-4 bg-gray-200 rounded w-full" />
+        <div className="h-4 bg-gray-200 rounded w-2/3" />
       </div>
       <div className="flex justify-between pt-4">
-        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
-        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
+        <div className="h-8 bg-gray-200 rounded w-1/3" />
+        <div className="h-8 bg-gray-200 rounded w-1/4" />
       </div>
     </div>
   </div>
 );
 
 export default function ActivitiesPage() {
-  const { theme, setTheme } = useTheme();
+  // HAPUS: const { theme, setTheme } = useTheme();
   const t = useTranslations("activities");
-  const tNav = useTranslations("Navbar");
+  // HAPUS: const tNav ... (karena tombol toggle dihapus)
 
   // --- State ---
   const [allActivities, setAllActivities] = useState<Activity[]>([]);
@@ -96,16 +87,16 @@ export default function ActivitiesPage() {
 
   // Filters State
   const [searchQuery, setSearchQuery] = useState("");
-  const [maxPrice, setMaxPrice] = useState<number>(5000000); // Nilai awal
-  const [priceSliderMax, setPriceSliderMax] = useState<number>(5000000); // Dynamic Limit
+  const [maxPrice, setMaxPrice] = useState<number>(5000000);
+  const [priceSliderMax, setPriceSliderMax] = useState<number>(5000000);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // Pagination State (Client Side)
+  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // --- Fetch Data Logic (Aggressive Loop) ---
+  // --- Fetch Data Logic ---
   useEffect(() => {
     let isMounted = true; 
 
@@ -116,19 +107,16 @@ export default function ActivitiesPage() {
       let allData: Activity[] = [];
       let page = 1;
       let hasMore = true;
-      const MAX_PAGES_SAFETY = 50; // Safety break
+      const MAX_PAGES_SAFETY = 50;
 
       try {
         while (hasMore && page <= MAX_PAGES_SAFETY) {
-            console.log(`Fetching Activities Page ${page}...`);
-            
             const response = await api.get<ApiResponse>("/activities", {
                 params: { per_page: 50, page: page }
             });
             
             if (!isMounted) return;
 
-            // Handle struktur response
             const responseData = Array.isArray(response.data) ? response.data : response.data.data;
             const newData = responseData || [];
 
@@ -136,40 +124,30 @@ export default function ActivitiesPage() {
                 hasMore = false;
             } else {
                 allData = [...allData, ...newData];
-
-                // Cek Meta Pagination dari API
                 const meta = !Array.isArray(response.data) ? response.data.meta : null;
                 if (meta && meta.current_page >= meta.last_page) {
                     hasMore = false;
                 } else if (!meta && newData.length < 10) {
                     hasMore = false;
                 }
-                
                 page++;
             }
         }
 
-        // 1. Hapus Duplikat (Deduplication)
         const uniqueActivities = Array.from(new Map(allData.map(item => [item.id, item])).values());
-        
-        console.log("Total Activities Fetched:", uniqueActivities.length);
         setAllActivities(uniqueActivities);
 
-        // 2. Kalkulasi Max Price untuk Slider
         if (uniqueActivities.length > 0) {
             const prices = uniqueActivities.map(act => parsePrice(act.price));
             const highestPrice = Math.max(...prices);
-            
             if (highestPrice > 0) {
-                // Bulatkan ke atas kelipatan 500rb atau 1jt agar slider rapi
                 const niceMax = Math.ceil(highestPrice / 500000) * 500000;
                 setPriceSliderMax(niceMax);
-                setMaxPrice(niceMax); // Set default filter ke max
+                setMaxPrice(niceMax);
             }
         }
 
       } catch (err: unknown) {
-        console.error("Failed to fetch activities:", err);
         if (isMounted) {
              const axiosError = err as AxiosError;
              setError(axiosError.message || t("empty.fetchError", { defaultMessage: "Could not load activities." }));
@@ -180,10 +158,7 @@ export default function ActivitiesPage() {
     };
 
     fetchActivities();
-
-    return () => {
-        isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [t]);
 
   // --- Derived Data ---
@@ -194,25 +169,19 @@ export default function ActivitiesPage() {
 
   const filteredActivities = useMemo(() => {
     return allActivities.filter((act) => {
-      // Gunakan parsePrice agar perbandingan angka valid
       const actPrice = parsePrice(act.price);
-      
       const priceMatch = actPrice <= maxPrice;
       const categoryMatch = selectedCategories.length === 0 || (act.category && selectedCategories.includes(act.category));
-      
       const searchMatch = act.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (act.location && act.location.toLowerCase().includes(searchQuery.toLowerCase()));
-      
       return priceMatch && categoryMatch && searchMatch;
     });
   }, [allActivities, maxPrice, selectedCategories, searchQuery]);
 
-  // Reset Pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, maxPrice, selectedCategories]);
 
-  // Pagination Logic (Client Side)
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentActivities = filteredActivities.slice(indexOfFirstItem, indexOfLastItem);
@@ -220,10 +189,8 @@ export default function ActivitiesPage() {
 
   const paginate = (pageNumber: number) => {
     setCurrentPage(pageNumber);
-    // window.scrollTo({ top: 0, behavior: 'smooth' }); // Opsional
   };
 
-  // --- Handlers ---
   const handleCategoryChange = (category: string) => {
     setSelectedCategories(prev => 
       prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
@@ -231,7 +198,7 @@ export default function ActivitiesPage() {
   };
 
   const formatCurrency = (amount: number | string) => {
-    const num = parsePrice(amount); // Pastikan angka
+    const num = parsePrice(amount);
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
@@ -240,40 +207,24 @@ export default function ActivitiesPage() {
     }).format(num);
   };
 
-  // --- Styles ---
-  const isExclusive = theme === "exclusive";
-  const mainBgClass = isExclusive ? "bg-black" : "bg-gray-50";
-  const textClass = isExclusive ? "text-white" : "text-gray-900";
-  const textMutedClass = isExclusive ? "text-gray-400" : "text-gray-500";
-  const cardBgClass = isExclusive ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100";
-  const accentColor = isExclusive ? "text-yellow-500" : "text-blue-600";
+  // HAPUS: Variabel isExclusive, mainBgClass, dll. Gunakan class string langsung di JSX.
    
   return (
-    <div className={`min-h-screen ${mainBgClass} transition-colors duration-300`}>
-      {/* --- Hero Header --- */}
-      <div className={`relative py-16 lg:py-24 overflow-hidden ${isExclusive ? "bg-gray-900" : "bg-white border-b border-gray-200"}`}>
-        
+    <div className="min-h-screen bg-gray-50 transition-colors duration-300">
+      
+      {/* --- Hero Header (Mode Regular Static) --- */}
+      <div className="relative py-16 lg:py-24 overflow-hidden bg-white border-b border-gray-200">
         <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#888_1px,transparent_1px)] [background-size:16px_16px]" />
         
         <div className="container mx-auto px-4 text-center relative z-10">
-          <span className={`inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase mb-4 ${isExclusive ? "bg-yellow-900/30 text-yellow-500" : "bg-blue-100 text-primary"}`}>
+          <span className="inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase mb-4 bg-blue-100 text-primary">
             {t("subtitle", { defaultMessage: "Explore The World" })}
           </span>
-          <h1 className={`text-4xl md:text-6xl font-black tracking-tight mb-6 ${textClass}`}>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6 text-gray-900">
             {t("title", { defaultMessage: "Unforgettable Activities" })}
           </h1>
           
-          {/* Theme Toggle */}
-          <div className="flex justify-center mt-8">
-            <div className={`flex items-center p-1.5 rounded-full ${isExclusive ? "bg-gray-800" : "bg-gray-100"}`}>
-              <button onClick={() => setTheme("regular")} className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${!isExclusive ? "bg-white text-primary shadow-md" : "text-gray-400 hover:text-white"}`}>
-                {tNav("regular", { defaultMessage: "Regular" })}
-              </button>
-              <button onClick={() => setTheme("exclusive")} className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${isExclusive ? "bg-yellow-500 text-black shadow-md" : "text-gray-500 hover:text-black"}`}>
-                {tNav("exclusive", { defaultMessage: "Exclusive" })}
-              </button>
-            </div>
-          </div>
+          {/* HAPUS: Theme Toggle Button Div */}
         </div>
       </div>
 
@@ -283,7 +234,7 @@ export default function ActivitiesPage() {
           {/* --- Mobile Filter Trigger Button --- */}
           <button 
             onClick={() => setShowMobileFilters(true)}
-            className={`lg:hidden w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold mb-4 transition-all active:scale-95 ${isExclusive ? "bg-gray-800 text-white" : "bg-white text-gray-900 shadow-sm border border-gray-200"}`}
+            className="lg:hidden w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold mb-4 transition-all active:scale-95 bg-white text-gray-900 shadow-sm border border-gray-200"
           >
             <SlidersHorizontal size={18} />
             {t("filters.title", { defaultMessage: "Filters" })}
@@ -293,14 +244,14 @@ export default function ActivitiesPage() {
           <aside className={`
             fixed inset-0 z-50 transform transition-transform duration-300 lg:relative lg:transform-none lg:w-80 lg:block lg:inset-auto lg:z-auto
             ${showMobileFilters ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-            ${isExclusive ? "bg-black lg:bg-transparent" : "bg-white lg:bg-transparent"}
+            bg-white lg:bg-transparent
           `}>
-            <div className={`flex flex-col h-full lg:h-auto lg:block ${isExclusive ? "lg:bg-gray-900/50" : "lg:bg-white"} lg:rounded-2xl lg:shadow-sm lg:border ${isExclusive ? "lg:border-gray-800" : "lg:border-gray-200"} lg:sticky lg:top-24`}>
+            <div className="flex flex-col h-full lg:h-auto lg:block lg:bg-white lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-200 lg:sticky lg:top-24">
               
-              {/* Header Mobile (Title + Close) */}
-              <div className="flex justify-between items-center p-6 lg:hidden border-b border-gray-100 dark:border-gray-800">
-                <h3 className={`text-xl font-bold ${textClass}`}>{t("filters.title")}</h3>
-                <button onClick={() => setShowMobileFilters(false)} className={`p-2 rounded-full ${isExclusive ? "hover:bg-gray-800" : "hover:bg-gray-100"} ${textClass}`}>
+              {/* Header Mobile */}
+              <div className="flex justify-between items-center p-6 lg:hidden border-b border-gray-100">
+                <h3 className="text-xl font-bold text-gray-900">{t("filters.title")}</h3>
+                <button onClick={() => setShowMobileFilters(false)} className="p-2 rounded-full hover:bg-gray-100 text-gray-900">
                   <X size={24} />
                 </button>
               </div>
@@ -309,8 +260,8 @@ export default function ActivitiesPage() {
               <div className="flex-1 overflow-y-auto p-6 lg:p-6 space-y-8">
                 {/* Search */}
                 <div>
-                  <h4 className={`font-bold mb-3 flex items-center gap-2 ${textClass}`}>
-                    <Search size={16} className={accentColor} />
+                  <h4 className="font-bold mb-3 flex items-center gap-2 text-gray-900">
+                    <Search size={16} className="text-blue-600" />
                     Search
                   </h4>
                   <input 
@@ -318,42 +269,42 @@ export default function ActivitiesPage() {
                     placeholder="Search activities..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:outline-none transition-all ${isExclusive ? "bg-gray-800 border-gray-700 text-white focus:ring-yellow-500" : "bg-gray-50 border-gray-200 focus:ring-primary "}`}
+                    className="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:outline-none transition-all bg-gray-50 border-gray-200 focus:ring-primary"
                   />
                 </div>
 
                 {/* Price Filter */}
                 <div>
-                  <h4 className={`font-bold mb-4 flex items-center gap-2 ${textClass}`}>
-                    <Tag size={16} className={accentColor} />
+                  <h4 className="font-bold mb-4 flex items-center gap-2 text-gray-900">
+                    <Tag size={16} className="text-blue-600" />
                     {t("filters.price", { defaultMessage: "Price Range" })}
                   </h4>
                   <input
                     type="range"
                     min="0"
-                    max={priceSliderMax} // Dynamic Max
-                    step={priceSliderMax / 100} // Step dinamis
+                    max={priceSliderMax}
+                    step={priceSliderMax / 100}
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(Number(e.target.value))}
                     disabled={isLoading}
-                    className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${isExclusive ? "bg-gray-700 accent-yellow-500" : "bg-gray-200 accent-primary"}`}
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 accent-primary"
                   />
                   <div className="flex justify-between mt-2 text-sm">
-                    <span className={textMutedClass}>0</span>
-                    <span className={`font-bold ${textClass}`}>{formatCurrency(maxPrice)}</span>
+                    <span className="text-gray-500">0</span>
+                    <span className="font-bold text-gray-900">{formatCurrency(maxPrice)}</span>
                   </div>
                 </div>
 
                 {/* Categories */}
                 <div>
-                  <h4 className={`font-bold mb-3 flex items-center gap-2 ${textClass}`}>
-                    <SlidersHorizontal size={16} className={accentColor} />
+                  <h4 className="font-bold mb-3 flex items-center gap-2 text-gray-900">
+                    <SlidersHorizontal size={16} className="text-blue-600" />
                     {t("filters.categories", { defaultMessage: "Categories" })}
                   </h4>
                   <div className="space-y-2.5 max-h-60 overflow-y-auto custom-scrollbar">
                     {allCategories.map((category) => (
                       <label key={category} className="flex items-center group cursor-pointer">
-                        <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${selectedCategories.includes(category) ? (isExclusive ? "bg-yellow-500 border-yellow-500" : "bg-primary border-primary") : "border-gray-400 bg-transparent"}`}>
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${selectedCategories.includes(category) ? "bg-primary border-primary" : "border-gray-400 bg-transparent"}`}>
                            {selectedCategories.includes(category) && <X size={12} className="text-white rotate-45" />}
                         </div>
                         <input
@@ -362,13 +313,13 @@ export default function ActivitiesPage() {
                           checked={selectedCategories.includes(category)}
                           onChange={() => handleCategoryChange(category)}
                         />
-                        <span className={`text-sm transition-colors ${selectedCategories.includes(category) ? `font-medium ${textClass}` : textMutedClass} group-hover:${textClass}`}>
+                        <span className={`text-sm transition-colors ${selectedCategories.includes(category) ? "font-medium text-gray-900" : "text-gray-500"} group-hover:text-gray-900`}>
                           {category}
                         </span>
                       </label>
                     ))}
                     {allCategories.length === 0 && !isLoading && (
-                        <p className={`text-xs ${textMutedClass}`}>No categories available</p>
+                        <p className="text-xs text-gray-500">No categories available</p>
                     )}
                   </div>
                 </div>
@@ -377,7 +328,7 @@ export default function ActivitiesPage() {
                 {(selectedCategories.length > 0 || maxPrice < priceSliderMax || searchQuery) && (
                   <button 
                     onClick={() => { setSelectedCategories([]); setMaxPrice(priceSliderMax); setSearchQuery(""); }}
-                    className={`w-full py-2 text-sm font-semibold rounded-lg transition-colors ${isExclusive ? "bg-gray-800 text-gray-300 hover:bg-gray-700" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                    className="w-full py-2 text-sm font-semibold rounded-lg transition-colors bg-gray-100 text-gray-600 hover:bg-gray-200"
                   >
                     Reset Filters
                   </button>
@@ -385,14 +336,10 @@ export default function ActivitiesPage() {
               </div>
 
               {/* Tombol STICKY "Show Results" (Mobile) */}
-              <div className={`p-4 border-t lg:hidden mt-auto ${isExclusive ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"}`}>
+              <div className="p-4 border-t lg:hidden mt-auto bg-white border-gray-100">
                 <button 
                   onClick={() => setShowMobileFilters(false)}
-                  className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-95 ${
-                    isExclusive 
-                      ? "bg-yellow-500 text-black hover:bg-yellow-400" 
-                      : "bg-teal-500 text-white hover:bg-teal-600" 
-                  }`}
+                  className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-95 bg-teal-500 text-white hover:bg-teal-600"
                 >
                   <CheckCircle size={20} />
                   Show {filteredActivities.length} Results
@@ -418,7 +365,7 @@ export default function ActivitiesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
                   {currentActivities.map((act) => (
                     <Link key={act.id} href={`/activities/${act.id}`} className="group h-full">
-                      <article className={`h-full flex flex-col rounded-2xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border ${cardBgClass}`}>
+                      <article className="h-full flex flex-col rounded-2xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border bg-white border-gray-100">
                         {/* Image */}
                         <div className="relative h-56 w-full overflow-hidden">
                           <Image
@@ -429,7 +376,7 @@ export default function ActivitiesPage() {
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
                           {act.category && (
-                            <span className={`absolute top-4 left-4 text-xs font-bold px-3 py-1 rounded-full backdrop-blur-md shadow-sm ${isExclusive ? "bg-black/60 text-white" : "bg-white/90 text-gray-900"}`}>
+                            <span className="absolute top-4 left-4 text-xs font-bold px-3 py-1 rounded-full backdrop-blur-md shadow-sm bg-white/90 text-gray-900">
                               {act.category}
                             </span>
                           )}
@@ -437,39 +384,39 @@ export default function ActivitiesPage() {
 
                         {/* Content */}
                         <div className="p-5 flex flex-col flex-grow">
-                          <h2 className={`text-lg font-bold mb-2 line-clamp-2 leading-tight ${textClass} group-hover:${accentColor} transition-colors`}>
+                          <h2 className="text-lg font-bold mb-2 line-clamp-2 leading-tight text-gray-900 group-hover:text-blue-600 transition-colors">
                             {act.name}
                           </h2>
 
                           {/* Metadata Row */}
                           <div className="flex items-center gap-4 text-xs mb-4">
                             {act.duration && (
-                              <div className={`flex items-center gap-1.5 ${textMutedClass}`}>
-                                <Clock size={14} className={accentColor} />
+                              <div className="flex items-center gap-1.5 text-gray-500">
+                                <Clock size={14} className="text-blue-600" />
                                 <span>{act.duration}</span>
                               </div>
                             )}
                             {act.location && (
-                              <div className={`flex items-center gap-1.5 ${textMutedClass}`}>
-                                <MapPin size={14} className={accentColor} />
+                              <div className="flex items-center gap-1.5 text-gray-500">
+                                <MapPin size={14} className="text-blue-600" />
                                 <span className="truncate max-w-[100px]">{act.location}</span>
                               </div>
                             )}
                           </div>
 
-                          <p className={`text-sm line-clamp-2 mb-6 ${textMutedClass} flex-grow`}>
+                          <p className="text-sm line-clamp-2 mb-6 text-gray-500 flex-grow">
                             {act.description || "Experience an unforgettable journey..."}
                           </p>
 
                           {/* Footer */}
-                          <div className={`pt-4 mt-auto border-t flex items-end justify-between ${isExclusive ? "border-gray-800" : "border-gray-100"}`}>
+                          <div className="pt-4 mt-auto border-t flex items-end justify-between border-gray-100">
                             <div>
-                              <p className={`text-xs ${textMutedClass} mb-0.5`}>{t("filters.startingFrom", { defaultMessage: "Starting from" })}</p>
-                              <p className={`text-lg font-bold ${isExclusive ? "text-yellow-500" : "text-primary"}`}>
+                              <p className="text-xs text-gray-500 mb-0.5">{t("filters.startingFrom", { defaultMessage: "Starting from" })}</p>
+                              <p className="text-lg font-bold text-primary">
                                 {formatCurrency(act.price)}
                               </p>
                             </div>
-                            <span className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isExclusive ? "bg-gray-800 text-white group-hover:bg-yellow-500 group-hover:text-black" : "bg-gray-100 text-primary group-hover:bg-primary group-hover:text-white"}`}>
+                            <span className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 bg-gray-100 text-primary group-hover:bg-primary group-hover:text-white">
                               <ChevronRight size={20} />
                             </span>
                           </div>
@@ -488,9 +435,7 @@ export default function ActivitiesPage() {
                       className={`w-10 h-10 flex items-center justify-center rounded-lg border transition-all
                         ${currentPage === 1 
                           ? "opacity-30 cursor-not-allowed border-transparent" 
-                          : isExclusive 
-                            ? "border-gray-700 hover:bg-gray-800 text-white" 
-                            : "border-gray-200 hover:bg-gray-100 text-gray-600"
+                          : "border-gray-200 hover:bg-gray-100 text-gray-600"
                         }`}
                     >
                       <ChevronLeft size={20} />
@@ -503,11 +448,7 @@ export default function ActivitiesPage() {
                             onClick={() => paginate(number)}
                             className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-bold transition-all
                             ${currentPage === number
-                                ? isExclusive 
-                                ? "bg-yellow-500 text-black shadow-md scale-105" 
-                                : "bg-teal-400 text-white shadow-md scale-105" 
-                                : isExclusive
-                                ? "text-gray-400 hover:text-white hover:bg-gray-800"
+                                ? "bg-teal-400 text-white shadow-md scale-105" 
                                 : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
                             }`}
                         >
@@ -522,9 +463,7 @@ export default function ActivitiesPage() {
                       className={`w-10 h-10 flex items-center justify-center rounded-lg border transition-all
                         ${currentPage === totalPages 
                           ? "opacity-30 cursor-not-allowed border-transparent" 
-                          : isExclusive 
-                            ? "border-gray-700 hover:bg-gray-800 text-white" 
-                            : "border-gray-200 hover:bg-gray-100 text-gray-600"
+                          : "border-gray-200 hover:bg-gray-100 text-gray-600"
                         }`}
                     >
                       <ChevronRight size={20} />
@@ -533,13 +472,13 @@ export default function ActivitiesPage() {
                 )}
               </>
             ) : (
-              <div className={`text-center py-20 rounded-2xl border border-dashed ${isExclusive ? "border-gray-800 bg-gray-900/50" : "border-gray-200 bg-gray-50"}`}>
-                <Search size={48} className={`mx-auto mb-4 opacity-20 ${textClass}`} />
-                <h3 className={`text-xl font-bold mb-2 ${textClass}`}>No activities found</h3>
-                <p className={textMutedClass}>Try adjusting your filters or search query.</p>
+              <div className="text-center py-20 rounded-2xl border border-dashed border-gray-200 bg-gray-50">
+                <Search size={48} className="mx-auto mb-4 opacity-20 text-gray-900" />
+                <h3 className="text-xl font-bold mb-2 text-gray-900">No activities found</h3>
+                <p className="text-gray-500">Try adjusting your filters or search query.</p>
                 <button 
                   onClick={() => { setSelectedCategories([]); setMaxPrice(priceSliderMax); setSearchQuery(""); }}
-                  className={`mt-6 px-6 py-2 rounded-lg font-medium text-sm transition-colors ${isExclusive ? "bg-white text-black hover:bg-gray-200" : "bg-black text-white hover:bg-gray-800"}`}
+                  className="mt-6 px-6 py-2 rounded-lg font-medium text-sm transition-colors bg-black text-white hover:bg-gray-800"
                 >
                   Clear all filters
                 </button>

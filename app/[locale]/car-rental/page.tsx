@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { Users, Gauge, Luggage } from "lucide-react";
 import api from "@/lib/api";
-
+import { useTheme } from "@/components/ThemeProvider";
 
 interface ApiCar {
   id: number;
@@ -22,18 +22,16 @@ interface ApiCar {
   images: { url: string; type: 'thumbnail' | 'gallery' }[];
 }
 
-// --- Reusable Icon Component ---
-function InfoIcon({ icon: Icon, text }: { icon: React.ElementType; text: string | number }) {
+function InfoIcon({ icon: Icon, text, colorClass }: { icon: React.ElementType; text: string | number; colorClass?: string }) {
   return (
-    <div className="flex items-center gap-2 text-foreground/80">
-      <Icon className="h-5 w-5 text-primary" />
+    <div className={`flex items-center gap-2 ${colorClass || "text-foreground/80"}`}>
+      <Icon className="h-5 w-5 opacity-70" />
       <span className="text-sm font-medium">{text}</span>
     </div>
   );
 }
 
-// --- CarCard Component ---
-function CarCard({ car }: { car: ApiCar }) {
+function CarCard({ car, isExclusive }: { car: ApiCar; isExclusive: boolean }) {
   const t = useTranslations("carRental");
 
   const formatCurrency = (amount: number) => {
@@ -53,12 +51,16 @@ function CarCard({ car }: { car: ApiCar }) {
     ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/storage/${thumbnail.url}`
     : "/cars/placeholder.jpg";
 
-
   const displayType = car.car_type?.toUpperCase() || "GENERAL";
+
+  const cardBgClass = isExclusive ? "bg-gray-900 border border-gray-800" : "bg-card shadow-md";
+  const textTitleClass = isExclusive ? "text-white" : "text-foreground";
+  const textMutedClass = isExclusive ? "text-gray-400" : "text-foreground/70";
+  const accentColor = isExclusive ? "text-yellow-500" : "text-primary";
 
   return (
     <Link href={`/car-rental/${car.id}`} className="block h-full">
-      <div className="bg-card text-foreground rounded-xl shadow-md overflow-hidden hover:shadow-2xl transition-shadow duration-300 h-full flex flex-col group">
+      <div className={`${cardBgClass} rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 h-full flex flex-col group`}>
         <div className="relative h-56 w-full">
           <Image
             src={imageUrl}
@@ -70,24 +72,24 @@ function CarCard({ car }: { car: ApiCar }) {
         </div>
         <div className="p-5 flex flex-col flex-grow">
           
-          <p className="text-sm font-semibold text-primary">{displayType}</p>
+          <p className={`text-sm font-semibold ${accentColor}`}>{displayType}</p>
           
-          <h3 className="text-2xl font-bold text-foreground mt-1">{carName}</h3>
+          <h3 className={`text-2xl font-bold mt-1 ${textTitleClass}`}>{carName}</h3>
 
-          <div className="flex items-center gap-4 mt-4 text-sm text-foreground/70">
-            <InfoIcon icon={Users} text={`${car.capacity} Seats`} />
-            <InfoIcon icon={Gauge} text={car.transmission} />
-            <InfoIcon icon={Luggage} text={`${car.trunk_size} Bags`} />
+          <div className={`flex items-center gap-4 mt-4 text-sm ${textMutedClass}`}>
+            <InfoIcon icon={Users} text={`${car.capacity} Seats`} colorClass={textMutedClass} />
+            <InfoIcon icon={Gauge} text={car.transmission} colorClass={textMutedClass} />
+            <InfoIcon icon={Luggage} text={`${car.trunk_size} Bags`} colorClass={textMutedClass} />
           </div>
 
-          <p className="text-foreground/70 mt-4 line-clamp-2 flex-grow h-12">
+          <p className={`${textMutedClass} mt-4 line-clamp-2 flex-grow h-12`}>
             {car.description || "No description available."}
           </p>
 
-          <div className="mt-5 pt-4 border-t border-border/50">
-            <p className="text-xl font-extrabold text-foreground">
+          <div className={`mt-5 pt-4 border-t ${isExclusive ? "border-gray-800" : "border-border/50"}`}>
+            <p className={`text-xl font-extrabold ${textTitleClass}`}>
               {formatCurrency(price)}
-              <span className="text-sm font-normal text-foreground/50">
+              <span className={`text-sm font-normal ${textMutedClass}`}>
                 {" "}{t("pricePerDay")}
               </span>
             </p>
@@ -98,14 +100,23 @@ function CarCard({ car }: { car: ApiCar }) {
   );
 }
 
-// --- Main Page Component ---
+
 export default function CarRentalPage() {
+  
+  const { theme, setTheme } = useTheme();
   const t = useTranslations("carRental");
+  const tNav = useTranslations("Navbar"); 
   const locale = useLocale();
 
   const [cars, setCars] = useState<ApiCar[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  
+  const isExclusive = theme === "exclusive";
+  const mainBgClass = isExclusive ? "bg-black" : "bg-background"; 
+  const textClass = isExclusive ? "text-white" : "text-foreground";
+  const textMutedClass = isExclusive ? "text-gray-400" : "text-foreground/60";
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -117,7 +128,6 @@ export default function CarRentalPage() {
         if (response.status !== 200) throw new Error("Failed to fetch car rental data.");
         setCars(response.data);
       } catch (err: unknown) {
-        // Safe error handling
         let errorMessage = "An unknown error occurred.";
         if (err instanceof Error) {
             errorMessage = err.message;
@@ -134,34 +144,59 @@ export default function CarRentalPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <p className="text-xl text-foreground/80">Loading cars...</p>
+      <div className={`flex justify-center items-center min-h-screen ${mainBgClass}`}>
+        <p className={`text-xl ${textMutedClass}`}>Loading cars...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-[50vh]">
+      <div className={`flex justify-center items-center min-h-screen ${mainBgClass}`}>
         <p className="text-xl text-red-500">Error: {error}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-background min-h-screen">
+    
+    <div className={`${mainBgClass} min-h-screen transition-colors duration-300`}>
       <div className="container mx-auto px-4 lg:px-8 py-16">
+        
+        
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-extrabold text-foreground tracking-tight">
+          <h1 className={`text-5xl font-extrabold tracking-tight ${textClass}`}>
             {t("title")}
           </h1>
-          <p className="mt-4 text-lg text-foreground/60 max-w-2xl mx-auto">
+          <p className={`mt-4 text-lg max-w-2xl mx-auto ${textMutedClass}`}>
             {t("subtitle")}
           </p>
+
+          
+          <div className="flex justify-center mt-8">
+            <div className={`flex items-center p-1.5 rounded-full ${isExclusive ? "bg-gray-800" : "bg-gray-100"}`}>
+              <button 
+                onClick={() => setTheme("regular")} 
+                className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${!isExclusive ? "bg-white text-primary shadow-md" : "text-gray-400 hover:text-white"}`}
+              >
+                {tNav("regular", { defaultMessage: "Regular" })}
+              </button>
+              <button 
+                onClick={() => setTheme("exclusive")} 
+                className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${isExclusive ? "bg-yellow-500 text-black shadow-md" : "text-gray-500 hover:text-black"}`}
+              >
+                {tNav("exclusive", { defaultMessage: "Exclusive" })}
+              </button>
+            </div>
+          </div>
+          
+
         </div>
+
+        
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {cars.map((car) => (
-            <CarCard key={car.id} car={car} />
+            <CarCard key={car.id} car={car} isExclusive={isExclusive} />
           ))}
         </div>
       </div>
