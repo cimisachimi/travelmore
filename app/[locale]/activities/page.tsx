@@ -254,7 +254,7 @@ export default function ActivitiesPage() {
                 {/* Search */}
                 <div>
                   <h4 className="font-bold mb-3 flex items-center gap-2 text-gray-900">
-                    <Search size={16} className="text-blue-600" />
+                    <Search size={16} className="text-primary" />
                     Search
                   </h4>
                   <input 
@@ -269,7 +269,7 @@ export default function ActivitiesPage() {
                 {/* Price Filter */}
                 <div>
                   <h4 className="font-bold mb-4 flex items-center gap-2 text-gray-900">
-                    <Tag size={16} className="text-blue-600" />
+                    <Tag size={16} className="text-primary" />
                     {t("filters.price", { defaultMessage: "Price Range" })}
                   </h4>
                   <input
@@ -291,7 +291,7 @@ export default function ActivitiesPage() {
                 {/* Categories */}
                 <div>
                   <h4 className="font-bold mb-3 flex items-center gap-2 text-gray-900">
-                    <SlidersHorizontal size={16} className="text-blue-600" />
+                    <SlidersHorizontal size={16} className="text-primary" />
                     {t("filters.categories", { defaultMessage: "Categories" })}
                   </h4>
                   <div className="space-y-2.5 max-h-60 overflow-y-auto custom-scrollbar">
@@ -377,7 +377,7 @@ export default function ActivitiesPage() {
 
                         {/* Content */}
                         <div className="p-5 flex flex-col flex-grow">
-                          <h2 className="text-lg font-bold mb-2 line-clamp-2 leading-tight text-gray-900 group-hover:text-blue-600 transition-colors">
+                          <h2 className="text-lg font-bold mb-2 line-clamp-2 leading-tight text-gray-900 group-hover:text-primary transition-colors">
                             {act.name}
                           </h2>
 
@@ -385,13 +385,13 @@ export default function ActivitiesPage() {
                           <div className="flex items-center gap-4 text-xs mb-4">
                             {act.duration && (
                               <div className="flex items-center gap-1.5 text-gray-500">
-                                <Clock size={14} className="text-blue-600" />
+                                <Clock size={14} className="text-primary" />
                                 <span>{act.duration}</span>
                               </div>
                             )}
                             {act.location && (
                               <div className="flex items-center gap-1.5 text-gray-500">
-                                <MapPin size={14} className="text-blue-600" />
+                                <MapPin size={14} className="text-primary" />
                                 <span className="truncate max-w-[100px]">{act.location}</span>
                               </div>
                             )}
