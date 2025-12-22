@@ -1,3 +1,4 @@
+// app/[locale]/layout.tsx
 import "./globals.css";
 import React from "react";
 import { Poppins, Montserrat, Lora } from "next/font/google";
