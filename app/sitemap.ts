@@ -1,13 +1,15 @@
-// app/sitemap.ts
 import { MetadataRoute } from 'next';
 
+// Generic item type covering packages, activities, and cars
 type Item = {
   id: number;
-  name: string;
+  name?: string; // For packages & activities
+  brand?: string; // For cars
+  car_model?: string; // For cars
   updated_at?: string;
 };
 
-// Helper slug yang konsisten
+// Helper slug generator
 function createSlug(name: string) {
   return name
     .toLowerCase()
@@ -19,30 +21,40 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://travelmore.travel';
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  // 1. Ambil Data Packages
+  // 1. Fetch Packages (Asumsi: API Packages tanpa /public)
   let allPackages: Item[] = [];
   try {
-    const res = await fetch(`${apiUrl}/public/packages?per_page=1000`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${apiUrl}/packages?per_page=1000`, { next: { revalidate: 3600 } });
     const json = await res.json();
     allPackages = json.data || [];
   } catch (error) {
     console.error("Sitemap Packages Error:", error);
   }
 
-  // 2. ✅ TAMBAHAN: Ambil Data Activities
+  // 2. Fetch Activities (Asumsi: API Activities tanpa /public, sesuai fix sebelumnya)
   let allActivities: Item[] = [];
   try {
-    const res = await fetch(`${apiUrl}/public/activities?per_page=1000`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${apiUrl}/activities?per_page=1000`, { next: { revalidate: 3600 } });
     const json = await res.json();
     allActivities = json.data || [];
   } catch (error) {
     console.error("Sitemap Activities Error:", error);
   }
 
+  // 3. ✅ Fetch Cars (FIX: Menggunakan /public sesuai konfirmasi API Car Rental)
+  let allCars: Item[] = [];
+  try {
+    const res = await fetch(`${apiUrl}/public/car-rentals?per_page=1000`, { next: { revalidate: 3600 } });
+    const json = await res.json();
+    allCars = json.data || [];
+  } catch (error) {
+    console.error("Sitemap Cars Error:", error);
+  }
+
   const locales = ['en', 'id'];
 
-  // 3. Static Routes
-  const staticPages = ['', '/packages', '/activities', '/blog', '/about', '/contact'];
+  // 4. Static Routes
+  const staticPages = ['', '/packages', '/activities', '/car-rental', '/blog', '/about', '/contact'];
   const staticRoutes = staticPages.flatMap((route) =>
     locales.map((locale) => ({
       url: `${baseUrl}/${locale}${route}`,
@@ -52,25 +64,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   );
 
-  // 4. Package Routes (Dynamic)
+  // 5. Package Routes
   const packageRoutes = allPackages.flatMap((pkg) =>
     locales.map((locale) => ({
-      url: `${baseUrl}/${locale}/packages/${pkg.id}-${createSlug(pkg.name)}`,
+      url: `${baseUrl}/${locale}/packages/${pkg.id}-${createSlug(pkg.name || "")}`,
       lastModified: pkg.updated_at ? new Date(pkg.updated_at) : new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     }))
   );
 
-  // 5. ✅ TAMBAHAN: Activity Routes (Dynamic)
+  // 6. Activity Routes
   const activityRoutes = allActivities.flatMap((act) =>
     locales.map((locale) => ({
-      url: `${baseUrl}/${locale}/activities/${act.id}-${createSlug(act.name)}`,
+      url: `${baseUrl}/${locale}/activities/${act.id}-${createSlug(act.name || "")}`,
       lastModified: act.updated_at ? new Date(act.updated_at) : new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     }))
   );
 
-  return [...staticRoutes, ...packageRoutes, ...activityRoutes];
+  // 7. ✅ Car Routes
+  const carRoutes = allCars.flatMap((car) =>
+    locales.map((locale) => {
+      // Create slug from Brand + Model (e.g., "Toyota Avanza")
+      const carName = `${car.brand} ${car.car_model}`; 
+      const slug = createSlug(carName);
+      
+      return {
+        url: `${baseUrl}/${locale}/car-rental/${car.id}-${slug}`,
+        lastModified: car.updated_at ? new Date(car.updated_at) : new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.9,
+      };
+    })
+  );
+
+  return [...staticRoutes, ...packageRoutes, ...activityRoutes, ...carRoutes];
 }

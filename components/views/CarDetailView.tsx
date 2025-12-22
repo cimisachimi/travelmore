@@ -1,50 +1,27 @@
-// app/[locale]/car-rental/[id]/page.tsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { DayPicker, DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/components/ThemeProvider";
 import { toast } from "sonner";
 import "@/styles/calendar.css";
-import api from "@/lib/api";
+import api from "@/lib/api"; 
 import Link from "next/link";
 import { AxiosError } from "axios";
 import { 
-  Car, Fuel, Luggage, User as UserIcon, Settings, 
+  Car as CarIcon, Fuel, Luggage, User as UserIcon, Settings, 
   Clock, TicketPercent, Loader2, CheckCircle2, AlertCircle, MapPin,
-  ArrowLeft // 1. IMPORT ICON PANAH KIRI
+  ArrowLeft 
 } from 'lucide-react';
+import { Car } from "@/types/car";
 
-// --- Interfaces ---
-interface ApiCarImage {
-  url: string;
-  type: "thumbnail" | "gallery";
-}
-
-type AvailabilityStatus = "available" | "booked" | "maintenance";
-interface ApiCarAvailabilityMap {
-  [date: string]: AvailabilityStatus;
-}
-
-interface ApiCar {
-  id: number;
-  car_model: string;
-  brand: string;
-  category: "regular" | "exclusive";
-  car_type: string | null;
-  transmission: string | null;
-  fuel_type: string | null;
-  capacity: number | null;
-  trunk_size: number | null;
-  description: string | null;
-  features: string[] | null;
-  price_per_day: string;
-  images: ApiCarImage[];
+interface CarDetailViewProps {
+  initialData: Car;
 }
 
 interface ApiCheckPriceResponse {
@@ -53,23 +30,30 @@ interface ApiCheckPriceResponse {
   message?: string;
 }
 
-export default function CarDetailPage() {
+type AvailabilityStatus = "available" | "booked" | "maintenance";
+interface ApiCarAvailabilityMap {
+  [date: string]: AvailabilityStatus;
+}
+
+export default function CarDetailView({ initialData }: CarDetailViewProps) {
   const t = useTranslations("carDetail");
-  const params = useParams();
-  const locale = useLocale();
   const { user } = useAuth();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   
-  const id = Array.isArray(params?.id) ? params.id[0] : params?.id ?? "";
-
-  const [car, setCar] = useState<ApiCar | null>(null);
+  const [car] = useState<Car>(initialData);
   const [availabilities, setAvailabilities] = useState<ApiCarAvailabilityMap>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedRange, setSelectedRange] = useState<DateRange | undefined>();
-  const [activeImage, setActiveImage] = useState<string>("");
+  
+  // ✅ FIX UTAMA: Inisialisasi Active Image LANGSUNG di sini
+  // Jangan gunakan string kosong "" sebagai default, tapi hitung langsung dari props
+  const [activeImage, setActiveImage] = useState<string>(() => {
+    const firstImage = initialData.images?.find(img => img.type === 'thumbnail')?.url || initialData.images?.[0]?.url;
+    return firstImage 
+        ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/storage/${firstImage}`
+        : "/cars/placeholder.jpg";
+  });
 
+  const [selectedRange, setSelectedRange] = useState<DateRange | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
@@ -96,11 +80,9 @@ export default function CarDetailPage() {
   const inputBgClass = isExclusive ? "bg-gray-950 border-gray-800 text-white" : "bg-background border-gray-300";
   const buttonClass = isExclusive ? "bg-yellow-500 text-black hover:bg-yellow-400" : "bg-primary text-primary-foreground hover:bg-primary/90";
 
-  // 2. LOGIKA WARNA KALENDER
-  // Kita override variabel CSS rdp (React Day Picker) sesuai tema
   const calendarStyle = {
-    "--rdp-accent-color": isExclusive ? "#eab308" : "var(--primary, #000000)", // Kuning jika exclusive, atau gunakan variable primary
-    "--rdp-background-color": isExclusive ? "#1f2937" : "#e5e7eb", // Warna background range middle
+    "--rdp-accent-color": isExclusive ? "#eab308" : "var(--primary, #000000)",
+    "--rdp-background-color": isExclusive ? "#1f2937" : "#e5e7eb",
   } as React.CSSProperties;
 
   const formatDateLocal = (date: Date) => {
@@ -110,64 +92,45 @@ export default function CarDetailPage() {
     return `${year}-${month}-${day}`;
   };
 
-  const fetchAvailability = async () => {
-    if (!id) return;
-    try {
-      const availabilityResponse = await api.get(
-        `/public/car-rentals/${id}/availability`
-      );
-      setAvailabilities(availabilityResponse.data);
-    } catch (err) {
-      console.error("Failed to refetch availability:", err);
-    }
-  };
-
+  // Initial Setup (Fetch Availability Only)
   useEffect(() => {
-    if (!id) return;
-    const fetchCarAndAvailability = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const [carResponse, availabilityResponse] = await Promise.all([
-          api.get(`/public/car-rentals/${id}`, { params: { locale } }),
-          api.get(`/public/car-rentals/${id}/availability`),
-        ]);
-        const data: ApiCar = carResponse.data;
-        setCar(data);
-        
-        setTheme(data.category || "regular");
-
-        setAvailabilities(availabilityResponse.data);
-        const firstImage = data.images?.[0]?.url
-          ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/storage/${data.images[0].url}`
-          : "/cars/placeholder.jpg";
-        setActiveImage(firstImage);
-      } catch (err: unknown) {
-        const error = err as AxiosError<{ message?: string }>;
-        if (error.response && error.response.status === 404) {
-          setError(t("notFound"));
-        } else {
-          setError(error.message || "An error occurred.");
+    if (car) {
+      setTheme(car.category || "regular");
+      
+      // Fetch Availability
+      const fetchAvailability = async () => {
+        try {
+          // ✅ FIX: Konsisten menggunakan /public
+          const availabilityResponse = await api.get(`/public/car-rentals/${car.id}/availability`);
+          setAvailabilities(availabilityResponse.data);
+        } catch (err) {
+            console.error("Failed to fetch availability, trying fallback...");
+            try {
+                 const fallback = await api.get(`/car-rentals/${car.id}/availability`);
+                 setAvailabilities(fallback.data);
+            } catch (fallbackErr) {
+                 // Silent fail agar UI tidak rusak total
+                 console.warn("Availability fetch failed completely. Calendar will show all days as available.");
+            }
         }
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCarAndAvailability();
-  }, [id, locale, t, setTheme]);
+      };
+      fetchAvailability();
+    }
+  }, [car, setTheme]);
 
+  // Reset theme on unmount
   useEffect(() => {
     return () => {
       setTheme("regular");
     };
   }, [setTheme]);
 
+  // Autofill User Info
   useEffect(() => {
     if (user) {
       setName(user.name || "");
       setEmail(user.email || "");
-      // @ts-expect-error: phone exists on user object
+      // @ts-expect-error: phone/phone_number field check
       setPhone(user.phone || user.phone_number || "");
     }
   }, [user]);
@@ -198,7 +161,6 @@ export default function CarDetailPage() {
     }).format(amount);
 
   // --- HANDLERS ---
-
   const handleApplyCode = async () => {
     if (!discountCode.trim()) return;
     if (!selectedRange?.from || !selectedRange?.to) {
@@ -213,7 +175,7 @@ export default function CarDetailPage() {
     try {
       const response = await api.post<ApiCheckPriceResponse>('/booking/check-price', {
         type: 'car_rental',
-        id: car?.id,
+        id: car.id,
         discount_code: discountCode,
         start_date: formatDateLocal(selectedRange.from),
         end_date: formatDateLocal(selectedRange.to),
@@ -240,6 +202,7 @@ export default function CarDetailPage() {
     }
   };
 
+  // Debounce Discount Check
   useEffect(() => {
     if (appliedDiscount > 0 && discountCode && selectedRange?.from && selectedRange?.to) {
       const timer = setTimeout(() => {
@@ -252,7 +215,7 @@ export default function CarDetailPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!car || !selectedRange?.from || !selectedRange?.to) {
+    if (!selectedRange?.from || !selectedRange?.to) {
       toast.error("Please select a valid start and end date.");
       return;
     }
@@ -280,12 +243,11 @@ export default function CarDetailPage() {
       if (response.status === 201) {
         toast.success(`Booking created! Please complete payment in your profile.`);
         setBookingSuccess(true);
-        fetchAvailability();
       }
     } catch (err: unknown) {
       let message = "Booking failed. Please try again.";
       if (typeof err === "object" && err !== null && "response" in err) {
-        // @ts-expect-error: err may have response property
+        // @ts-expect-error: handling axios error structure loosely
         message = err.response?.data?.message || message;
       }
       toast.error(message);
@@ -321,9 +283,7 @@ export default function CarDetailPage() {
     return [{ before: today }, ...bookedDays, ...maintenanceDays];
   }, [bookedDays, maintenanceDays, today]);
 
-  if (loading) return <div className={`p-10 text-center min-h-screen ${mainBgClass} ${textMutedClass}`}>Loading...</div>;
-  if (error || !car) return <div className={`p-10 text-center min-h-screen ${mainBgClass} text-red-500`}>{error || t("notFound")}</div>;
-
+  // View Helpers
   const carName = `${car.brand} ${car.car_model}`;
   const price = parseFloat(car.price_per_day);
   const gallery = car.images?.map((img) => ({
@@ -334,7 +294,6 @@ export default function CarDetailPage() {
     <div className={`${mainBgClass} ${textClass} min-h-screen transition-colors duration-300`}>
       <div className="container mx-auto px-4 py-8">
         
-        {/* 3. TOMBOL BACK KE HALAMAN SEBELUMNYA */}
         <Link 
             href="/car-rental" 
             className={`inline-flex items-center gap-2 mb-6 text-sm font-medium hover:underline transition-all ${textMutedClass} hover:${isExclusive ? "text-yellow-500" : "text-primary"}`}
@@ -348,14 +307,19 @@ export default function CarDetailPage() {
           {/* --- LEFT: Gallery + Info --- */}
           <div>
             <div className={`relative w-full h-80 rounded-lg overflow-hidden shadow-lg mb-4 ${isExclusive ? "bg-gray-800 border border-gray-700" : "bg-muted"}`}>
-              <Image
-                src={activeImage}
-                alt={carName}
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 1023px) 100vw, 50vw"
-              />
+              {/* ✅ FIX: Pastikan activeImage ada isinya sebelum render Image */}
+              {activeImage ? (
+                  <Image
+                    src={activeImage}
+                    alt={carName}
+                    fill
+                    className="object-cover"
+                    priority
+                    sizes="(max-width: 1023px) 100vw, 50vw"
+                  />
+              ) : (
+                  <div className="flex items-center justify-center h-full text-gray-500">No Image Available</div>
+              )}
             </div>
             {gallery.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2">
@@ -377,7 +341,7 @@ export default function CarDetailPage() {
             <div className={`mt-8 border-t pt-6 ${isExclusive ? "border-gray-800" : "border-border"}`}>
               <h3 className="text-xl font-bold mb-4">{t('details.title')}</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-                {car.car_type && <div className="flex items-center gap-2"><Car size={16} className={accentColorClass}/><span className={textMutedClass}>{t('details.type')}:</span><span className="font-semibold">{car.car_type}</span></div>}
+                {car.car_type && <div className="flex items-center gap-2"><CarIcon size={16} className={accentColorClass}/><span className={textMutedClass}>{t('details.type')}:</span><span className="font-semibold">{car.car_type}</span></div>}
                 {car.transmission && <div className="flex items-center gap-2"><Settings size={16} className={accentColorClass}/><span className={textMutedClass}>{t('details.transmission')}:</span><span className="font-semibold">{car.transmission}</span></div>}
                 {car.fuel_type && <div className="flex items-center gap-2"><Fuel size={16} className={accentColorClass}/><span className={textMutedClass}>{t('details.fuel')}:</span><span className="font-semibold">{car.fuel_type}</span></div>}
                 {car.capacity && <div className="flex items-center gap-2"><UserIcon size={16} className={accentColorClass}/><span className={textMutedClass}>{t('details.capacity')}:</span><span className="font-semibold">{car.capacity} {t('details.seats')}</span></div>}
@@ -403,7 +367,6 @@ export default function CarDetailPage() {
               <span className={textMutedClass}> /day</span>
             </div>
 
-            {/* 4. PENERAPAN STYLE KALENDER */}
             <div className="calendar-container mb-6 flex justify-center" style={calendarStyle}>
               <DayPicker
                 mode="range"
@@ -412,7 +375,6 @@ export default function CarDetailPage() {
                 disabled={disabledDays}
                 modifiers={{ available: availableDays, booked: bookedDays, maintenance: maintenanceDays }}
                 modifiersClassNames={{ available: "rdp-day_available", booked: "rdp-day_booked", maintenance: "rdp-day_maintenance" }}
-                // Tambahan: Force styling menggunakan Tailwind classes jika variabel CSS tidak cukup
                 classNames={{
                     day_selected: isExclusive 
                         ? "!bg-yellow-500 !text-black hover:!bg-yellow-400" 
@@ -436,7 +398,6 @@ export default function CarDetailPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Contact Info */}
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 gap-3">
                         <input type="text" value={name} disabled className={`w-full border rounded-lg px-4 py-2 opacity-70 cursor-not-allowed ${inputBgClass}`} />

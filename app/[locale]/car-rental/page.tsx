@@ -1,4 +1,3 @@
-
 // app/[locale]/car-rental/page.tsx
 "use client";
 
@@ -14,7 +13,7 @@ interface ApiCar {
   id: number;
   car_model: string;
   brand: string;
-  category: "regular" | "exclusive"; // Added category field from API
+  category: "regular" | "exclusive";
   description: string | null;
   price_per_day: string;
   car_type: string | null; 
@@ -23,6 +22,15 @@ interface ApiCar {
   trunk_size: number;
   features: string[];
   images: { url: string; type: 'thumbnail' | 'gallery' }[];
+}
+
+// --- Helper Slug Function ---
+function createSlug(brand: string, model: string) {
+  const fullName = `${brand} ${model}`;
+  return fullName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with -
+    .replace(/(^-|-$)+/g, '');   // Remove leading/trailing -
 }
 
 // --- Reusable Icon Component ---
@@ -64,8 +72,12 @@ function CarCard({ car, isExclusive }: { car: ApiCar; isExclusive: boolean }) {
   const textMutedClass = isExclusive ? "text-gray-400" : "text-foreground/70";
   const accentColor = isExclusive ? "text-yellow-500" : "text-primary";
 
+  // ✅ UPDATED LINK WITH SLUG
+  const slug = createSlug(car.brand, car.car_model);
+  const href = `/car-rental/${car.id}-${slug}`;
+
   return (
-    <Link href={`/car-rental/${car.id}`} className="block h-full">
+    <Link href={href} className="block h-full">
       <div className={`${cardBgClass} rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 h-full flex flex-col group`}>
         <div className="relative h-56 w-full">
           <Image
@@ -133,14 +145,20 @@ export default function CarRentalPage() {
     const fetchCars = async () => {
       setLoading(true);
       try {
+        // ✅ FIX: Menambahkan '/public' karena backend mengharuskannya
+        // URL Akhir: https://api.travelmore.travel/api/public/car-rentals?locale=en
         const response = await api.get("/public/car-rentals", {
           params: { locale }
         });
+        
         if (response.status !== 200) throw new Error("Failed to fetch car rental data.");
-        setCars(response.data);
+        setCars(response.data.data || response.data); // Handle jika response dibungkus 'data'
       } catch (err: unknown) {
         let errorMessage = "An unknown error occurred.";
         if (err instanceof Error) errorMessage = err.message;
+        
+        // Debugging di console browser
+        console.error("Fetch Cars Error:", err);
         setError(errorMessage);
       } finally {
         setLoading(false);
@@ -161,6 +179,7 @@ export default function CarRentalPage() {
     return (
       <div className={`flex justify-center items-center min-h-screen ${mainBgClass}`}>
         <p className="text-xl text-red-500">Error: {error}</p>
+        <p className="text-sm text-gray-500 mt-2">Cek Console Log untuk detail.</p>
       </div>
     );
   }
