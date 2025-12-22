@@ -13,7 +13,7 @@ import ClientBreadcrumbsWrapper from "@/components/ui/ClientBreadcrumbsWrapper";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { routing } from "@/i18n/routing";
 
-// ✅ 1. Import Komponen Floating Contact
+// Import Komponen Floating Contact
 import FloatingContact from "@/components/FloatingContact"; 
 
 // --- Font Configurations ---
@@ -38,9 +38,25 @@ const fontSerif = Lora({
   display: "swap",
 });
 
+// --- UPDATED METADATA ---
 export const metadata = {
-  title: "TravelMore - Explore Yogyakarta",
+  // PENTING: URL dasar agar gambar SEO (OpenGraph) terbaca
+  metadataBase: new URL('https://travelmore-topaz.vercel.app'), 
+  
+  title: {
+    default: "TravelMore - Explore Yogyakarta",
+    template: "%s | TravelMore", // Judul halaman lain otomatis jadi "Judul Paket | TravelMore"
+  },
   description: "Plan your personalized trip to Yogyakarta with ease.",
+  
+  openGraph: {
+    title: 'TravelMore - Explore Yogyakarta',
+    description: 'Plan your personalized trip to Yogyakarta with ease.',
+    url: 'https://travelmore-topaz.vercel.app',
+    siteName: 'TravelMore',
+    locale: 'en_US',
+    type: 'website',
+  },
 };
 
 export default async function RootLayout({
@@ -70,7 +86,6 @@ export default async function RootLayout({
       <body className="bg-background text-foreground font-sans antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <AuthProvider>
-            {/* ✅ Fixed: Removed unsupported props (attribute, defaultTheme, etc.) */}
             <ThemeProvider>
               <div className="flex flex-col min-h-screen">
                 <Navbar />
@@ -85,7 +100,7 @@ export default async function RootLayout({
                 <Footer />
               </div>
               
-              {/* ✅ 2. Pasang Floating Contact di sini agar muncul di semua halaman */}
+              {/* Floating Contact */}
               <FloatingContact />
 
               {/* Toast Notification */}
