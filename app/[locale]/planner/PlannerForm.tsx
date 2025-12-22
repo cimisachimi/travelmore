@@ -16,6 +16,7 @@ import { AxiosError } from "axios";
 
 // --- Tipe Data ---
 interface IFormData {
+  id?: number | null; // ✅ Add this to track the record
   type: "personal" | "company" | "";
   tripType: "domestic" | "foreign" | "";
   fullName: string;
@@ -370,6 +371,7 @@ export default function PlannerForm() {
   const [isSaving, setIsSaving] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
   const [formData, setFormData] = useState<IFormData>({
+    id: null, // ✅ Initialize as null
     type: "",
     tripType: "",
     fullName: "",
@@ -407,6 +409,7 @@ export default function PlannerForm() {
   });
 
   const totalSteps = 10;
+  
 
   // ✅ 3. Logic Baru untuk Menangkap Semua Data URL (Immediate Load)
   useEffect(() => {
@@ -718,26 +721,28 @@ export default function PlannerForm() {
   const handleBack = () => setStep((prev) => Math.max(1, prev - 1));
 
   const saveData = useCallback(async () => {
-    if (!formData.type) return; 
-    setIsSaving(true);
-    try {
-      const snakeCaseData: { [key: string]: unknown } = {};
-      for (const key in formData) {
-        const snakeKey = key.replace(
-          /[A-Z]/g,
-          (letter) => `_${letter.toLowerCase()}`
-        );
-        snakeCaseData[snakeKey] = formData[key as keyof IFormData];
-      }
-      await api.post("/trip-planner", snakeCaseData);
-      console.log("Data saved:", snakeCaseData); 
-    } catch (error) {
-      console.error("Failed to auto-save trip plan:", error);
-      toast.error("Failed to save progress."); 
-    } finally {
-      setIsSaving(false);
+  if (!formData.type) return; 
+  setIsSaving(true);
+  try {
+    const snakeCaseData: { [key: string]: unknown } = {};
+    for (const key in formData) {
+      const snakeKey = key.replace(/[A-Z]/g, (l) => `_${l.toLowerCase()}`);
+      snakeCaseData[snakeKey] = formData[key as keyof IFormData];
     }
-  }, [formData]);
+
+    // ✅ Capture the response to get the ID
+    const response = await api.post("/trip-planner", snakeCaseData);
+    
+    // ✅ Store the ID so next saves update this row
+    if (response.data && response.data.id) {
+      setFormData(prev => ({ ...prev, id: response.data.id }));
+    }
+  } catch (error) {
+    console.error("Failed to save progress:", error);
+  } finally {
+    setIsSaving(false);
+  }
+}, [formData]);
 
   const handleNext = async () => {
     await saveData(); 
