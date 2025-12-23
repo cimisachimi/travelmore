@@ -1,9 +1,10 @@
+// app/sitemap.ts
 import { MetadataRoute } from 'next';
 
-// Generic item type covering packages, activities, and cars
+// Generic item type covering packages, activities, cars, AND Open Trips
 type Item = {
   id: number;
-  name?: string; // For packages & activities
+  name?: string; // For packages, activities, open trips
   brand?: string; // For cars
   car_model?: string; // For cars
   updated_at?: string;
@@ -19,9 +20,9 @@ function createSlug(name: string) {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://travelmore.travel';
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, ''); // Safety: remove trailing slash
 
-  // 1. Fetch Packages (Asumsi: API Packages tanpa /public)
+  // 1. Fetch Packages
   let allPackages: Item[] = [];
   try {
     const res = await fetch(`${apiUrl}/packages?per_page=1000`, { next: { revalidate: 3600 } });
@@ -31,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("Sitemap Packages Error:", error);
   }
 
-  // 2. Fetch Activities (Asumsi: API Activities tanpa /public, sesuai fix sebelumnya)
+  // 2. Fetch Activities
   let allActivities: Item[] = [];
   try {
     const res = await fetch(`${apiUrl}/activities?per_page=1000`, { next: { revalidate: 3600 } });
@@ -41,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("Sitemap Activities Error:", error);
   }
 
-  // 3. ✅ Fetch Cars (FIX: Menggunakan /public sesuai konfirmasi API Car Rental)
+  // 3. Fetch Cars (Using /public)
   let allCars: Item[] = [];
   try {
     const res = await fetch(`${apiUrl}/public/car-rentals?per_page=1000`, { next: { revalidate: 3600 } });
@@ -51,10 +52,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("Sitemap Cars Error:", error);
   }
 
+  // 4. ✅ Fetch Open Trips (FIX: Tanpa /public)
+  let allOpenTrips: Item[] = [];
+  try {
+    const res = await fetch(`${apiUrl}/open-trips?per_page=1000`, { next: { revalidate: 3600 } });
+    const json = await res.json();
+    allOpenTrips = json.data || [];
+  } catch (error) {
+    console.error("Sitemap Open Trips Error:", error);
+  }
+
   const locales = ['en', 'id'];
 
-  // 4. Static Routes
-  const staticPages = ['', '/packages', '/activities', '/car-rental', '/blog', '/about', '/contact'];
+  // 5. Static Routes
+  const staticPages = ['', '/packages', '/activities', '/car-rental', '/open-trip', '/blog', '/about', '/contact'];
   const staticRoutes = staticPages.flatMap((route) =>
     locales.map((locale) => ({
       url: `${baseUrl}/${locale}${route}`,
@@ -64,7 +75,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   );
 
-  // 5. Package Routes
+  // 6. Package Routes
   const packageRoutes = allPackages.flatMap((pkg) =>
     locales.map((locale) => ({
       url: `${baseUrl}/${locale}/packages/${pkg.id}-${createSlug(pkg.name || "")}`,
@@ -74,7 +85,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   );
 
-  // 6. Activity Routes
+  // 7. Activity Routes
   const activityRoutes = allActivities.flatMap((act) =>
     locales.map((locale) => ({
       url: `${baseUrl}/${locale}/activities/${act.id}-${createSlug(act.name || "")}`,
@@ -84,10 +95,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   );
 
-  // 7. ✅ Car Routes
+  // 8. Car Routes
   const carRoutes = allCars.flatMap((car) =>
     locales.map((locale) => {
-      // Create slug from Brand + Model (e.g., "Toyota Avanza")
       const carName = `${car.brand} ${car.car_model}`; 
       const slug = createSlug(carName);
       
@@ -100,5 +110,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
   );
 
-  return [...staticRoutes, ...packageRoutes, ...activityRoutes, ...carRoutes];
+  // 9. Open Trip Routes
+  const openTripRoutes = allOpenTrips.flatMap((trip) =>
+    locales.map((locale) => ({
+      url: `${baseUrl}/${locale}/open-trip/${trip.id}-${createSlug(trip.name || "")}`,
+      lastModified: trip.updated_at ? new Date(trip.updated_at) : new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.9,
+    }))
+  );
+
+  return [...staticRoutes, ...packageRoutes, ...activityRoutes, ...carRoutes, ...openTripRoutes];
 }
