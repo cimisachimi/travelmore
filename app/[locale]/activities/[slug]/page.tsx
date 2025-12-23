@@ -1,3 +1,4 @@
+// app/[locale]/activities/[slug]/page.tsx
 import { Metadata, ResolvingMetadata } from "next";
 import ActivityDetailView from "@/components/views/ActivityDetailView";
 import { notFound } from "next/navigation";

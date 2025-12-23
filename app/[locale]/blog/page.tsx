@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl"; 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
+import { Calendar, User, ArrowRight } from "lucide-react";
 
 interface Blog {
   id: number;
@@ -14,8 +15,23 @@ interface Blog {
   excerpt: string;
   published_at: string;
   author: string;
-  images: string[];
+  images: string[]; 
 }
+
+function encryptId(n: number) {
+    const salt = 54321; 
+    const val = (n * salt) + 99999; 
+    return val.toString(36).toUpperCase(); 
+}
+
+const getImageUrl = (path: string | null | undefined) => {
+  if (!path) return "/placeholder.jpg";
+  if (path.startsWith("http")) return path;
+  if (path.startsWith("/")) return path;
+  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, "");
+  const cleanPath = path.replace(/^\//, "");
+  return `${baseUrl}/storage/${cleanPath}`;
+};
 
 export default function BlogSection() {
   const t = useTranslations("blogSection");
@@ -28,111 +44,102 @@ export default function BlogSection() {
     const fetchBlogs = async () => {
       try {
         setLoading(true);
-        
-       
-        const response = await api.get("/public/posts?limit=3", {
-          headers: {
-            "Accept-Language": locale 
-          }
+        const response = await api.get("/public/posts?limit=9", { 
+          headers: { "Accept-Language": locale }
         });
-        
-        setBlogs(response.data.data);
+        setBlogs(response.data.data || []);
       } catch (error) {
         console.error("Failed to fetch blogs:", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchBlogs();
   }, [locale]); 
 
   return (
-    <section className="bg-card py-20">
+    // ✅ PERUBAHAN: Background diganti menjadi bg-white secara permanen
+    <section className="bg-white min-h-screen py-20 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6">
       
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground">
-            {t("title")}
+          <span className="text-primary font-bold tracking-wider uppercase text-xs mb-2 block">Our Blog</span>
+          <h2 className="text-4xl font-black text-gray-900">
+            {t("title", { defaultMessage: "Latest Stories" })}
           </h2>
-          <p className="text-foreground/80 mt-3 max-w-2xl mx-auto">
-            {t("subtitle")}
+          <p className="text-gray-600 mt-3 max-w-2xl mx-auto">
+            {t("subtitle", { defaultMessage: "Updates, tips, and inspiration for your next journey." })}
           </p>
         </div>
 
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {loading ? (
             Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="bg-background rounded-3xl shadow-md flex flex-col overflow-hidden border border-border">
-                <div className="relative h-60 w-full bg-foreground/10 animate-pulse"></div>
-                <div className="p-6">
-                  <div className="h-4 bg-foreground/10 rounded w-1/4"></div>
-                  <div className="h-6 bg-foreground/10 rounded w-3/4 mt-3"></div>
-                  <div className="h-4 bg-foreground/10 rounded w-full mt-4"></div>
+              // ✅ Skeleton disesuaikan untuk bg putih
+              <div key={i} className="bg-gray-50 rounded-3xl border border-gray-100 flex flex-col overflow-hidden">
+                <div className="h-60 w-full bg-gray-200 animate-pulse"></div>
+                <div className="p-6 space-y-3">
+                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                  <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
                 </div>
               </div>
             ))
           ) : (
-            blogs.map((blog) => (
-              <Link
-                key={blog.id}
-                href={`/blog/${blog.slug}`}
-                className="bg-background rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col overflow-hidden group border border-border"
-              >
-                <div className="relative h-60 w-full overflow-hidden">
-                  {blog.images.length > 0 ? (
-                    <Image
-                      src={blog.images[0]}
-                      alt={blog.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-foreground/10 flex items-center justify-center text-foreground/50">
-                      No Image
+            blogs.map((blog) => {
+              const cleanSlug = blog.slug || blog.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+              const uniqueCode = encryptId(blog.id);
+              const href = `/blog/${cleanSlug}-${uniqueCode}`;
+              const imageUrl = getImageUrl(blog.images?.[0]);
+
+              return (
+                <Link
+                  key={blog.id}
+                  href={href}
+                  // ✅ PERUBAHAN: Card menggunakan bg-white dengan border halus & shadow agar kontras
+                  className="bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col overflow-hidden group border border-gray-100 h-full"
+                >
+                  <div className="relative h-60 w-full overflow-hidden">
+                     <Image
+                        src={imageUrl}
+                        alt={blog.title}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        unoptimized={imageUrl.startsWith('http')}
+                      />
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
+                  </div>
+
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
+                        <span className="flex items-center gap-1">
+                            <Calendar size={12} />
+                            {new Date(blog.published_at).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })}
+                        </span>
+                        {blog.author && (
+                             <span className="flex items-center gap-1">
+                                <User size={12} /> {blog.author}
+                             </span>
+                        )}
                     </div>
-                  )}
-                </div>
 
-                <div className="p-6 flex flex-col flex-1">
-                  <span className="text-sm text-foreground/60">
+                    {/* ✅ Teks dipaksa tetap gelap agar terbaca jelas di bg putih */}
+                    <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
+                      {blog.title}
+                    </h3>
                     
-                    {new Date(blog.published_at).toLocaleDateString(locale, {
-                      year: 'numeric', month: 'long', day: 'numeric'
-                    })}
-                  </span>
-                  <h3 className="text-xl font-semibold mt-2 text-foreground group-hover:text-primary transition-colors">
-                    {blog.title}
-                  </h3>
-                  <p className="text-foreground/80 mt-3 flex-1">
-                    {blog.excerpt}
-                  </p>
-                  <span className="mt-4 text-sm font-medium text-foreground">
-                    {blog.author}
-                  </span>
-                </div>
-              </Link>
-            ))
-          )}
-        </div>
+                    <p className="text-gray-600 line-clamp-3 mb-6 flex-1 text-sm leading-relaxed">
+                      {blog.excerpt}
+                    </p>
 
-        {/* Show More Button */}
-        <div className="mt-12 flex justify-center">
-          <Link
-            href="/blog"
-            className="inline-flex items-center px-8 py-3 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary hover:text-black transition-colors"
-          >
-            {t("button")}
-            <svg
-              className="ml-2 w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </Link>
+                    <span className="inline-flex items-center text-sm font-bold text-primary group-hover:gap-2 transition-all">
+                      Read More <ArrowRight size={16} className="ml-1" />
+                    </span>
+                  </div>
+                </Link>
+              );
+            })
+          )}
         </div>
       </div>
     </section>
