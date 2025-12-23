@@ -434,7 +434,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
                 type="button"
                 onClick={handleApplyCode}
                 disabled={!discountCode.trim() || isCheckingCode}
-                className="bg-primary hover:bg-primary/90 text-black font-semibold py-2 px-4 rounded-md min-w-[80px] flex justify-center items-center"
+                className="bg-primary hover:bg-primary/90 text-black font-semibold py-2 px-4 rounded-md min-w-20 flex justify-center items-center"
               >
                 {isCheckingCode ? <Loader2 size={16} className="animate-spin" /> : "Apply"}
               </button>

@@ -1,4 +1,3 @@
-// components/views/PackageDetailView.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -16,7 +15,11 @@ import "swiper/css/pagination";
 
 import { HolidayPackage, TFunction, AuthUser } from "@/types/package";
 import PackageBookingModal from "@/app/[locale]/packages/[slug]/PackageBookingModal";
-import { Check, X as XMark, MapPin, Clock, Tag, Users, CalendarCheck, ChevronLeft, Camera, Info, ShieldCheck, CheckCircle2, LucideIcon } from "lucide-react";
+import { 
+  Check, X as XMark, MapPin, Clock, Tag, Users, 
+  CalendarCheck, ChevronLeft, Camera, Info, 
+  ShieldCheck, CheckCircle2, LucideIcon, MessageCircle 
+} from "lucide-react";
 
 // Helper Components
 const MobileImageSlider: React.FC<{ images: string[]; title: string }> = ({ images, title }) => (
@@ -65,6 +68,11 @@ export default function PackageDetailView({ initialData }: PackageDetailViewProp
   const [activeTab, setActiveTab] = useState<string>("Overview");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
+  // WhatsApp Configuration for Sidebar Help Card
+  const whatsappNumber = "6282224291148";
+  const whatsappMsg = encodeURIComponent(`Hi TravelMore! I'm interested in the "${pkg.name}" package. Can you provide more details?`);
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMsg}`;
+
   // Data Processing
   const costData = (typeof pkg.cost === 'object' && pkg.cost !== null)
     ? { included: Array.isArray(pkg.cost.included) ? pkg.cost.included : [], excluded: Array.isArray(pkg.cost.excluded) ? pkg.cost.excluded : [] }
@@ -77,13 +85,7 @@ export default function PackageDetailView({ initialData }: PackageDetailViewProp
     startingPrice = pkg.starting_from_price;
   } else if (priceTiers.length > 0) {
     const sortedTiers = [...priceTiers].sort((a, b) => a.min_pax - b.min_pax);
-    const smallGroupTier = sortedTiers.find((tier) => tier.min_pax <= 4 && (tier.max_pax || 4) >= 2);
-    if (smallGroupTier) {
-      startingPrice = smallGroupTier.price;
-    } else {
-      const medianIndex = Math.floor(sortedTiers.length / 2);
-      startingPrice = sortedTiers[medianIndex].price;
-    }
+    startingPrice = sortedTiers[0].price;
   }
 
   const hasMultipleTiers = priceTiers.length > 1;
@@ -115,7 +117,6 @@ export default function PackageDetailView({ initialData }: PackageDetailViewProp
     return `${min}–${max} pax`;
   };
 
-  // ✅ SEO FIX: Helper visibility class (Text tetap di-render, hanya di-hide CSS)
   const getTabVisibility = (tabName: string) => {
       return activeTab === tabName ? "block animate-in fade-in slide-in-from-bottom-2 duration-300" : "hidden";
   };
@@ -123,7 +124,7 @@ export default function PackageDetailView({ initialData }: PackageDetailViewProp
   return (
     <div className={`min-h-screen ${mainBg} transition-colors duration-300`}>
       
-      {/* Header / Gallery Section (Standard Code) */}
+      {/* Header / Gallery Section */}
       <div className="relative">
         <div className="md:hidden">
           <MobileImageSlider images={images} title={title} />
@@ -137,35 +138,19 @@ export default function PackageDetailView({ initialData }: PackageDetailViewProp
         <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 h-[500px] max-w-7xl mx-auto pt-8 px-8">
            <div className="col-span-2 row-span-2 relative rounded-l-2xl overflow-hidden group">
              {images[0] ? (
-                <Image 
-                  src={images[0]} 
-                  alt={`${pkg.name} - Main Highlight at ${pkg.location}`} 
-                  fill 
-                  className="object-cover transition-transform duration-700 group-hover:scale-105" 
-                  priority 
-                />
+                <Image src={images[0]} alt={pkg.name} fill className="object-cover transition-transform duration-700 group-hover:scale-105" priority />
              ) : (
                 <div className="w-full h-full bg-gray-300 flex items-center justify-center"><Camera /></div>
              )}
              <div className="absolute top-4 left-4">
-                <Link href="/packages" className="bg-white/90 py-2 px-4 rounded-full text-black font-semibold text-sm shadow-lg backdrop-blur-sm hover:bg-white transition flex items-center gap-2">
+                <Link href="/packages" className="bg-white/90 py-2 px-4 rounded-full text-black font-semibold text-sm shadow-lg backdrop-blur-sm flex items-center gap-2">
                   <ChevronLeft size={16} /> Back
                 </Link>
              </div>
            </div>
            {images.slice(1, 5).map((src, i) => (
              <div key={i} className={`col-span-1 row-span-1 relative overflow-hidden group ${i === 1 ? 'rounded-tr-2xl' : ''} ${i === 3 ? 'rounded-br-2xl' : ''}`}>
-               <Image 
-                 src={src} 
-                 alt={`${pkg.name} - Gallery View ${i + 1}`} 
-                 fill 
-                 className="object-cover transition-transform duration-700 group-hover:scale-105" 
-               />
-             </div>
-           ))}
-           {images.length < 5 && Array.from({ length: 5 - images.length }).map((_, i) => (
-             <div key={`placeholder-${i}`} className="bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-400">
-               <Camera size={24} />
+               <Image src={src} alt={pkg.name} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
              </div>
            ))}
         </div>
@@ -218,24 +203,19 @@ export default function PackageDetailView({ initialData }: PackageDetailViewProp
               </div>
             </div>
 
-            {/* Content Area - ✅ FIX: CSS Visibility Logic */}
             <div className={`p-6 md:p-8 rounded-3xl border shadow-sm ${cardBg}`}>
               
-              {/* 1. OVERVIEW */}
+              {/* Overview */}
               <div className={getTabVisibility("Overview")}>
                   <SectionTitle icon={Info} theme={theme}>{t("trip.about")}</SectionTitle>
-                  <div className={`prose ${isDark ? "prose-invert" : ""} max-w-none`}>
-                    <p className={`whitespace-pre-wrap leading-relaxed ${textMuted}`}>
-                      {pkg.description || "No description provided."}
-                    </p>
-                  </div>
+                  <p className={`whitespace-pre-wrap leading-relaxed ${textMuted}`}>{pkg.description}</p>
                   {tripInfo.length > 0 && (
                     <div className={`mt-8 pt-8 border-t ${borderColor}`}>
                       <h4 className={`text-lg font-bold mb-4 ${textColor}`}>{t("trip.info")}</h4>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {tripInfo.map((info, idx) => (
                           <div key={idx} className={`p-4 rounded-xl ${isDark ? "bg-gray-800" : "bg-gray-50"}`}>
-                            <div className="text-2xl mb-2">{info.icon || '✨'}</div>
+                            <div className="text-2xl mb-2">{info.icon}</div>
                             <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${textMuted}`}>{info.label}</p>
                             <p className={`font-bold ${textColor}`}>{info.value}</p>
                           </div>
@@ -245,114 +225,72 @@ export default function PackageDetailView({ initialData }: PackageDetailViewProp
                   )}
               </div>
 
-              {/* 2. ITINERARY (Visible to Bots) */}
+              {/* Itinerary */}
               <div className={getTabVisibility("Itinerary")}>
                   <SectionTitle icon={CalendarCheck} theme={theme}>Itinerary</SectionTitle>
-                  {itineraryData.length > 0 ? (
-                    <div className="relative pl-8 space-y-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-blue-200 dark:before:bg-blue-900">
-                      {itineraryData.map((item, index) => (
-                        <div key={index} className="relative">
-                           <div className="absolute -left-[35px] w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg ring-4 ring-white dark:ring-gray-900">
-                             {item.day}
-                           </div>
-                           <h3 className={`text-lg font-bold ${textColor}`}>{item.title}</h3>
-                           <p className={`mt-2 ${textMuted}`}>{item.description}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className={textMuted}>{t("status.noItinerary")}</p>
-                  )}
+                  <div className="relative pl-8 space-y-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-blue-200 dark:before:bg-blue-900">
+                    {itineraryData.map((item, index) => (
+                      <div key={index} className="relative">
+                         <div className="absolute -left-[35px] w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg ring-4 ring-white dark:ring-gray-900">{item.day}</div>
+                         <h3 className={`text-lg font-bold ${textColor}`}>{item.title}</h3>
+                         <p className={`mt-2 ${textMuted}`}>{item.description}</p>
+                      </div>
+                    ))}
+                  </div>
               </div>
 
-              {/* 3. PRICING */}
+              {/* Pricing */}
               <div className={getTabVisibility("Pricing")}>
                   <SectionTitle icon={Tag} theme={theme}>{t("tabs.pricing")}</SectionTitle>
-                  {hasMultipleTiers && (
-                    <div className={`p-4 rounded-lg border-2 border-green-500 mb-6 ${isDark ? "bg-green-900/20" : "bg-green-50"}`}>
-                      <div className="flex items-center gap-3">
-                        <Tag className="w-5 h-5 text-green-600" />
-                        <div>
-                          <p className={`text-sm font-semibold ${isDark ? "text-green-300" : "text-green-800"}`}>Best Value</p>
-                          <p className={`text-lg font-bold ${isDark ? "text-green-200" : "text-green-900"}`}>{formatPrice(bestPriceTier.price)} per person</p>
-                          <p className={`text-sm ${isDark ? "text-green-300" : "text-green-700"}`}>For {formatPaxRange(bestPriceTier.min_pax, bestPriceTier.max_pax)}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {priceTiers.length > 0 ? (
-                    <div className={`overflow-hidden rounded-xl border ${borderColor}`}>
-                      <table className="w-full text-left">
-                        <thead className={isDark ? "bg-gray-800" : "bg-gray-50"}>
-                          <tr>
-                            <th className={`px-6 py-4 text-sm font-bold uppercase ${textMuted}`}>Group Size</th>
-                            <th className={`px-6 py-4 text-sm font-bold uppercase ${textMuted}`}>Price / Person</th>
+                  <div className={`overflow-hidden rounded-xl border ${borderColor}`}>
+                    <table className="w-full text-left">
+                      <thead className={isDark ? "bg-gray-800" : "bg-gray-50"}>
+                        <tr>
+                          <th className="px-6 py-4 text-sm font-bold uppercase">Group Size</th>
+                          <th className="px-6 py-4 text-sm font-bold uppercase">Price / Person</th>
+                        </tr>
+                      </thead>
+                      <tbody className={`divide-y ${borderColor}`}>
+                        {priceTiers.map((tier) => (
+                          <tr key={tier.min_pax}>
+                            <td className={`px-6 py-4 ${textColor}`}>{formatPaxRange(tier.min_pax, tier.max_pax)}</td>
+                            <td className="px-6 py-4 font-bold text-primary">{formatPrice(tier.price)}</td>
                           </tr>
-                        </thead>
-                        <tbody className={`divide-y ${borderColor}`}>
-                          {priceTiers.map((tier) => (
-                            <tr key={tier.min_pax} className={tier.min_pax === bestPriceTier.min_pax ? (isDark ? "bg-green-900/10" : "bg-green-50") : ""}>
-                              <td className={`px-6 py-4 ${textColor}`}>
-                                {formatPaxRange(tier.min_pax, tier.max_pax)}
-                                {tier.min_pax === bestPriceTier.min_pax && <span className="ml-2 text-xs font-bold text-green-600 uppercase">Best</span>}
-                              </td>
-                              <td className="px-6 py-4 font-bold text-primary">{formatPrice(tier.price)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : <p className={textMuted}>{t("status.noPricing")}</p>}
-
-                  {pkg.addons && pkg.addons.length > 0 && (
-                    <div className="pt-4 mt-6">
-                      <h4 className={`text-lg font-bold mb-4 flex items-center gap-2 ${textColor}`}><Camera className="w-5 h-5 text-purple-500" /> Optional Add-ons</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {pkg.addons.map((addon, idx) => (
-                          <div key={idx} className={`p-4 rounded-xl border flex justify-between items-center ${cardBg}`}>
-                            <span className={`font-medium ${textColor}`}>{addon.name}</span>
-                            <span className={`px-3 py-1 rounded-lg text-sm font-bold ${isDark ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-900"}`}>+{formatPrice(addon.price)}</span>
-                          </div>
                         ))}
-                      </div>
-                    </div>
-                  )}
+                      </tbody>
+                    </table>
+                  </div>
               </div>
 
-              {/* 4. COST */}
+              {/* Cost */}
               <div className={getTabVisibility("Cost")}>
                 <div className="grid md:grid-cols-2 gap-8">
                     <div>
                       <h4 className="font-bold text-lg mb-4 flex items-center gap-2 text-green-600"><Check className="w-5 h-5" /> {t("cost.facilitiesIncluded")}</h4>
                       <ul className="space-y-3">
-                        {costData.included?.length ? costData.included.map((item, i) => <li key={i} className={`flex items-start gap-3 text-sm ${textMuted}`}><Check className="w-4 h-4 text-green-500 mt-0.5 shrink-0" /> {item}</li>) : <li className={textMuted}>{t("cost.noIncludedItems")}</li>}
+                        {costData.included?.map((item, i) => <li key={i} className={`flex items-start gap-3 text-sm ${textMuted}`}><Check className="w-4 h-4 text-green-500 mt-0.5 shrink-0" /> {item}</li>)}
                       </ul>
                     </div>
                     <div>
                       <h4 className="font-bold text-lg mb-4 flex items-center gap-2 text-red-500"><XMark className="w-5 h-5" /> {t("cost.facilitiesExcluded")}</h4>
                       <ul className="space-y-3">
-                        {costData.excluded?.length ? costData.excluded.map((item, i) => <li key={i} className={`flex items-start gap-3 text-sm ${textMuted}`}><XMark className="w-4 h-4 text-red-500 mt-0.5 shrink-0" /> {item}</li>) : <li className={textMuted}>{t("cost.noExcludedItems")}</li>}
+                        {costData.excluded?.map((item, i) => <li key={i} className={`flex items-start gap-3 text-sm ${textMuted}`}><XMark className="w-4 h-4 text-red-500 mt-0.5 shrink-0" /> {item}</li>)}
                       </ul>
                     </div>
                 </div>
               </div>
 
-              {/* 5. FAQs (Visible to Bots) */}
+              {/* FAQs */}
               <div className={getTabVisibility("FAQs")}>
                   <SectionTitle theme={theme}>Frequently Asked Questions</SectionTitle>
-                  {faqsData.length ? faqsData.map((faq, i) => (
+                  {faqsData.map((faq, i) => (
                     <div key={i} className={`p-5 rounded-xl border ${borderColor} ${isDark ? "bg-gray-800/30" : "bg-gray-50/50"} mb-4`}>
-                      <h3 className={`font-bold flex gap-3 ${textColor}`}>
-                        <Users className="w-5 h-5 text-primary shrink-0" />
-                        {faq.question}
-                      </h3>
+                      <h3 className={`font-bold flex gap-3 ${textColor}`}><Users className="w-5 h-5 text-primary shrink-0" />{faq.question}</h3>
                       <p className={`mt-3 pl-8 text-sm leading-relaxed ${textMuted}`}>{faq.answer}</p>
                     </div>
-                  )) : <p className={textMuted}>{t("status.noFaqs")}</p>}
+                  ))}
               </div>
 
-              {/* 6. MAP (Keep Conditional to avoid iframe load) */}
               {activeTab === "Map" && (
                 <div className="h-[400px] rounded-xl overflow-hidden bg-gray-200 relative animate-in fade-in">
                   {mapUrl ? (
@@ -373,14 +311,11 @@ export default function PackageDetailView({ initialData }: PackageDetailViewProp
                     <span className={`text-4xl font-black ${isDark ? "text-white" : "text-primary"}`}>{formatPrice(startingPrice)}</span>
                     <span className={textMuted}>/ pax</span>
                 </div>
-                <p className={`text-xs italic ${textMuted} mb-3`}>*Price varies depending on group size and travel date</p>
-                {hasMultipleTiers && (<div className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold ${isDark ? "bg-green-900/30 text-green-400" : "bg-green-100 text-green-700"}`}><Users size={14} /> Group discounts available</div>)}
               </div>
               <div className="space-y-4">
-                <button onClick={() => setIsModalOpen(true)} className="w-full py-4 rounded-xl font-bold text-lg shadow-lg bg-linear-to-r from-primary to-cyan-500 hover:brightness-110 text-white">
+                <button onClick={() => setIsModalOpen(true)} className="w-full py-4 rounded-xl font-bold text-lg shadow-lg bg-linear-to-r from-primary to-cyan-500 text-white">
                   {user ? t("booking.checkAvailability") : t("booking.loginToBook")}
                 </button>
-                {/* Security badges code... */}
                  <div className={`flex flex-col gap-3 p-4 rounded-xl ${isDark ? "bg-gray-800" : "bg-gray-50"}`}>
                   <div className="flex items-center gap-3">
                     <ShieldCheck className="w-5 h-5 text-green-500" />
@@ -393,11 +328,20 @@ export default function PackageDetailView({ initialData }: PackageDetailViewProp
                 </div>
               </div>
             </div>
-            {/* Help Card */}
+
+            {/* FIXED Help Card */}
             <div className={`p-6 rounded-3xl border ${cardBg}`}>
                <h4 className={`font-bold mb-2 ${textColor}`}>{t("booking.needHelp")}</h4>
                <p className={`text-sm mb-4 ${textMuted}`}>Contact our support team for custom arrangements.</p>
-               <a href="#" className={`block w-full py-3 rounded-xl border font-bold text-center transition ${isDark ? "border-gray-700 hover:bg-gray-800" : "border-gray-200 hover:bg-gray-50"}`}>{t("booking.sendMessage")}</a>
+               <a 
+                 href={whatsappUrl}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl border font-bold text-center transition ${isDark ? "border-gray-700 hover:bg-gray-800 text-white" : "border-gray-200 hover:bg-gray-50 text-gray-900"}`}
+               >
+                 <MessageCircle size={18} />
+                 {t("booking.sendMessage")}
+               </a>
             </div>
           </div>
         </div>

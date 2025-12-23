@@ -1,6 +1,5 @@
 // types/package.ts
 
-
 export interface AuthUser {
   id: number;
   name: string;
@@ -22,21 +21,24 @@ export interface PackagePriceTier {
 
 export interface HolidayPackage {
   id: number;
+  slug: string; // ✅ Matches translated attribute
   name: string;
   duration: number;
   category: string;
   description: string;
   location: string;
-  rating: number | null;
-  images_url: string[];
-  addons?: Addon[]; 
-  itinerary: { day: number; title: string; description: string }[];
-  cost: { included: string[]; excluded: string[] };
-  faqs: { question: string; answer: string }[];
-  tripInfo: { label: string; value: string; icon: string }[];
-  mapUrl: string;
-  price_tiers: PackagePriceTier[];
+  rating: number | string | null; // Matches decimal cast in Laravel
+  images_url: string[]; // Matches appended attribute in model
+  thumbnail_url: string | null; // ✅ Matches appended attribute in model
+  addons?: Addon[]; // Decoded JSON field
+  itinerary: { day: number; title: string; description: string }[]; // Decoded JSON field
+  cost: { included: string[]; excluded: string[] }; // Decoded JSON field
+  faqs: { question: string; answer: string }[]; // Decoded JSON field
+  tripInfo: { label: string; value: string; icon: string }[]; // ✅ Matches appended camelCase attribute
+  mapUrl: string; // ✅ Matches appended camelCase attribute
+  price_tiers: PackagePriceTier[]; // Decoded JSON field
   starting_from_price: number | null;
+  is_active: boolean; // ✅ Added to match backend visibility control
 }
 
 export type TFunction = (key: string, values?: Record<string, string | number | Date>) => string;

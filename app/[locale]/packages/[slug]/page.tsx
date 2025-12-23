@@ -1,39 +1,23 @@
-// app/[locale]/packages/[slug]/page.tsx
 import { Metadata, ResolvingMetadata } from "next";
 import PackageDetailView from "@/components/views/PackageDetailView";
-import { notFound, permanentRedirect } from "next/navigation"; 
+import { notFound } from "next/navigation"; 
 import { HolidayPackage } from "@/types/package";
+import { MessageCircle } from "lucide-react"; 
 
 type Props = {
-  // Folder sudah diubah jadi [slug], maka params juga 'slug'
   params: Promise<{ slug: string; locale: string }>;
 };
 
-// Base URL dari Environment Variable
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://travelmore.travel';
 
-// --- HELPER FUNCTIONS ---
-
-// 1. Helper membuat Slug URL-Friendly (contoh: "Bali Trip" -> "bali-trip")
-function createSlug(name: string) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-') // Ganti karakter non-alphanumeric dengan -
-    .replace(/(^-|-$)+/g, '');   // Hapus - di awal/akhir
-}
-
-// 2. Helper Fetch Data (Tetap pakai ID angka ke Backend)
-async function getPackageData(id: string): Promise<HolidayPackage | null> {
+async function getPackageData(slug: string): Promise<HolidayPackage | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  
-  // Validasi sederhana: Jika ID bukan angka, return null (jangan fetch ke API)
-  if (!id || isNaN(Number(id))) return null;
+  if (!slug) return null;
 
   try {
-    const res = await fetch(`${apiUrl}/public/packages/${id}`, {
+    const res = await fetch(`${apiUrl}/public/packages/slug/${slug}`, {
       next: { revalidate: 60 }, 
     });
-
     if (!res.ok) return null;
     return res.json();
   } catch (error) {
@@ -42,17 +26,12 @@ async function getPackageData(id: string): Promise<HolidayPackage | null> {
   }
 }
 
-// --- GENERATE METADATA (SEO) ---
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug, locale } = await params;
-  
-  // Ambil ID dari bagian depan slug (misal: "34-bali-trip" -> ambil "34")
-  const id = slug.split('-')[0]; 
-  
-  const product = await getPackageData(id);
+  const product = await getPackageData(slug);
 
   if (!product) {
     return {
@@ -62,10 +41,7 @@ export async function generateMetadata(
     };
   }
 
-  // Generate URL Slug yang benar untuk Canonical
-  const correctSlug = `${product.id}-${createSlug(product.name)}`;
-  const canonicalUrl = `${baseUrl}/${locale}/packages/${correctSlug}`;
-
+  const canonicalUrl = `${baseUrl}/${locale}/packages/${product.slug}`;
   const previousImages = (await parent).openGraph?.images || [];
   const productImage = product.images_url?.[0] || '/default-package.jpg';
   
@@ -78,59 +54,32 @@ export async function generateMetadata(
     description: product.description 
       ? product.description.substring(0, 160) + "..." 
       : `Book your trip to ${product.location} with TravelMore.`,
-    
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        'en': `${baseUrl}/en/packages/${correctSlug}`,
-        'id': `${baseUrl}/id/packages/${correctSlug}`,
+        'en': `${baseUrl}/en/packages/${product.slug}`,
+        'id': `${baseUrl}/id/packages/${product.slug}`,
       },
     },
-
     openGraph: {
       title: product.name,
       description: `Lokasi: ${product.location}. Mulai dari ${priceFormatted}. Pesan sekarang!`,
       url: canonicalUrl,
       siteName: 'TravelMore',
-      images: [
-        {
-          url: productImage,
-          width: 1200,
-          height: 630,
-          alt: product.name,
-        },
-        ...previousImages
-      ],
+      images: [{ url: productImage, width: 1200, height: 630, alt: product.name }, ...previousImages],
       type: 'website',
     },
   };
 }
 
-// --- MAIN PAGE COMPONENT ---
 export default async function Page({ params }: Props) {
   const { slug, locale } = await params;
-  
-  // 1. Ekstrak ID dari URL (ambil angka sebelum tanda strip pertama)
-  const id = slug.split('-')[0];
-
-  // 2. Fetch Data
-  const packageData = await getPackageData(id);
+  const packageData = await getPackageData(slug);
 
   if (!packageData) {
     notFound(); 
   }
 
-  // 3. SEO Strict Mode: Auto Redirect
-  // Cek apakah URL saat ini ("slug") sama dengan slug yang seharusnya?
-  // Jika user akses "/packages/34" -> Redirect ke "/packages/34-bali-trip"
-  const correctSlug = `${packageData.id}-${createSlug(packageData.name)}`;
-  
-  if (slug !== correctSlug) {
-    // Permanent Redirect (308) bagus untuk memindahkan ranking SEO ke URL baru
-    permanentRedirect(`/${locale}/packages/${correctSlug}`);
-  }
-
-  // 4. Setup Schema JSON-LD (Structured Data)
   const nextYear = new Date();
   nextYear.setFullYear(nextYear.getFullYear() + 1);
 
@@ -146,8 +95,7 @@ export default async function Page({ params }: Props) {
       priceCurrency: 'IDR',
       price: packageData.starting_from_price || '0',
       availability: 'https://schema.org/InStock',
-      // Gunakan URL dengan Slug yang benar
-      url: `${baseUrl}/${locale}/packages/${correctSlug}`, 
+      url: `${baseUrl}/${locale}/packages/${packageData.slug}`, 
       validFrom: new Date().toISOString(),
       priceValidUntil: nextYear.toISOString().split('T')[0],
     },
@@ -155,7 +103,7 @@ export default async function Page({ params }: Props) {
       '@type': 'TravelAgency',
       name: 'TravelMore',
       url: baseUrl,
-      logo: `${baseUrl}/logo.png` // Pastikan ada file ini di folder public
+      logo: `${baseUrl}/logo.png`
     },
     ...(packageData.rating ? {
       aggregateRating: {
@@ -167,13 +115,38 @@ export default async function Page({ params }: Props) {
     } : {})
   };
 
+  // WhatsApp Config
+  const whatsappNumber = "6282224291148";
+  const whatsappMsg = encodeURIComponent(`Hi TravelMore! I'm interested in the "${packageData.name}" package. Can we discuss custom arrangements?`);
+
   return (
-    <>
+    <div className="relative">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <PackageDetailView initialData={packageData} />
-    </>
+
+      {/* Specific "Need help with booking?" Section */}
+      <div className="container mx-auto px-4 py-12 border-t border-gray-100 dark:border-gray-800">
+        <div className="max-w-4xl mx-auto bg-blue-50 dark:bg-blue-900/20 rounded-3xl p-8 md:p-12 text-center shadow-sm">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white mb-3">
+            Need help with booking?
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 text-lg mb-8">
+            Contact our support team for custom arrangements.
+          </p>
+          <a 
+            href={`https://wa.me/${whatsappNumber}?text=${whatsappMsg}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 bg-primary hover:brightness-95 text-black font-bold py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-xl active:scale-95"
+          >
+            <MessageCircle size={20} />
+            Send Us a Message
+          </a>
+        </div>
+      </div>
+    </div>
   );
 }
