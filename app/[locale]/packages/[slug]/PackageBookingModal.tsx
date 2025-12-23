@@ -69,6 +69,17 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
 
   const today = new Date().toISOString().split("T")[0];
 
+  // ✅ FIX: Body Scroll Lock (Kept from functional fix)
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => { document.body.style.overflow = "auto"; };
+  }, [isOpen]);
+
+  // Initial Form Data Hydration
   useEffect(() => {
     if (isOpen) {
       setFullName(user?.name || "");
@@ -137,7 +148,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
     }
   };
 
-  // ✅ OPTIMASI: Debounce Effect
+  // Debounce effect for price calculation when pax changes
   useEffect(() => {
     if (appliedDiscount > 0 && discountCode) {
       const timer = setTimeout(() => {
@@ -270,7 +281,6 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
         onClose();
       }
     } catch (err: unknown) {
-        // PERBAIKAN DI SINI: Mengganti 'any' dengan 'Record<string, unknown>'
         const error = err as AxiosError<{ message?: string, errors?: Record<string, unknown> }>;
         toast.error(error.response?.data?.message || t("booking.errors.general"));
     } finally {
@@ -280,25 +290,27 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
 
   if (!isOpen) return null;
 
-  // --- STYLING VARS ---
+  // --- STYLING VARS (Restored to "TravelMore" classic) ---
   const modalBgClass = theme === "regular" ? "bg-white" : "bg-card";
   const textColor = theme === "regular" ? "text-gray-900" : "text-foreground";
   const mutedTextColor = theme === "regular" ? "text-gray-600" : "text-foreground/70";
   const inputBgClass = theme === "regular" ? "bg-gray-50" : "bg-background";
   const inputBorderClass = theme === "regular" ? "border-gray-300" : "border-border";
   const focusRingClass = "focus:ring-primary focus:border-primary";
-  const baseInputClass = `mt-1 block w-full rounded-md shadow-sm ${inputBgClass} ${focusRingClass} ${textColor} placeholder:${mutedTextColor} disabled:opacity-50 disabled:cursor-not-allowed`;
+  const baseInputClass = `mt-1 block w-full rounded-md shadow-sm ${inputBgClass} ${focusRingClass} ${textColor} placeholder:${mutedTextColor} disabled:opacity-50 disabled:cursor-not-allowed border`;
   const errorBorderClass = "border-red-500 focus:border-red-500 focus:ring-red-500";
-  const addonCardClass = theme === "regular" ? "border-gray-200 hover:border-primary bg-white" : "border-gray-600 hover:border-primary bg-gray-700";
+  const addonCardClass = theme === "regular" ? "border-gray-200 hover:border-primary bg-white" : "border-gray-700 hover:border-primary bg-gray-800";
   const addonSelectedClass = "border-primary ring-1 ring-primary bg-primary/10 dark:bg-primary/20";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn p-4 overflow-y-auto py-10">
-      <div className={`${modalBgClass} rounded-xl shadow-xl p-6 sm:p-8 w-full max-w-lg relative max-h-[90vh] overflow-y-auto`}>
-        <button onClick={onClose} className={`absolute top-4 right-4 ${mutedTextColor} hover:${textColor}`}><X size={24} /></button>
+    // ✅ FIX: Items-start + high z-index + overflow-y-auto ensures scrollability
+    <div className="fixed inset-0 z-[1000] flex justify-center items-start bg-black/70 backdrop-blur-sm p-4 overflow-y-auto animate-fadeIn">
+      {/* ✅ FIX: Added vertical margin (my-10) so the modal is never trapped behind top navbar */}
+      <div className={`${modalBgClass} rounded-xl shadow-xl p-6 sm:p-8 w-full max-w-lg relative my-10 animate-in zoom-in-95 duration-200`}>
+        <button onClick={onClose} className={`absolute top-4 right-4 ${mutedTextColor} hover:${textColor} transition-colors`}><X size={24} /></button>
 
-        <div className="sm:flex sm:items-start mb-6">
-           <div className="w-full text-center sm:text-left ml-0 sm:ml-4">
+        <div className="sm:flex sm:items-start mb-6 border-b border-border pb-4">
+           <div className="w-full text-center sm:text-left">
                <h2 className={`text-2xl font-bold ${textColor}`}>{t("booking.title")}</h2>
                <p className={`text-sm ${mutedTextColor}`}>{pkg.name}</p>
            </div>
@@ -315,9 +327,9 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
               onChange={(e) => setStartDate(e.target.value)}
               required
               disabled={isSubmitting}
-              className={`${baseInputClass} ${errors.startDate ? errorBorderClass : inputBorderClass}`}
+              className={`${baseInputClass} ${errors.startDate ? errorBorderClass : inputBorderClass} py-2 px-3`}
             />
-            {errors.startDate && <p className="text-red-600 text-sm mt-1">{errors.startDate}</p>}
+            {errors.startDate && <p className="text-red-600 text-sm mt-1 font-medium">{errors.startDate}</p>}
           </div>
 
           {/* 2. Pax */}
@@ -331,7 +343,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
                 disabled={isCheckingCode || isSubmitting}
                 onChange={(e) => setAdults(Number(e.target.value))}
                 required
-                className={`${baseInputClass} ${errors.adults ? errorBorderClass : inputBorderClass}`}
+                className={`${baseInputClass} ${errors.adults ? errorBorderClass : inputBorderClass} py-2 px-3`}
               />
             </div>
             <div>
@@ -343,7 +355,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
                 disabled={isCheckingCode || isSubmitting}
                 onChange={(e) => setChildren(Number(e.target.value))}
                 required
-                className={`${baseInputClass} ${errors.children ? errorBorderClass : inputBorderClass}`}
+                className={`${baseInputClass} ${errors.children ? errorBorderClass : inputBorderClass} py-2 px-3`}
               />
             </div>
           </div>
@@ -352,7 +364,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
           {pkg.addons && pkg.addons.length > 0 && (
             <div className="space-y-3 pt-2">
               <label className={`block text-sm font-bold ${textColor} flex items-center gap-2`}><Camera size={16} /> {t("booking.enhanceTrip")}</label>
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-2">
                 {pkg.addons.map((addon) => {
                   const isSelected = selectedAddons.includes(addon.name);
                   return (
@@ -382,7 +394,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
                value={nationality}
                onChange={(e) => setNationality(e.target.value)}
                required
-               className={`${baseInputClass} ${errors.participant_nationality ? errorBorderClass : inputBorderClass}`}
+               className={`${baseInputClass} ${errors.participant_nationality ? errorBorderClass : inputBorderClass} py-2 px-3`}
              >
                 <option value="">{t("booking.selectOption")}</option>
                 <option value="WNI">{t("booking.nationality.local")}</option>
@@ -393,11 +405,11 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
            {/* User Info Inputs */}
            <div>
               <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.fullName")}</label>
-              <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required className={baseInputClass} />
+              <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required className={`${baseInputClass} py-2 px-3 border ${inputBorderClass}`} />
            </div>
            <div>
               <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.email")}</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={baseInputClass} />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={`${baseInputClass} py-2 px-3 border ${inputBorderClass}`} />
            </div>
            
            <div>
@@ -406,13 +418,13 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
                   <select value={phoneCode} onChange={(e) => setPhoneCode(e.target.value)} className={`w-auto border rounded-l-md px-3 py-2 ${inputBgClass} ${inputBorderClass}`}>
                      {countryCodes.map((c) => (<option key={c.code} value={c.code}>{c.label}</option>))}
                   </select>
-                  <input type="tel" value={localPhone} onChange={handleLocalPhoneChange} required className={`${baseInputClass} rounded-l-none mt-0`} />
+                  <input type="tel" value={localPhone} onChange={handleLocalPhoneChange} required className={`${baseInputClass} rounded-l-none border-l-0 mt-0 py-2 px-3`} />
               </div>
            </div>
 
            <div>
               <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.pickupLocation")}</label>
-              <input type="text" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} required className={baseInputClass} />
+              <input type="text" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} required className={`${baseInputClass} py-2 px-3 border ${inputBorderClass}`} />
            </div>
 
            {/* Discount Code */}
@@ -427,51 +439,55 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
                     setAppliedDiscount(0); 
                     setDiscountMessage(null);
                 }}
-                className={`block w-full rounded-md shadow-sm ${inputBgClass} ${inputBorderClass}`}
+                className={`block w-full rounded-md shadow-sm py-2 px-3 border ${inputBgClass} ${inputBorderClass}`}
                 placeholder="SALE10"
               />
               <button
                 type="button"
                 onClick={handleApplyCode}
                 disabled={!discountCode.trim() || isCheckingCode}
-                className="bg-primary hover:bg-primary/90 text-black font-semibold py-2 px-4 rounded-md min-w-20 flex justify-center items-center"
+                className="bg-primary hover:brightness-95 text-black font-semibold py-2 px-5 rounded-md transition-all active:scale-95 flex justify-center items-center min-w-[80px]"
               >
                 {isCheckingCode ? <Loader2 size={16} className="animate-spin" /> : "Apply"}
               </button>
             </div>
             {discountMessage && (
-               <div className={`mt-2 text-sm flex items-center gap-1.5 ${discountMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+               <div className={`mt-2 text-xs flex items-center gap-1.5 font-medium ${discountMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
                   {discountMessage.type === 'success' ? <CheckCircle2 size={14}/> : <AlertCircle size={14}/>} {discountMessage.text}
                </div>
             )}
           </div>
 
           {/* Price Summary */}
-          <div className={`pt-4 space-y-2 bg-gray-100 dark:bg-background p-4 rounded-lg border ${inputBorderClass}`}>
-            <div className="flex justify-between items-center">
-              <span className={`text-sm ${mutedTextColor}`}>{t("pricing.pricePerPax")} ({totalPax}x)</span>
-              <span className={`text-sm font-medium ${textColor}`}>{formatPrice(pricePerPax)}</span>
+          <div className={`pt-4 space-y-2 bg-gray-50 dark:bg-gray-900/40 p-5 rounded-lg border ${inputBorderClass}`}>
+            <div className="flex justify-between items-center text-sm">
+              <span className={mutedTextColor}>{t("pricing.pricePerPax")} ({totalPax}x)</span>
+              <span className={`font-medium ${textColor}`}>{formatPrice(pricePerPax)}</span>
             </div>
             {addonsTotal > 0 && (
-               <div className="flex justify-between items-center">
-                <span className={`text-sm ${mutedTextColor}`}>Add-ons</span>
-                <span className={`text-sm font-medium ${textColor}`}>+ {formatPrice(addonsTotal)}</span>
+               <div className="flex justify-between items-center text-sm">
+                <span className={mutedTextColor}>Add-ons</span>
+                <span className={`font-medium ${textColor}`}>+ {formatPrice(addonsTotal)}</span>
               </div>
             )}
             {appliedDiscount > 0 && (
-              <div className="flex justify-between items-center text-green-600">
-                <span className="text-sm font-medium flex items-center gap-1"><TicketPercent size={14} /> Discount</span>
-                <span className="text-sm font-bold">- {formatPrice(appliedDiscount)}</span>
+              <div className="flex justify-between items-center text-sm text-green-600 font-bold">
+                <span className="flex items-center gap-1"><TicketPercent size={14} /> Discount</span>
+                <span>- {formatPrice(appliedDiscount)}</span>
               </div>
             )}
-            <div className={`flex justify-between items-center border-t ${inputBorderClass} pt-2 mt-2`}>
-              <p className={`text-lg font-semibold ${textColor}`}>{t("booking.subtotal")}:</p>
-              <p className="text-2xl font-bold text-primary">{formatPrice(grandTotal)}</p>
+            <div className={`flex justify-between items-center border-t ${inputBorderClass} pt-3 mt-2`}>
+              <p className={`text-lg font-bold ${textColor}`}>{t("booking.subtotal")}:</p>
+              <p className="text-2xl font-black text-primary">{formatPrice(grandTotal)}</p>
             </div>
           </div>
 
-          <button type="submit" disabled={isSubmitting || isCheckingCode} className="w-full bg-primary text-black font-bold py-3 px-4 rounded-lg hover:brightness-90 disabled:opacity-50 transition-all">
-            {isSubmitting ? t("booking.submitting") : t("booking.confirm")}
+          <button 
+            type="submit" 
+            disabled={isSubmitting || isCheckingCode} 
+            className="w-full bg-primary text-black font-bold py-4 px-4 rounded-lg hover:brightness-95 disabled:opacity-50 transition-all active:scale-[0.98] shadow-lg shadow-primary/10"
+          >
+            {isSubmitting ? <span className="flex items-center justify-center gap-2"><Loader2 className="animate-spin" /> {t("booking.submitting")}</span> : t("booking.confirm")}
           </button>
         </form>
       </div>
