@@ -16,9 +16,25 @@ import "swiper/css/pagination";
 
 import { Activity, TFunction, AuthUser } from "@/types/activity";
 import ActivityBookingModal from "@/app/[locale]/activities/[slug]/ActivityBookingModal";
-import { Check, X as XMark, MapPin, Clock, Tag, Users, CalendarCheck, ChevronLeft, Camera, Info, ShieldCheck, CheckCircle2, LucideIcon, AlertCircle } from "lucide-react";
+import { 
+  Check, 
+  X as XMark, 
+  MapPin, 
+  Clock, 
+  Tag, 
+  Users, 
+  CalendarCheck, 
+  ChevronLeft, 
+  Camera, 
+  Info, 
+  ShieldCheck, 
+  CheckCircle2, 
+  LucideIcon, 
+  AlertCircle,
+  MessageCircle // Added for Help Button
+} from "lucide-react";
 
-// Helper Components (Sama seperti Package)
+// Helper Components
 const MobileImageSlider: React.FC<{ images: string[]; title: string }> = ({ images, title }) => (
   <Swiper modules={[Navigation, Pagination]} spaceBetween={0} slidesPerView={1} navigation pagination={{ clickable: true }} className="h-[400px] w-full">
     {images.map((src, index) => (
@@ -53,6 +69,11 @@ export default function ActivityDetailView({ initialData }: ActivityDetailViewPr
   const [activeTab, setActiveTab] = useState<string>("Overview");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
+  // WhatsApp Configuration for Sidebar Help Card
+  const whatsappNumber = "6282224291148";
+  const whatsappMsg = encodeURIComponent(`Hi TravelMore! I'm interested in the "${activity.name}" activity. Can you provide more details?`);
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMsg}`;
+
   // Data Extraction
   const images = activity.images_url?.map(img => img.url) || [];
   const title = activity.name;
@@ -81,7 +102,6 @@ export default function ActivityDetailView({ initialData }: ActivityDetailViewPr
   const formatPrice = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
   const formatPaxRange = (min: number, max: number): string => (min === max) ? `${min} pax` : (!max || max === 0) ? `${min}+ pax` : `${min}–${max} pax`;
 
-  // ✅ SEO Fix: Visibility
   const getTabVisibility = (tabName: string) => {
       return activeTab === tabName ? "block animate-in fade-in slide-in-from-bottom-2 duration-300" : "hidden";
   };
@@ -253,7 +273,10 @@ export default function ActivityDetailView({ initialData }: ActivityDetailViewPr
                 {hasMultipleTiers && <div className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold ${isDark ? "bg-green-900/30 text-green-400" : "bg-green-100 text-green-700"}`}><Users size={14} /> Group discounts available</div>}
               </div>
               <div className="space-y-4">
-                <button onClick={() => setIsModalOpen(true)} className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-cyan-500 hover:from-primary hover:to-cyan-600 text-white transform transition-all hover:-translate-y-1`}>
+                <button 
+                  onClick={() => setIsModalOpen(true)} 
+                  className="w-full py-4 rounded-xl font-bold text-lg shadow-lg bg-linear-to-r from-primary to-cyan-500 text-white transition-all duration-300 transform hover:-translate-y-1 hover:brightness-110 hover:shadow-primary/25 active:scale-95"
+                >
                   {user ? "Book Now" : "Login to Book"}
                 </button>
                 <div className={`flex flex-col gap-3 p-4 rounded-xl ${isDark ? "bg-gray-800" : "bg-gray-50"}`}>
@@ -262,10 +285,20 @@ export default function ActivityDetailView({ initialData }: ActivityDetailViewPr
                 </div>
               </div>
             </div>
+
+            {/* Help Card Fixed with WhatsApp Redirection */}
             <div className={`p-6 rounded-3xl border ${cardBg}`}>
-               <h4 className={`font-bold mb-2 ${textColor}`}>Need Help?</h4>
+               <h4 className={`font-bold mb-2 ${textColor}`}>{t("booking.needHelp")}</h4>
                <p className={`text-sm mb-4 ${textMuted}`}>Contact our support team for custom arrangements.</p>
-               <a href="#" className={`block w-full py-3 rounded-xl border font-bold text-center transition ${isDark ? "border-gray-700 hover:bg-gray-800" : "border-gray-200 hover:bg-gray-50"}`}>Contact Support</a>
+               <a 
+                 href={whatsappUrl}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl border font-bold text-center transition ${isDark ? "border-gray-700 hover:bg-gray-800 text-white" : "border-gray-200 hover:bg-gray-50 text-gray-900"}`}
+               >
+                 <MessageCircle size={18} />
+                 {t("booking.sendMessage")}
+               </a>
             </div>
           </div>
         </div>

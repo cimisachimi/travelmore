@@ -26,6 +26,7 @@ export interface Addon {
 
 interface Activity {
   id: number;
+  slug: string; // ✅ ADDED: Slug field for dynamic routing
   name: string;
   category: string | null;
   description: string | null;
@@ -207,7 +208,7 @@ export default function ActivitiesPage() {
   return (
     <div className="min-h-screen bg-gray-50 transition-colors duration-300">
       
-      {/* --- Hero Header (Mode Regular Static) --- */}
+      {/* --- Hero Header --- */}
       <div className="relative py-16 lg:py-24 overflow-hidden bg-white border-b border-gray-200">
         <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#888_1px,transparent_1px)] [background-size:16px_16px]" />
         
@@ -241,7 +242,6 @@ export default function ActivitiesPage() {
           `}>
             <div className="flex flex-col h-full lg:h-auto lg:block lg:bg-white lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-200 lg:sticky lg:top-24">
               
-              {/* Header Mobile */}
               <div className="flex justify-between items-center p-6 lg:hidden border-b border-gray-100">
                 <h3 className="text-xl font-bold text-gray-900">{t("filters.title")}</h3>
                 <button onClick={() => setShowMobileFilters(false)} className="p-2 rounded-full hover:bg-gray-100 text-gray-900">
@@ -249,9 +249,7 @@ export default function ActivitiesPage() {
                 </button>
               </div>
 
-              {/* Scrollable Content Area */}
               <div className="flex-1 overflow-y-auto p-6 lg:p-6 space-y-8">
-                {/* Search */}
                 <div>
                   <h4 className="font-bold mb-3 flex items-center gap-2 text-gray-900">
                     <Search size={16} className="text-primary" />
@@ -266,7 +264,6 @@ export default function ActivitiesPage() {
                   />
                 </div>
 
-                {/* Price Filter */}
                 <div>
                   <h4 className="font-bold mb-4 flex items-center gap-2 text-gray-900">
                     <Tag size={16} className="text-primary" />
@@ -288,7 +285,6 @@ export default function ActivitiesPage() {
                   </div>
                 </div>
 
-                {/* Categories */}
                 <div>
                   <h4 className="font-bold mb-3 flex items-center gap-2 text-gray-900">
                     <SlidersHorizontal size={16} className="text-primary" />
@@ -311,13 +307,9 @@ export default function ActivitiesPage() {
                         </span>
                       </label>
                     ))}
-                    {allCategories.length === 0 && !isLoading && (
-                        <p className="text-xs text-gray-500">No categories available</p>
-                    )}
                   </div>
                 </div>
 
-                {/* Reset Button */}
                 {(selectedCategories.length > 0 || maxPrice < priceSliderMax || searchQuery) && (
                   <button 
                     onClick={() => { setSelectedCategories([]); setMaxPrice(priceSliderMax); setSearchQuery(""); }}
@@ -328,7 +320,6 @@ export default function ActivitiesPage() {
                 )}
               </div>
 
-              {/* Tombol STICKY "Show Results" (Mobile) */}
               <div className="p-4 border-t lg:hidden mt-auto bg-white border-gray-100">
                 <button 
                   onClick={() => setShowMobileFilters(false)}
@@ -357,9 +348,9 @@ export default function ActivitiesPage() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
                   {currentActivities.map((act) => (
-                    <Link key={act.id} href={`/activities/${act.id}`} className="group h-full">
+                    /* ✅ CHANGED: Now using act.slug instead of act.id for SEO/Dynamic routing */
+                    <Link key={act.id} href={`/activities/${act.slug}`} className="group h-full">
                       <article className="h-full flex flex-col rounded-2xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border bg-white border-gray-100">
-                        {/* Image */}
                         <div className="relative h-56 w-full overflow-hidden">
                           <Image
                             src={act.thumbnail_url || "/placeholder.jpg"}
@@ -375,13 +366,11 @@ export default function ActivitiesPage() {
                           )}
                         </div>
 
-                        {/* Content */}
                         <div className="p-5 flex flex-col flex-grow">
                           <h2 className="text-lg font-bold mb-2 line-clamp-2 leading-tight text-gray-900 group-hover:text-primary transition-colors">
                             {act.name}
                           </h2>
 
-                          {/* Metadata Row */}
                           <div className="flex items-center gap-4 text-xs mb-4">
                             {act.duration && (
                               <div className="flex items-center gap-1.5 text-gray-500">
@@ -401,7 +390,6 @@ export default function ActivitiesPage() {
                             {act.description || "Experience an unforgettable journey..."}
                           </p>
 
-                          {/* Footer */}
                           <div className="pt-4 mt-auto border-t flex items-end justify-between border-gray-100">
                             <div>
                               <p className="text-xs text-gray-500 mb-0.5">{t("filters.startingFrom", { defaultMessage: "Starting from" })}</p>
@@ -419,7 +407,6 @@ export default function ActivitiesPage() {
                   ))}
                 </div>
 
-                {/* Pagination Controls */}
                 {totalPages > 1 && (
                   <div className="flex justify-center items-center gap-2 mt-auto pb-8">
                     <button

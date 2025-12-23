@@ -21,6 +21,7 @@ export interface ActivityPriceTier {
 
 export interface Activity {
   id: number;
+  slug: string; // ✅ Added to resolve Build Error and match backend response
   name: string;
   duration: string | null;
   category: string | null;
@@ -33,7 +34,7 @@ export interface Activity {
   itinerary: string | null;
   notes: string | null;
   addons?: Addon[];
-  images_url: { id: number; url: string; type: string }[]; // Sesuaikan dengan response API activity
+  images_url: { id: number; url: string; type: string }[]; 
   thumbnail_url: string | null;
   faqs?: { question: string; answer: string }[];
   tripInfo?: { label: string; value: string; icon: string }[];
