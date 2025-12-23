@@ -258,7 +258,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
 
   if (!isOpen) return null;
 
-  // --- STYLING VARS (Matched to Package Modal) ---
+  // --- STYLING VARS ---
   const modalBgClass = theme === "regular" ? "bg-white" : "bg-card";
   const textColor = theme === "regular" ? "text-gray-900" : "text-foreground";
   const mutedTextColor = theme === "regular" ? "text-gray-600" : "text-foreground/70";
@@ -286,7 +286,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
           {/* Date & Time */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.date")}</label>
+              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.date")} :</label>
               <input 
                 type="date" 
                 min={today} 
@@ -296,10 +296,9 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
                 disabled={isSubmitting} 
                 className={`${baseInputClass} py-2 px-3 ${errors.booking_date ? errorBorderClass : ""}`} 
               />
-              {errors.booking_date && <p className="text-red-600 text-xs mt-1">{errors.booking_date}</p>}
             </div>
             <div>
-              <label className={`block text-sm font-medium ${mutedTextColor}`}><Clock size={14} className="inline mr-1" /> {t("booking.time")}</label>
+              <label className={`block text-sm font-medium ${mutedTextColor}`}><Clock size={14} className="inline mr-1" /> {t("booking.time")} :</label>
               <input 
                 type="time" 
                 value={activityTime} 
@@ -308,13 +307,12 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
                 disabled={isSubmitting} 
                 className={`${baseInputClass} py-2 px-3 ${errors.activity_time ? errorBorderClass : ""}`} 
               />
-              {errors.activity_time && <p className="text-red-600 text-xs mt-1">{errors.activity_time}</p>}
             </div>
           </div>
 
           {/* Quantity */}
           <div>
-            <label className={`block text-sm font-medium ${mutedTextColor}`}><Users size={14} className="inline mr-1" /> {t("booking.quantity")}</label>
+            <label className={`block text-sm font-medium ${mutedTextColor}`}><Users size={14} className="inline mr-1" /> {t("booking.quantity")} :</label>
             <input 
               type="number" 
               min={1} 
@@ -324,13 +322,12 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               disabled={isSubmitting || isCheckingCode} 
               className={`${baseInputClass} py-2 px-3 ${errors.quantity ? errorBorderClass : ""}`} 
             />
-            {errors.quantity && <p className="text-red-600 text-xs mt-1">{errors.quantity}</p>}
           </div>
 
           {/* Add-ons */}
           {activity.addons && activity.addons.length > 0 && (
             <div className="space-y-3 pt-2">
-              <label className={`block text-sm font-bold ${textColor} flex items-center gap-2`}><Camera size={16} /> {t("booking.enhanceTrip")}</label>
+              <label className={`block text-sm font-bold ${textColor} flex items-center gap-2`}><Camera size={16} /> {t("booking.enhanceTrip")} :</label>
               <div className="grid grid-cols-1 gap-2">
                 {activity.addons.map((addon) => {
                   const isSelected = selectedAddons.includes(addon.name);
@@ -357,7 +354,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
           {/* Contact Information */}
           <div className="space-y-4">
             <div>
-              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.nationality.title")}</label>
+              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.nationality.title")} :</label>
               <select 
                 value={nationality} 
                 onChange={(e) => setNationality(e.target.value)} 
@@ -370,30 +367,46 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               </select>
             </div>
 
-            <input type="text" placeholder={t("booking.fullName")} value={fullName} onChange={(e) => setFullName(e.target.value)} required className={`${baseInputClass} py-2 px-3`} />
-            <input type="email" placeholder={t("booking.email")} value={email} onChange={(e) => setEmail(e.target.value)} required className={`${baseInputClass} py-2 px-3`} />
-            
-            <div className="flex">
-              <select value={phoneCode} onChange={(e) => setPhoneCode(e.target.value)} className={`w-auto border rounded-l-md px-3 py-2 ${inputBgClass} ${inputBorderClass}`}>
-                {countryCodes.map((c) => (<option key={c.code} value={c.code}>{c.label}</option>))}
-              </select>
-              <input 
-                type="tel" 
-                placeholder={t("booking.phone")} 
-                value={localPhone} 
-                onChange={handleLocalPhoneChange} 
-                required 
-                className={`${baseInputClass} rounded-l-none border-l-0 mt-0 py-2 px-3`} 
-              />
+            <div>
+              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.fullName")} :</label>
+              <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required className={`${baseInputClass} py-2 px-3`} />
             </div>
 
-            <input type="text" placeholder={t("booking.pickupLocation")} value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} required className={`${baseInputClass} py-2 px-3`} />
-            <textarea placeholder={t("booking.specialRequest.title")} rows={2} value={specialRequest} onChange={(e) => setSpecialRequest(e.target.value)} className={`${baseInputClass} py-2 px-3`} />
+            <div>
+              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.email")} :</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={`${baseInputClass} py-2 px-3`} />
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.phone")} :</label>
+              <div className="flex">
+                <select value={phoneCode} onChange={(e) => setPhoneCode(e.target.value)} className={`w-auto border rounded-l-md px-3 py-2 ${inputBgClass} ${inputBorderClass}`}>
+                  {countryCodes.map((c) => (<option key={c.code} value={c.code}>{c.label}</option>))}
+                </select>
+                <input 
+                  type="tel" 
+                  value={localPhone} 
+                  onChange={handleLocalPhoneChange} 
+                  required 
+                  className={`${baseInputClass} rounded-l-none border-l-0 mt-0 py-2 px-3`} 
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.pickupLocation")} :</label>
+              <input type="text" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} required className={`${baseInputClass} py-2 px-3`} />
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.specialRequest.title")} :</label>
+              <textarea rows={2} value={specialRequest} onChange={(e) => setSpecialRequest(e.target.value)} className={`${baseInputClass} py-2 px-3`} />
+            </div>
           </div>
 
           {/* Discount Code */}
           <div>
-            <label className={`block text-sm font-medium ${mutedTextColor} flex items-center gap-1`}><TicketPercent size={14} /> {t("booking.discountCode")}</label>
+            <label className={`block text-sm font-medium ${mutedTextColor} flex items-center gap-1`}><TicketPercent size={14} /> {t("booking.discountCode")} :</label>
             <div className="flex gap-2 mt-1">
               <input 
                 type="text" 
@@ -441,7 +454,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               </div>
             )}
             <div className={`flex justify-between items-center border-t ${inputBorderClass} pt-3 mt-2`}>
-              <p className={`text-lg font-bold ${textColor}`}>{t("booking.total")}:</p>
+              <p className={`text-lg font-bold ${textColor}`}>{t("booking.total")} :</p>
               <p className="text-2xl font-black text-primary">{formatPrice(grandTotal)}</p>
             </div>
           </div>
