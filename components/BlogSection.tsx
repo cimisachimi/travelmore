@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation"; 
 import api from "@/lib/api";
+import { Calendar, User, ArrowRight } from "lucide-react";
 
 // Interface to match API response
 interface Blog {
@@ -18,9 +19,26 @@ interface Blog {
   images: string[];
 }
 
+// ✅ FIX: Fungsi encryptId agar konsisten dengan halaman detail
+function encryptId(n: number) {
+    const salt = 54321; 
+    const val = (n * salt) + 99999; 
+    return val.toString(36).toUpperCase(); 
+}
+
+// Helper untuk URL gambar
+const getImageUrl = (path: string | null | undefined) => {
+  if (!path) return "/placeholder.jpg";
+  if (path.startsWith("http")) return path;
+  if (path.startsWith("/")) return path;
+  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, "");
+  const cleanPath = path.replace(/^\//, "");
+  return `${baseUrl}/storage/${cleanPath}`;
+};
+
 export default function BlogSection() {
   const t = useTranslations("blogSection");
-  const params = useParams(); // [2] Ambil params dari URL
+  const params = useParams(); 
   const locale = (params.locale as string) || "en"; 
 
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -30,8 +48,6 @@ export default function BlogSection() {
     const fetchBlogs = async () => {
       try {
         setLoading(true);
-        
-       
         const response = await api.get("/public/posts?limit=3", {
             headers: {
                 "Accept-Language": locale 
@@ -46,11 +62,9 @@ export default function BlogSection() {
       }
     };
 
-   
     fetchBlogs();
   }, [locale]); 
 
- 
   if (!loading && blogs.length === 0) {
     return null; 
   }
@@ -83,74 +97,64 @@ export default function BlogSection() {
               </div>
             ))
           ) : (
-            blogs.map((blog) => (
-              <Link
-                key={blog.id}
-                href={`/${locale}/blog/${blog.slug}`} // [5] Pastikan link blog tetap dalam locale yang sama
-                className="bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col overflow-hidden group border border-gray-100"
-              >
-                {/* Gambar */}
-                <div className="relative h-60 w-full overflow-hidden">
-                  {blog.images.length > 0 ? (
-                    <Image
-                      src={blog.images[0]}
-                      alt={blog.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // [6] Fix warning next/image
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-gray-100 flex items-center justify-center text-gray-400">
-                      No Image
+            blogs.map((blog) => {
+              // ✅ FIX: Buat slug lengkap dengan encryptId agar match dengan halaman detail
+              const cleanSlug = blog.slug || blog.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+              const uniqueCode = encryptId(blog.id);
+              const href = `/${locale}/blog/${cleanSlug}-${uniqueCode}`;
+              const imageUrl = getImageUrl(blog.images?.[0]);
+
+              return (
+                <Link
+                  key={blog.id}
+                  href={href} 
+                  className="bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col overflow-hidden group border border-gray-100 h-full"
+                >
+                  {/* Gambar */}
+                  <div className="relative h-60 w-full overflow-hidden">
+                      <Image
+                        src={imageUrl}
+                        alt={blog.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        unoptimized={imageUrl.startsWith('http')}
+                      />
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
+                  </div>
+
+                  {/* Konten */}
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
+                        <span className="flex items-center gap-1">
+                            <Calendar size={12} />
+                            {new Date(blog.published_at).toLocaleDateString(locale === 'id' ? "id-ID" : "en-US", {
+                              year: 'numeric', month: 'short', day: 'numeric'
+                            })}
+                        </span>
+                        {blog.author && (
+                             <span className="flex items-center gap-1">
+                                <User size={12} /> {blog.author}
+                             </span>
+                        )}
                     </div>
-                  )}
-                </div>
 
-                {/* Konten */}
-                <div className="p-6 flex flex-col flex-1">
-                  <span className="text-sm text-gray-500">
-                    {/* [7] Format tanggal dinamis sesuai locale */}
-                    {new Date(blog.published_at).toLocaleDateString(locale === 'id' ? "id-ID" : "en-US", {
-                      year: 'numeric', month: 'long', day: 'numeric'
-                    })}
-                  </span>
-                  <h3 className="text-xl font-semibold mt-2 text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
-                    {blog.title}
-                  </h3>
-                  <p className="text-gray-600 mt-3 flex-1 line-clamp-3">
-                    {blog.excerpt}
-                  </p>
-                  <span className="mt-4 text-sm font-medium text-gray-900">
-                    {/* Translasi manual kecil untuk kata "By/Oleh" */}
-                    {locale === 'id' ? 'Oleh' : 'By'} {blog.author}
-                  </span>
-                </div>
-              </Link>
-            ))
+                    <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
+                      {blog.title}
+                    </h3>
+                    
+                    <p className="text-gray-600 line-clamp-3 mb-6 flex-1 text-sm leading-relaxed">
+                      {blog.excerpt}
+                    </p>
+                    
+                    <span className="inline-flex items-center text-sm font-bold text-primary group-hover:gap-2 transition-all mt-auto">
+                      Read More <ArrowRight size={16} className="ml-1" />
+                    </span>
+                  </div>
+                </Link>
+              );
+            })
           )}
-        </div>
-
-        {/* Show More Button */}
-        <div className="mt-12 flex justify-center">
-          <Link
-            href={`/${locale}/blog`} // [8] Link show more juga harus ikut locale
-            className="inline-flex items-center px-8 py-3 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary hover:text-white transition-colors"
-          >
-            {t("button")}
-            <svg
-              className="ml-2 w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
-          </Link>
         </div>
       </div>
     </section>
