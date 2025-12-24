@@ -1,4 +1,4 @@
-//  app/[locale]/activities/[slug]/ActivityDetailView.tsx
+// components/views/ActivityDetailView.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -17,30 +17,32 @@ import "swiper/css/pagination";
 import { Activity, TFunction, AuthUser } from "@/types/activity";
 import ActivityBookingModal from "@/app/[locale]/activities/[slug]/ActivityBookingModal";
 import { 
-  Check, 
-  X as XMark, 
-  MapPin, 
-  Clock, 
-  Tag, 
-  Users, 
-  CalendarCheck, 
-  ChevronLeft, 
-  Camera, 
-  Info, 
-  ShieldCheck, 
-  CheckCircle2, 
-  LucideIcon, 
-  AlertCircle,
-  MessageCircle // Added for Help Button
+  Check, X as XMark, MapPin, Clock, Tag, Users, 
+  CalendarCheck, ChevronLeft, Camera, Info, 
+  ShieldCheck, CheckCircle2, LucideIcon, MessageCircle, AlertCircle 
 } from "lucide-react";
 
-// Helper Components
+// ✅ UPDATE: Mobile Slider dengan Priority & Sizes
 const MobileImageSlider: React.FC<{ images: string[]; title: string }> = ({ images, title }) => (
-  <Swiper modules={[Navigation, Pagination]} spaceBetween={0} slidesPerView={1} navigation pagination={{ clickable: true }} className="h-[400px] w-full">
+  <Swiper 
+    modules={[Navigation, Pagination]} 
+    spaceBetween={0} 
+    slidesPerView={1} 
+    navigation 
+    pagination={{ clickable: true }} 
+    className="h-[400px] w-full"
+  >
     {images.map((src, index) => (
       <SwiperSlide key={index}>
         <div className="relative h-full w-full">
-          <Image src={src} alt={`${title} - view ${index + 1}`} fill className="object-cover" priority={index === 0} />
+          <Image 
+            src={src} 
+            alt={`${title} - view ${index + 1}`} 
+            fill 
+            className="object-cover" 
+            priority={index === 0} // Fix LCP Warning
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Fix Sizes Warning
+          />
           <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent md:hidden" />
         </div>
       </SwiperSlide>
@@ -69,7 +71,7 @@ export default function ActivityDetailView({ initialData }: ActivityDetailViewPr
   const [activeTab, setActiveTab] = useState<string>("Overview");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  // WhatsApp Configuration for Sidebar Help Card
+  // WhatsApp Configuration
   const whatsappNumber = "6282224291148";
   const whatsappMsg = encodeURIComponent(`Hi TravelMore! I'm interested in the "${activity.name}" activity. Can you provide more details?`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMsg}`;
@@ -91,7 +93,6 @@ export default function ActivityDetailView({ initialData }: ActivityDetailViewPr
 
   const tabs = ["Overview", "Itinerary", "Pricing", "Cost", "FAQs", "Map"];
 
-  // Styling
   const isDark = theme === "exclusive";
   const mainBg = isDark ? "bg-black" : "bg-gray-50";
   const cardBg = isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100";
@@ -119,15 +120,33 @@ export default function ActivityDetailView({ initialData }: ActivityDetailViewPr
         </div>
 
         <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 h-[500px] max-w-7xl mx-auto pt-8 px-8">
+           {/* ✅ UPDATE: Desktop Main Image (Index 0) - Priority & Sizes */}
            <div className="col-span-2 row-span-2 relative rounded-l-2xl overflow-hidden group">
-             {images[0] && <Image src={images[0]} alt="Main" fill className="object-cover transition-transform duration-700 group-hover:scale-105" priority />}
+             {images[0] && (
+                <Image 
+                  src={images[0]} 
+                  alt="Main" 
+                  fill 
+                  className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                  priority={true} // Fix LCP Warning
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Fix Sizes Warning
+                />
+             )}
              <div className="absolute top-4 left-4">
-                <Link href="/activities" className="bg-white/90 py-2 px-4 rounded-full text-black font-semibold text-sm shadow-lg backdrop-blur-sm hover:bg-white transition flex items-center gap-2"><ChevronLeft size={16} /> Back</Link>
+               <Link href="/activities" className="bg-white/90 py-2 px-4 rounded-full text-black font-semibold text-sm shadow-lg backdrop-blur-sm hover:bg-white transition flex items-center gap-2"><ChevronLeft size={16} /> Back</Link>
              </div>
            </div>
+
+           {/* ✅ UPDATE: Desktop Secondary Images - Sizes Only */}
            {images.slice(1, 5).map((src, i) => (
              <div key={i} className={`col-span-1 row-span-1 relative overflow-hidden group ${i === 1 ? 'rounded-tr-2xl' : ''} ${i === 3 ? 'rounded-br-2xl' : ''}`}>
-               <Image src={src} alt={`Gallery ${i+1}`} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
+               <Image 
+                 src={src} 
+                 alt={`Gallery ${i+1}`} 
+                 fill 
+                 className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+               />
              </div>
            ))}
            {images.length < 5 && Array.from({ length: 5 - images.length }).map((_, i) => (

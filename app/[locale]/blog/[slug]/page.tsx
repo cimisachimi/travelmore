@@ -1,4 +1,5 @@
-import { Metadata, ResolvingMetadata } from "next";
+// app/[locale]/blog/[slug]/page.tsx
+import { Metadata } from "next"; 
 import { notFound, permanentRedirect } from "next/navigation";
 import BlogDetailView from "@/components/views/BlogDetailView";
 
@@ -19,18 +20,7 @@ type Props = {
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://travelmore.travel';
 
-// --- Helper Functions (Salt Consistency: 54321 & 99999) ---
-function decryptId(code: string) {
-    const salt = 54321;
-    try {
-        const val = parseInt(code, 36);
-        const result = (val - 99999) / salt;
-        return Number.isInteger(result) ? result : null;
-    } catch (e) {
-        return null;
-    }
-}
-
+// Helper Functions
 function encryptId(n: number) {
     const salt = 54321; 
     const val = (n * salt) + 99999; 
@@ -42,53 +32,34 @@ function extractOriginalSlug(fullSlug: string) {
     return parts.slice(0, -1).join('-');
 }
 
-const getImageUrl = (path: string | null | undefined) => {
-  if (!path) return "/placeholder.jpg";
-  if (path.startsWith("http")) return path;
-  if (path.startsWith("/")) return `${baseUrl}${path}`;
-  const apiUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, "");
-  const cleanPath = path.replace(/^\//, "");
-  return `${apiUrl}/storage/${cleanPath}`;
-};
-
 async function getBlogDataBySlug(originalSlug: string, locale: string): Promise<Blog | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
-  const url = `${apiUrl}/public/posts/${originalSlug}`;
-
   try {
-    const res = await fetch(url, {
-      headers: { 
-          "Accept-Language": locale,
-          "Accept": "application/json" 
-      },
-      next: { revalidate: 60 }, 
+    const res = await fetch(`${apiUrl}/public/posts/${originalSlug}`, {
+      headers: { "Accept-Language": locale },
+      next: { revalidate: 3600 }, 
     });
-
     if (!res.ok) return null;
     const json = await res.json();
     return json.data || json; 
-  } catch (error) {
-    return null;
+  } catch { 
+    // ✅ FIX: Hapus variabel 'error' karena tidak digunakan
+    return null; 
   }
 }
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug: fullSlug, locale } = await params;
   const originalSlug = extractOriginalSlug(fullSlug);
   const blog = await getBlogDataBySlug(originalSlug, locale);
 
   if (!blog) return { title: "Blog Not Found", robots: "noindex" };
 
-  const uniqueCode = encryptId(blog.id);
-  const correctFullSlug = `${blog.slug}-${uniqueCode}`;
+  const correctFullSlug = `${blog.slug}-${encryptId(blog.id)}`;
   const canonicalUrl = `${baseUrl}/${locale}/blog/${correctFullSlug}`;
-  const mainImage = blog.images?.[0] || getImageUrl(null);
 
   return {
-    title: blog.title,
+    title: `${blog.title} | TravelMore Blog`,
     description: blog.excerpt ? blog.excerpt.substring(0, 160) + "..." : blog.title,
     alternates: {
       canonical: canonicalUrl,
@@ -101,8 +72,7 @@ export async function generateMetadata(
       title: blog.title,
       description: blog.excerpt,
       url: canonicalUrl,
-      siteName: 'TravelMore',
-      images: [{ url: mainImage, width: 1200, height: 630, alt: blog.title }],
+      images: [{ url: blog.images?.[0] || '/default-blog.jpg' }],
       type: 'article',
       publishedTime: blog.published_at,
     },
@@ -111,28 +81,30 @@ export async function generateMetadata(
 
 export default async function Page({ params }: Props) {
   const { slug: fullSlug, locale } = await params;
-
   const originalSlug = extractOriginalSlug(fullSlug);
   const blogData = await getBlogDataBySlug(originalSlug, locale);
   
   if (!blogData) notFound();
 
-  const uniqueCode = encryptId(blogData.id);
-  const correctFullSlug = `${blogData.slug}-${uniqueCode}`;
-
+  // ✅ REDIRECT: Jika hash ID atau slug berubah agar URL tetap rapi
+  const correctFullSlug = `${blogData.slug}-${encryptId(blogData.id)}`;
   if (fullSlug !== correctFullSlug) {
     permanentRedirect(`/${locale}/blog/${correctFullSlug}`);
   }
 
-  const mainImage = blogData.images?.[0] || getImageUrl(null);
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: blogData.title,
-    image: [mainImage],
+    image: blogData.images?.[0],
     datePublished: blogData.published_at,
-    author: [{ '@type': 'Person', name: blogData.author || 'TravelMore Team' }],
-    description: blogData.excerpt
+    author: { '@type': 'Person', name: blogData.author || 'TravelMore Team' },
+    description: blogData.excerpt,
+    publisher: {
+      '@type': 'Organization',
+      'name': 'TravelMore',
+      'logo': { '@type': 'ImageObject', url: `${baseUrl}/logo.png` }
+    }
   };
 
   return (

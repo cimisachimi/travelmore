@@ -1,4 +1,18 @@
 {
+  "SEO": {
+    "home": {
+      "title": "TravelMore - Explore Yogyakarta | Best Custom Trip Planner",
+      "description": "Plan your personalized trip to Yogyakarta with ease. Custom tour packages, car rentals, and authentic activities."
+    },
+    "packages": {
+      "title": "Best Tour Packages Yogyakarta | TravelMore",
+      "description": "Find curated holiday packages in Jogja. Borobudur, Prambanan, Merapi tours available."
+    },
+    "activities": {
+      "title": "Things to Do in Yogyakarta | Activities Booking",
+      "description": "Book tickets for Cave Tubing Pindul, Jeep Merapi, and Batik making classes."
+    }
+  },
   "Navbar": {
     "home": "Home",
     "planner": "Trip Planner",

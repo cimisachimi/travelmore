@@ -21,13 +21,14 @@ export interface ActivityPriceTier {
 
 export interface Activity {
   id: number;
-  slug: string; // ✅ Added to resolve Build Error and match backend response
+  slug: string;
   name: string;
   duration: string | null;
   category: string | null;
   description: string | null;
   location: string | null;
   price: number;
+  rating?: number; 
   status: string;
   google_map_url: string | null;
   includes: { included: string[]; excluded: string[] } | null;

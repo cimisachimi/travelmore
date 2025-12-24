@@ -22,7 +22,9 @@ import {
   ShieldCheck, CheckCircle2, LucideIcon, MessageCircle 
 } from "lucide-react";
 
-// Helper Components
+// --- Helper Components ---
+
+// ✅ UPDATE 1: Mobile Slider Image dengan 'sizes' & 'priority'
 const MobileImageSlider: React.FC<{ images: string[]; title: string }> = ({ images, title }) => (
   <Swiper
     modules={[Navigation, Pagination]}
@@ -40,7 +42,8 @@ const MobileImageSlider: React.FC<{ images: string[]; title: string }> = ({ imag
             alt={`${title} - view ${index + 1}`}
             fill
             className="object-cover"
-            priority={index === 0}
+            priority={index === 0} // Gambar pertama dimuat prioritas (LCP)
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Optimasi ukuran
           />
           <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent md:hidden" />
         </div>
@@ -137,21 +140,37 @@ export default function PackageDetailView({ initialData }: PackageDetailViewProp
         </div>
 
         <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 h-[500px] max-w-7xl mx-auto pt-8 px-8">
+           {/* ✅ UPDATE 2: Desktop Main Image (Index 0) - Priority & Sizes */}
            <div className="col-span-2 row-span-2 relative rounded-l-2xl overflow-hidden group">
              {images[0] ? (
-                <Image src={images[0]} alt={pkg.name} fill className="object-cover transition-transform duration-700 group-hover:scale-105" priority />
+                <Image 
+                  src={images[0]} 
+                  alt={pkg.name} 
+                  fill 
+                  className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                  priority={true} // Wajib true untuk LCP
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
              ) : (
                 <div className="w-full h-full bg-gray-300 flex items-center justify-center"><Camera /></div>
              )}
              <div className="absolute top-4 left-4">
-                <Link href="/packages" className="bg-white/90 py-2 px-4 rounded-full text-black font-semibold text-sm shadow-lg backdrop-blur-sm flex items-center gap-2">
-                  <ChevronLeft size={16} /> Back
-                </Link>
+               <Link href="/packages" className="bg-white/90 py-2 px-4 rounded-full text-black font-semibold text-sm shadow-lg backdrop-blur-sm flex items-center gap-2">
+                 <ChevronLeft size={16} /> Back
+               </Link>
              </div>
            </div>
+
+           {/* ✅ UPDATE 3: Desktop Secondary Images - Sizes Only (No Priority) */}
            {images.slice(1, 5).map((src, i) => (
              <div key={i} className={`col-span-1 row-span-1 relative overflow-hidden group ${i === 1 ? 'rounded-tr-2xl' : ''} ${i === 3 ? 'rounded-br-2xl' : ''}`}>
-               <Image src={src} alt={pkg.name} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
+               <Image 
+                 src={src} 
+                 alt={pkg.name} 
+                 fill 
+                 className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+               />
              </div>
            ))}
         </div>
@@ -232,9 +251,9 @@ export default function PackageDetailView({ initialData }: PackageDetailViewProp
                   <div className="relative pl-8 space-y-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-blue-200 dark:before:bg-blue-900">
                     {itineraryData.map((item, index) => (
                       <div key={index} className="relative">
-                         <div className="absolute -left-[35px] w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg ring-4 ring-white dark:ring-gray-900">{item.day}</div>
-                         <h3 className={`text-lg font-bold ${textColor}`}>{item.title}</h3>
-                         <p className={`mt-2 ${textMuted}`}>{item.description}</p>
+                          <div className="absolute -left-[35px] w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg ring-4 ring-white dark:ring-gray-900">{item.day}</div>
+                          <h3 className={`text-lg font-bold ${textColor}`}>{item.title}</h3>
+                          <p className={`mt-2 ${textMuted}`}>{item.description}</p>
                       </div>
                     ))}
                   </div>
@@ -313,14 +332,14 @@ export default function PackageDetailView({ initialData }: PackageDetailViewProp
                     <span className={textMuted}>/ pax</span>
                 </div>
               </div>
- <div className="space-y-4">
-  <button 
-    onClick={() => setIsModalOpen(true)} 
-    className="w-full py-4 rounded-xl font-bold text-lg shadow-lg bg-linear-to-r from-primary to-cyan-500 text-white transition-all duration-300 transform hover:-translate-y-1 hover:brightness-110 hover:shadow-primary/25 active:scale-95"
-  >
-    {user ? t("booking.checkAvailability") : t("booking.loginToBook")}
-  </button>
-                 <div className={`flex flex-col gap-3 p-4 rounded-xl ${isDark ? "bg-gray-800" : "bg-gray-50"}`}>
+              <div className="space-y-4">
+                <button 
+                  onClick={() => setIsModalOpen(true)} 
+                  className="w-full py-4 rounded-xl font-bold text-lg shadow-lg bg-linear-to-r from-primary to-cyan-500 text-white transition-all duration-300 transform hover:-translate-y-1 hover:brightness-110 hover:shadow-primary/25 active:scale-95"
+                >
+                  {user ? t("booking.checkAvailability") : t("booking.loginToBook")}
+                </button>
+                <div className={`flex flex-col gap-3 p-4 rounded-xl ${isDark ? "bg-gray-800" : "bg-gray-50"}`}>
                   <div className="flex items-center gap-3">
                     <ShieldCheck className="w-5 h-5 text-green-500" />
                     <div><p className={`text-sm font-bold ${textColor}`}>Secure Booking</p><p className={`text-xs ${textMuted}`}>Your data is protected</p></div>

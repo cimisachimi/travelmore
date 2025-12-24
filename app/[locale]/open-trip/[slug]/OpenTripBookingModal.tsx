@@ -1,11 +1,11 @@
 // app/[locale]/open-trip/[slug]/OpenTripBookingModal.tsx
 "use client";
 
-import React, { useState, FormEvent, useMemo, useEffect } from "react";
+import React, { useState, FormEvent, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { X, MapPin, User, Mail, Phone, Flag, FileText, TicketPercent, CheckCircle2, AlertCircle, Loader2, Users, Calendar, Plus } from "lucide-react"; 
+import { X, MapPin, User, Mail, Phone, Flag, TicketPercent, CheckCircle2, AlertCircle, Loader2, Users, Calendar, Plus } from "lucide-react"; 
 import { useTheme } from "@/components/ThemeProvider";
 import axios, { AxiosError } from "axios";
 import { OpenTrip, AuthUser } from "@/types/opentrip";
@@ -33,7 +33,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({ isOpen, onC
 
   // --- STATE ---
   const [startDate, setStartDate] = useState("");
-  const [minDate, setMinDate] = useState(""); 
+  // const [minDate, setMinDate] = useState(""); // ✅ FIX: Hapus unused var
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   
@@ -64,9 +64,9 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({ isOpen, onC
     return () => { document.body.style.overflow = "auto"; };
   }, [isOpen]);
 
-  useEffect(() => {
-    setMinDate(new Date().toISOString().split("T")[0]);
-  }, []);
+  // useEffect(() => {
+  //   setMinDate(new Date().toISOString().split("T")[0]);
+  // }, []); // ✅ FIX: Hapus useEffect unused var
 
   useEffect(() => {
     if (isOpen) {
@@ -96,7 +96,8 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({ isOpen, onC
     );
   };
 
-  const handleApplyCode = async () => {
+  // ✅ FIX: Bungkus handleApplyCode dengan useCallback
+  const handleApplyCode = useCallback(async () => {
     if (!discountCode.trim()) return;
     setIsCheckingCode(true);
     try {
@@ -122,14 +123,15 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({ isOpen, onC
     } finally {
       setIsCheckingCode(false);
     }
-  };
+  }, [pkg.id, discountCode, adults, children, selectedAddons]);
 
+  // ✅ FIX: Update useEffect deps
   useEffect(() => {
     if (appliedDiscount > 0 && discountCode) {
       const timer = setTimeout(() => handleApplyCode(), 500); 
       return () => clearTimeout(timer);
     }
-  }, [adults, children, selectedAddons]);
+  }, [adults, children, selectedAddons, appliedDiscount, discountCode, handleApplyCode]);
 
   const { pricePerPax, totalPax, addonsTotal, grandTotal } = useMemo(() => {
     const count = adults + children;

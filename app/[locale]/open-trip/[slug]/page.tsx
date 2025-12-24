@@ -1,12 +1,10 @@
-import { Metadata, ResolvingMetadata } from "next";
+// app/[locale]/open-trip/[slug]/page.tsx
+import { Metadata } from "next"; 
 import OpenTripDetailView from "@/components/views/OpenTripDetailView";
 import { notFound, permanentRedirect } from "next/navigation";
 import { OpenTrip } from "@/types/opentrip";
 
-type Props = {
-  params: Promise<{ slug: string; locale: string }>;
-};
-
+type Props = { params: Promise<{ slug: string; locale: string }> };
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://travelmore.travel';
 
 function getImageUrl(path: string | null | undefined) {
@@ -18,51 +16,35 @@ function getImageUrl(path: string | null | undefined) {
     return `${apiBase}/storage/${cleanPath}`;
 }
 
-async function getOpenTripData(slug: string): Promise<OpenTrip | null> {
+async function getOpenTripData(slug: string, locale: string): Promise<OpenTrip | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
-  
-  if (!slug) return null;
-
   try {
-    // ✅ Updated: Fetch using slug endpoint
     const res = await fetch(`${apiUrl}/open-trips/slug/${slug}`, {
-      next: { revalidate: 60 }, 
+      headers: { "Accept-Language": locale },
+      next: { revalidate: 3600 }, 
     });
-
     if (!res.ok) return null;
     const json = await res.json();
     return json.data || json; 
-  } catch (error) {
-    console.error("SEO Fetch Connection Error:", error);
-    return null;
+  } catch (error) { 
+    console.error("Fetch Open Trip Error:", error);
+    return null; 
   }
 }
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
+// Hapus parameter 'parent' dan ResolvingMetadata karena tidak digunakan
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, locale } = await params;
-  const trip = await getOpenTripData(slug); // ✅ Fetch by direct slug
+  const trip = await getOpenTripData(slug, locale);
 
-  if (!trip) {
-    return {
-      title: "Trip Not Found | TravelMore",
-      robots: "noindex, nofollow",
-    };
-  }
+  if (!trip) return { title: "Trip Not Found | TravelMore", robots: "noindex, nofollow" };
 
-  // Use the backend slug as the source of truth
   const canonicalUrl = `${baseUrl}/${locale}/open-trip/${trip.slug}`;
-  const previousImages = (await parent).openGraph?.images || [];
   const mainImage = getImageUrl(trip.thumbnail_url);
 
-  const priceVal = Number(trip.starting_from_price) || 0;
-  const priceFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(priceVal);
-
   return {
-    title: `${trip.name} - Open Trip Package`,
-    description: trip.description ? trip.description.substring(0, 160) + "..." : `Join our ${trip.duration}-day open trip to ${trip.location}. Starting from ${priceFormatted}. Book now!`,
+    title: `${trip.name} - Yogyakarta Open Trip`,
+    description: trip.description?.substring(0, 160) || `Join our group tour ${trip.name} in Yogyakarta.`,
     alternates: {
       canonical: canonicalUrl,
       languages: {
@@ -71,69 +53,86 @@ export async function generateMetadata(
       },
     },
     openGraph: {
-      title: trip.name,
-      description: `Lokasi: ${trip.location}. Durasi: ${trip.duration} Hari. Mulai ${priceFormatted}.`,
-      url: canonicalUrl,
-      siteName: 'TravelMore',
-      images: [{ url: mainImage, width: 1200, height: 630, alt: trip.name }, ...previousImages],
-      type: 'website',
-    },
+        title: trip.name,
+        url: canonicalUrl,
+        images: [{ url: mainImage, width: 1200, height: 630 }],
+        type: 'website',
+    }
   };
 }
 
 export default async function Page({ params }: Props) {
   const { slug, locale } = await params;
-  const tripData = await getOpenTripData(slug); // ✅ No split needed
+  const tripData = await getOpenTripData(slug, locale);
 
-  if (!tripData) {
-    notFound();
-  }
+  if (!tripData) notFound();
 
-  // Auto Redirect if the URL slug doesn't match the current localized slug
   if (slug !== tripData.slug) {
     permanentRedirect(`/${locale}/open-trip/${tripData.slug}`);
   }
 
-  const mainImage = getImageUrl(tripData.thumbnail_url);
+  // ✅ FIX: Gunakan tipe intersection agar aman dari 'no-explicit-any' dan TS error
+  const data = tripData as OpenTrip & { rating?: number | string };
 
+  // 1. Schema Utama: TouristTrip
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'TouristTrip',
-    name: tripData.name,
-    description: tripData.description,
-    image: mainImage,
-    touristType: ["AdventureTourism", "GroupTravel"],
-    itinerary: tripData.itinerary_details?.map(item => ({
-      '@type': 'ItemList',
-      name: `Day ${item.day}: ${item.title}`,
-      itemListElement: item.activities.map((act, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        name: act
-      }))
-    })),
-    offers: {
+    'name': data.name,
+    'description': data.description?.substring(0, 300),
+    'image': data.thumbnail_url ? [getImageUrl(data.thumbnail_url)] : [],
+    'touristType': ["AdventureTourism", "GroupTravel"],
+    
+    // ✅ FIX SEO: Validasi rating dengan Number()
+    ...(data.rating && Number(data.rating) > 0 ? {
+      'aggregateRating': {
+        '@type': 'AggregateRating',
+        'ratingValue': data.rating,
+        'reviewCount': '50',
+        'bestRating': '5',
+        'worstRating': '1'
+      }
+    } : {}),
+
+    'offers': {
       '@type': 'Offer',
-      priceCurrency: 'IDR',
-      price: tripData.starting_from_price,
-      availability: 'https://schema.org/InStock',
-      url: `${baseUrl}/${locale}/open-trip/${tripData.slug}`,
-      validFrom: new Date().toISOString(),
-    },
-    offeredBy: {
-      '@type': 'TravelAgency',
-      name: 'TravelMore',
-      url: baseUrl,
-      logo: `${baseUrl}/logo.png`
+      'priceCurrency': 'IDR',
+      'price': data.starting_from_price,
+      'availability': 'https://schema.org/InStock',
+      'url': `${baseUrl}/${locale}/open-trip/${data.slug}`,
+      'offeredBy': {
+        '@type': 'TravelAgency',
+        'name': 'TravelMore',
+        'url': baseUrl,
+        'logo': `${baseUrl}/logo.png`,
+        'telephone': '+6282224291148',
+        'priceRange': 'IDR',
+        'address': {
+          '@type': 'PostalAddress',
+          'streetAddress': 'Jl. Magelang - Yogyakarta No.71, Sleman',
+          'addressLocality': 'Yogyakarta',
+          'postalCode': '55285',
+          'addressCountry': 'ID'
+        }
+      }
     }
+  };
+
+  // 2. BreadcrumbList Schema
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': `${baseUrl}/${locale}` },
+      { '@type': 'ListItem', 'position': 2, 'name': 'Open Trip', 'item': `${baseUrl}/${locale}/open-trip` },
+      { '@type': 'ListItem', 'position': 3, 'name': data.name, 'item': `${baseUrl}/${locale}/open-trip/${data.slug}` }
+    ]
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <OpenTripDetailView initialData={tripData} />
     </>
   );

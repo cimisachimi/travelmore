@@ -1,4 +1,18 @@
 {
+  "SEO": {
+    "home": {
+      "title": "TravelMore - Jelajahi Yogyakarta | Perencana Liburan Terbaik",
+      "description": "Rancang perjalanan personal ke Jogja dengan mudah. Paket wisata custom, sewa mobil, dan aktivitas otentik."
+    },
+    "packages": {
+      "title": "Paket Wisata Jogja Terbaik | TravelMore",
+      "description": "Temukan paket liburan pilihan di Jogja. Tur Borobudur, Prambanan, Merapi tersedia."
+    },
+    "activities": {
+      "title": "Aktivitas Seru di Yogyakarta | Pesan Tiket Wisata",
+      "description": "Pesan tiket Cave Tubing Pindul, Jeep Merapi, dan kelas membatik."
+    }
+  },
   "Navbar": {
     "home": "Beranda",
     "planner": "Perencana Perjalanan",
@@ -442,7 +456,7 @@
         "### 1. Rencanakan Perjalanan di Waktu yang Tepat",
         "Kunci utama liburan hemat adalah memilih waktu yang tepat. Hindari musim puncak (peak season) seperti Lebaran, Natal, atau liburan akhir tahun, karena harga transportasi dan akomodasi biasanya melambung tinggi. Berkunjung saat low season akan memberi Anda harga terbaik dan suasana yang lebih tenang.",
         "### 2. Pilih Akomodasi Ramah Anggaran",
-        "Jogja menawarkan banyak pilihan penginapan murah meriah. Mulai dari homestay, guesthouse, hingga hostel backpacker, Anda punya banyak pilihan. Beberapa rekomendasi dengan harga mulai dari Rp 50.000 per malam antara lain Omah Guyub, Pondok 71, atau Laura Backpackers 523. Memesan jauh-jauh hari akan membantu Anda mendapatkan harga terbaik.",
+        "Jogja menawarkan banyak pilihan penginapan murah meriah. Mulai dari homestay, guesthouses, hingga hostel backpacker, Anda punya banyak pilihan. Beberapa rekomendasi dengan harga mulai dari Rp 50.000 per malam antara lain Omah Guyub, Pondok 71, atau Laura Backpackers 523. Memesan jauh-jauh hari akan membantu Anda mendapatkan harga terbaik.",
         "### 3. Manfaatkan Transportasi Cerdas",
         "**Transportasi Umum:** Untuk keliling kota, Trans Jogja adalah pilihan paling ekonomis dengan tarif hanya Rp 3.500 sekali jalan.",
         "**Sewa Motor:** Jika ingin lebih fleksibel menjelajahi berbagai sudut kota, menyewa motor adalah solusi praktis dengan biaya mulai dari Rp 65.000 per hari.",

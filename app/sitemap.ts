@@ -1,16 +1,33 @@
 // app/sitemap.ts
+
 import { MetadataRoute } from 'next';
 
-// Generic item type covering packages, activities, cars, AND Open Trips
+// 1. Definisi Tipe Data dari API
 type Item = {
   id: number;
-  name?: string; // For packages, activities, open trips
-  brand?: string; // For cars
-  car_model?: string; // For cars
+  slug?: string;
+  name?: string;
+  brand?: string;
+  car_model?: string;
   updated_at?: string;
+  // Struktur gambar yang berbeda-beda dari API
+  images_url?: { url: string }[]; 
+  images?: { url: string }[];
+  thumbnail_url?: string;
 };
 
-// Helper slug generator
+// 2. Interface Khusus untuk Sitemap agar support Images tanpa 'any'
+interface SitemapEntry {
+  url: string;
+  lastModified?: Date;
+  changeFrequency?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
+  priority?: number;
+  alternates?: {
+    languages: Record<string, string>;
+  };
+  images?: string[]; // Properti ini yang kita butuhkan untuk Google Images
+}
+
 function createSlug(name: string) {
   return name
     .toLowerCase()
@@ -18,107 +35,179 @@ function createSlug(name: string) {
     .replace(/(^-|-$)+/g, '');
 }
 
+// ✅ Helper untuk mengekstrak URL gambar utama yang valid
+function getMainImage(item: Item): string | undefined {
+  let imgPath: string | undefined;
+
+  // 1. Cek struktur images_url (Paket & Aktivitas)
+  if (item.images_url && Array.isArray(item.images_url) && item.images_url.length > 0) {
+    imgPath = item.images_url[0].url;
+  }
+  // 2. Cek struktur images (Mobil)
+  else if (item.images && Array.isArray(item.images) && item.images.length > 0) {
+    imgPath = item.images[0].url;
+  }
+  // 3. Cek struktur thumbnail_url (Open Trip)
+  else if (item.thumbnail_url) {
+    imgPath = item.thumbnail_url;
+  }
+
+  if (!imgPath) return undefined;
+
+  // 4. Pastikan URL Absolute.
+  if (imgPath.startsWith('http')) {
+    return imgPath;
+  } else {
+    // Bersihkan slash untuk mencegah double slash
+    const apiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.travelmore.travel').replace(/\/$/, '');
+    const cleanPath = imgPath.replace(/^\//, '');
+    return `${apiBase}/storage/${cleanPath}`;
+  }
+}
+
+// ✅ Helper function agar fetch aman
+async function safeFetchData(url: string): Promise<Item[]> {
+  try {
+    const res = await fetch(url, { next: { revalidate: 3600 } });
+    
+    if (!res.ok) {
+      console.warn(`Sitemap Fetch Warning: ${url} returned status ${res.status}`);
+      return [];
+    }
+
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      console.warn(`Sitemap Fetch Warning: ${url} returned non-JSON content.`);
+      return [];
+    }
+
+    const json = await res.json();
+    return json.data || [];
+  } catch (error) {
+    console.error(`Sitemap Fetch Error for ${url}:`, error);
+    return [];
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://travelmore.travel';
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, ''); // Safety: remove trailing slash
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'https://api.travelmore.travel'; 
 
-  // 1. Fetch Packages
-  let allPackages: Item[] = [];
-  try {
-    const res = await fetch(`${apiUrl}/packages?per_page=1000`, { next: { revalidate: 3600 } });
-    const json = await res.json();
-    allPackages = json.data || [];
-  } catch (error) {
-    console.error("Sitemap Packages Error:", error);
-  }
-
-  // 2. Fetch Activities
-  let allActivities: Item[] = [];
-  try {
-    const res = await fetch(`${apiUrl}/activities?per_page=1000`, { next: { revalidate: 3600 } });
-    const json = await res.json();
-    allActivities = json.data || [];
-  } catch (error) {
-    console.error("Sitemap Activities Error:", error);
-  }
-
-  // 3. Fetch Cars (Using /public)
-  let allCars: Item[] = [];
-  try {
-    const res = await fetch(`${apiUrl}/public/car-rentals?per_page=1000`, { next: { revalidate: 3600 } });
-    const json = await res.json();
-    allCars = json.data || [];
-  } catch (error) {
-    console.error("Sitemap Cars Error:", error);
-  }
-
-  // 4. ✅ Fetch Open Trips (FIX: Tanpa /public)
-  let allOpenTrips: Item[] = [];
-  try {
-    const res = await fetch(`${apiUrl}/open-trips?per_page=1000`, { next: { revalidate: 3600 } });
-    const json = await res.json();
-    allOpenTrips = json.data || [];
-  } catch (error) {
-    console.error("Sitemap Open Trips Error:", error);
-  }
+  // 1. Fetch Data Parallel
+  const [allPackages, allActivities, allCars, allOpenTrips] = await Promise.all([
+    safeFetchData(`${apiUrl}/public/packages?per_page=1000`),
+    safeFetchData(`${apiUrl}/activities?per_page=1000`),
+    safeFetchData(`${apiUrl}/public/car-rentals?per_page=1000`),
+    safeFetchData(`${apiUrl}/open-trips?per_page=1000`),
+  ]);
 
   const locales = ['en', 'id'];
 
-  // 5. Static Routes
+  const getLastModified = (dateString?: string) => {
+    if (!dateString) return new Date();
+    return new Date(dateString);
+  };
+
+  const getAlternates = (path: string) => {
+    return {
+      languages: {
+        en: `${baseUrl}/en${path}`,
+        id: `${baseUrl}/id${path}`,
+      },
+    };
+  };
+
+  // 2. Static Routes
   const staticPages = ['', '/packages', '/activities', '/car-rental', '/open-trip', '/blog', '/about', '/contact'];
-  const staticRoutes = staticPages.flatMap((route) =>
+  const staticRoutes: SitemapEntry[] = staticPages.flatMap((route) =>
     locales.map((locale) => ({
       url: `${baseUrl}/${locale}${route}`,
       lastModified: new Date(),
-      changeFrequency: 'daily' as const,
-      priority: route === '' ? 1 : 0.8,
+      changeFrequency: 'daily',
+      priority: route === '' ? 1.0 : 0.8,
+      alternates: getAlternates(route),
     }))
   );
 
-  // 6. Package Routes
-  const packageRoutes = allPackages.flatMap((pkg) =>
-    locales.map((locale) => ({
-      url: `${baseUrl}/${locale}/packages/${pkg.id}-${createSlug(pkg.name || "")}`,
-      lastModified: pkg.updated_at ? new Date(pkg.updated_at) : new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.9,
-    }))
-  );
+  // 3. Dynamic Routes (Packages)
+  const packageRoutes: SitemapEntry[] = allPackages.flatMap((pkg) => {
+    const slugPath = `/packages/${pkg.id}-${createSlug(pkg.name || "")}`;
+    const mainImage = getMainImage(pkg);
 
-  // 7. Activity Routes
-  const activityRoutes = allActivities.flatMap((act) =>
-    locales.map((locale) => ({
-      url: `${baseUrl}/${locale}/activities/${act.id}-${createSlug(act.name || "")}`,
-      lastModified: act.updated_at ? new Date(act.updated_at) : new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.9,
-    }))
-  );
-
-  // 8. Car Routes
-  const carRoutes = allCars.flatMap((car) =>
-    locales.map((locale) => {
-      const carName = `${car.brand} ${car.car_model}`; 
-      const slug = createSlug(carName);
-      
-      return {
-        url: `${baseUrl}/${locale}/car-rental/${car.id}-${slug}`,
-        lastModified: car.updated_at ? new Date(car.updated_at) : new Date(),
-        changeFrequency: 'weekly' as const,
+    return locales.map((locale) => {
+      const entry: SitemapEntry = {
+        url: `${baseUrl}/${locale}${slugPath}`,
+        lastModified: getLastModified(pkg.updated_at),
+        changeFrequency: 'weekly',
         priority: 0.9,
+        alternates: getAlternates(slugPath),
       };
-    })
-  );
+      if (mainImage) entry.images = [mainImage]; 
+      return entry;
+    });
+  });
 
-  // 9. Open Trip Routes
-  const openTripRoutes = allOpenTrips.flatMap((trip) =>
-    locales.map((locale) => ({
-      url: `${baseUrl}/${locale}/open-trip/${trip.id}-${createSlug(trip.name || "")}`,
-      lastModified: trip.updated_at ? new Date(trip.updated_at) : new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.9,
-    }))
-  );
+  // 4. Dynamic Routes (Activities)
+  const activityRoutes: SitemapEntry[] = allActivities.flatMap((act) => {
+    const slugPath = `/activities/${act.id}-${createSlug(act.name || "")}`;
+    const mainImage = getMainImage(act);
 
-  return [...staticRoutes, ...packageRoutes, ...activityRoutes, ...carRoutes, ...openTripRoutes];
+    return locales.map((locale) => {
+      const entry: SitemapEntry = {
+        url: `${baseUrl}/${locale}${slugPath}`,
+        lastModified: getLastModified(act.updated_at),
+        changeFrequency: 'weekly',
+        priority: 0.9,
+        alternates: getAlternates(slugPath),
+      };
+      if (mainImage) entry.images = [mainImage];
+      return entry; // ✅ FIX: Jangan lupa return entry!
+    });
+  });
+
+  // 5. Dynamic Routes (Cars)
+  const carRoutes: SitemapEntry[] = allCars.flatMap((car) => {
+    const carName = `${car.brand} ${car.car_model}`;
+    const slugPath = `/car-rental/${car.id}-${createSlug(carName)}`;
+    const mainImage = getMainImage(car);
+
+    return locales.map((locale) => {
+      const entry: SitemapEntry = {
+        url: `${baseUrl}/${locale}${slugPath}`,
+        lastModified: getLastModified(car.updated_at),
+        changeFrequency: 'weekly',
+        priority: 0.9,
+        alternates: getAlternates(slugPath),
+      };
+      if (mainImage) entry.images = [mainImage]; 
+      return entry;
+    });
+  });
+
+  // 6. Dynamic Routes (Open Trips)
+  const openTripRoutes: SitemapEntry[] = allOpenTrips.flatMap((trip) => {
+    const slugPath = `/open-trip/${trip.id}-${createSlug(trip.name || "")}`;
+    const mainImage = getMainImage(trip);
+
+    return locales.map((locale) => {
+      const entry: SitemapEntry = {
+        url: `${baseUrl}/${locale}${slugPath}`,
+        lastModified: getLastModified(trip.updated_at),
+        changeFrequency: 'weekly',
+        priority: 0.9,
+        alternates: getAlternates(slugPath),
+      };
+      if (mainImage) entry.images = [mainImage]; 
+      return entry;
+    });
+  });
+
+  // Cast return ke MetadataRoute.Sitemap untuk kepatuhan Next.js
+  return [
+    ...staticRoutes,
+    ...packageRoutes,
+    ...activityRoutes,
+    ...carRoutes,
+    ...openTripRoutes,
+  ] as MetadataRoute.Sitemap;
 }

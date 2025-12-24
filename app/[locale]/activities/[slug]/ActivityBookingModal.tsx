@@ -1,7 +1,7 @@
 // app/[locale]/activities/[slug]/ActivityBookingModal.tsx
 "use client";
 
-import React, { useState, FormEvent, useMemo, useEffect } from "react";
+import React, { useState, FormEvent, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl"; 
 import api from "@/lib/api";
@@ -113,7 +113,17 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     }
   }, [isOpen, user]);
 
-  const handleApplyCode = async () => {
+  const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  // ✅ FIX: Gunakan useCallback untuk handleApplyCode
+  const handleApplyCode = useCallback(async () => {
     if (!discountCode.trim()) return;
     setIsCheckingCode(true);
     
@@ -146,8 +156,9 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     } finally {
       setIsCheckingCode(false);
     }
-  };
+  }, [activity.id, discountCode, quantity, selectedAddons]);
 
+  // ✅ FIX: Update useEffect dependencies
   useEffect(() => {
     if (appliedDiscount > 0 && discountCode) {
       const timer = setTimeout(() => {
@@ -155,7 +166,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
       }, 800); 
       return () => clearTimeout(timer);
     }
-  }, [quantity, selectedAddons]);
+  }, [quantity, selectedAddons, appliedDiscount, discountCode, handleApplyCode]);
 
   const baseSubtotal = useMemo(() => {
     const pricePerPax = Number(activity.price) || 0;
@@ -171,15 +182,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   }, [selectedAddons, activity.addons]);
 
   const grandTotal = Math.max(0, baseSubtotal + addonsTotal - appliedDiscount);
-
-  const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const handleLocalPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const numericValue = e.target.value.replace(/[^0-9]/g, "");

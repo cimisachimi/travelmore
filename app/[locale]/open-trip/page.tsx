@@ -1,3 +1,4 @@
+// app/[locale]/open-trip/page.tsx
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";

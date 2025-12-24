@@ -1,7 +1,7 @@
 // app/[locale]/car-rental/[slug]/page.tsx
 import { Metadata, ResolvingMetadata } from "next";
 import CarDetailView from "@/components/views/CarDetailView";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Car } from "@/types/car";
 
 type Props = {
@@ -10,13 +10,13 @@ type Props = {
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://travelmore.travel';
 
-// ✅ Updated: Fetch by backend slug
-async function getCarData(slug: string): Promise<Car | null> {
+async function getCarData(slug: string, locale: string): Promise<Car | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
   if (!slug) return null;
 
   try {
     const res = await fetch(`${apiUrl}/public/car-rentals/slug/${slug}`, {
+      headers: { "Accept-Language": locale },
       next: { revalidate: 60 }, 
     });
 
@@ -34,7 +34,7 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug, locale } = await params;
-  const car = await getCarData(slug); // ✅ Fetch using direct slug
+  const car = await getCarData(slug, locale);
 
   if (!car) return { title: "Car Not Found | TravelMore", robots: "noindex, nofollow" };
 
@@ -49,8 +49,8 @@ export async function generateMetadata(
   const priceFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(priceVal);
 
   return {
-    title: `Rent ${car.brand} ${car.car_model} in Yogyakarta - TravelMore`,
-    description: `Rent ${car.brand} ${car.car_model} in Jogja starting from ${priceFormatted}/day. Clean, reliable, and instant booking.`,
+    title: `Sewa Mobil ${car.brand} ${car.car_model} Jogja - TravelMore`,
+    description: `Rental ${car.brand} ${car.car_model} di Yogyakarta. Mulai dari ${priceFormatted}/day. Clean, reliable, and instant booking.`,
     alternates: {
       canonical: canonicalUrl,
       languages: {
@@ -69,25 +69,68 @@ export async function generateMetadata(
 
 export default async function Page({ params }: Props) {
   const { slug, locale } = await params;
-  const carData = await getCarData(slug); // ✅ Direct slug lookup
+  const carData = await getCarData(slug, locale);
 
   if (!carData) notFound();
 
-  // JSON-LD logic using carData.slug
+  if (slug !== carData.slug) {
+    permanentRedirect(`/${locale}/car-rental/${carData.slug}`);
+  }
+
+  // 1. Schema Utama: Product (Car)
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: `${carData.brand} ${carData.car_model}`,
-    offers: {
-      '@type': 'Offer',
-      price: carData.price_per_day,
-      url: `${baseUrl}/${locale}/car-rental/${carData.slug}`,
+    'name': `${carData.brand} ${carData.car_model} Rental Yogyakarta`,
+    'description': carData.description || `Sewa mobil ${carData.brand} ${carData.car_model} di Yogyakarta dengan harga terbaik.`,
+    
+    // ✅ FIX SEO: Image URL lengkap
+    'image': carData.images?.map(img => `${process.env.NEXT_PUBLIC_API_BASE_URL}/storage/${img.url}`) || [],
+    
+    'brand': { 
+      '@type': 'Brand', 
+      'name': carData.brand 
     },
+    
+    'offers': {
+      '@type': 'Offer',
+      'priceCurrency': 'IDR', // ✅ Wajib ada
+      'price': carData.price_per_day,
+      'availability': 'https://schema.org/InStock',
+      'url': `${baseUrl}/${locale}/car-rental/${carData.slug}`,
+      'offeredBy': {
+        '@type': 'TravelAgency',
+        'name': 'TravelMore',
+        'url': baseUrl,
+        'logo': `${baseUrl}/logo.png`,
+        'telephone': '+6282224291148',
+        'priceRange': 'IDR',
+        'address': {
+          '@type': 'PostalAddress',
+          'streetAddress': 'Jl. Magelang - Yogyakarta No.71, Sleman',
+          'addressLocality': 'Yogyakarta',
+          'postalCode': '55285',
+          'addressCountry': 'ID'
+        }
+      }
+    },
+  };
+
+  // 2. ✅ PERBAIKAN SEO: BreadcrumbList
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': `${baseUrl}/${locale}` },
+      { '@type': 'ListItem', 'position': 2, 'name': 'Car Rental', 'item': `${baseUrl}/${locale}/car-rental` },
+      { '@type': 'ListItem', 'position': 3, 'name': `${carData.brand} ${carData.car_model}`, 'item': `${baseUrl}/${locale}/car-rental/${carData.slug}` }
+    ]
   };
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <CarDetailView initialData={carData} />
     </>
   );
