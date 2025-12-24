@@ -1,3 +1,4 @@
+// app/[locale]/packages/[slug]/page.tsx
 import { Metadata, ResolvingMetadata } from "next";
 import PackageDetailView from "@/components/views/PackageDetailView";
 import { notFound } from "next/navigation"; 
