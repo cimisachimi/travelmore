@@ -27,6 +27,7 @@ export interface Addon {
 export interface OpenTrip {
   id: number;
   name: string;
+  slug : string;
   description?: string;
   location?: string;
   duration: number; // dalam hari

@@ -10,6 +10,7 @@ import { CalendarClock, Filter, X } from "lucide-react";
 
 interface OpenTrip {
   id: number;
+  slug: string; // ✅ Added slug field
   name: string;
   category?: string;
   location?: string;
@@ -29,16 +30,12 @@ interface ApiResponse {
   };
 }
 
-// ✅ FIX: Helper untuk URL Gambar yang aman
 const getImageUrl = (path: string | null | undefined) => {
-  if (!path || path === 'null') return "/placeholder.jpg"; // Pastikan ada file ini di folder public
+  if (!path || path === 'null') return "/placeholder.jpg";
   if (path.startsWith("http")) return path; 
-  if (path.startsWith("/")) return path; // Asumsi path lokal
-  
-  // Hapus slash di akhir URL API dan di awal path gambar untuk mencegah double slash
+  if (path.startsWith("/")) return path;
   const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, "");
   const cleanPath = path.replace(/^\//, "");
-  
   return `${baseUrl}/storage/${cleanPath}`;
 };
 
@@ -52,7 +49,6 @@ const parsePrice = (value: string | number | null | undefined): number => {
     return isNaN(result) ? 0 : result;
 };
 
-// Icon Filter
 const FilterIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
     <path fillRule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.59L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z" clipRule="evenodd" />
@@ -79,10 +75,8 @@ export default function OpenTripPage() {
 
   useEffect(() => {
     let isMounted = true;
-
     const fetchOpenTrips = async () => {
       setLoading(true);
-      
       let allData: OpenTrip[] = [];
       let page = 1;
       let hasMore = true;
@@ -94,18 +88,14 @@ export default function OpenTripPage() {
             const response = await api.get<ApiResponse>('/open-trips', {
                 params: { per_page: PER_PAGE, page: page }
             });
-            
             if (!isMounted) return;
-
             const responseData = Array.isArray(response.data) ? response.data : response.data.data;
             const newData = responseData || [];
-
             if (newData.length === 0) {
                 hasMore = false;
             } else {
                 allData = [...allData, ...newData];
                 const meta = !Array.isArray(response.data) ? response.data.meta : null;
-                
                 if (meta && meta.current_page >= meta.last_page) {
                     hasMore = false;
                 } else if (!meta && newData.length < PER_PAGE) {
@@ -114,32 +104,25 @@ export default function OpenTripPage() {
                 page++;
             }
         }
-
         const activeTrips = allData.filter(trip => trip.is_active !== false);
         const uniqueTrips = Array.from(new Map(activeTrips.map(item => [item.id, item])).values());
-        
         setApiPackages(uniqueTrips);
-
         if (uniqueTrips.length > 0) {
           const prices = uniqueTrips.map((p) => parsePrice(p.starting_from_price));
           const highestPrice = Math.max(...prices);
-          
           if (highestPrice > 0) {
             const niceMax = Math.ceil(highestPrice / 500000) * 500000;
             setPriceSliderMax(niceMax);
             setMaxPrice(niceMax);
           }
         }
-
       } catch (error) {
         console.error("Failed to fetch open trips:", error);
       } finally {
         if (isMounted) setLoading(false);
       }
     };
-
     fetchOpenTrips();
-
     return () => { isMounted = false; };
   }, []);
 
@@ -242,10 +225,10 @@ export default function OpenTripPage() {
             <main className="w-full lg:w-3/4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {filteredPackages.map((pkg) => (
-                      <Link key={pkg.id} href={`/open-trip/${pkg.id}-${pkg.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`} className="block group h-full">
+                      /* ✅ Updated: Using pkg.slug from backend */
+                      <Link key={pkg.id} href={`/open-trip/${pkg.slug}`} className="block group h-full">
                           <div className={`${cardBgClass} rounded-2xl shadow-lg border ${borderClass} overflow-hidden flex flex-col h-full hover:shadow-2xl transition duration-300 transform hover:-translate-y-1`}>
                               <div className="relative h-56 w-full overflow-hidden">
-                                  {/* ✅ FIX: Gunakan helper getImageUrl */}
                                   <Image 
                                       src={getImageUrl(pkg.thumbnail_url)} 
                                       alt={pkg.name} 

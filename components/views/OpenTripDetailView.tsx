@@ -1,3 +1,4 @@
+// components/views/OpenTripDetailView.tsx
 "use client";
 
 import React, { useState, useRef } from "react";
@@ -7,7 +8,8 @@ import { useTranslations } from "next-intl";
 import { useTheme } from "@/components/ThemeProvider";
 import { 
   Clock, MapPin, ArrowLeft, CheckCircle2, Users, 
-  Camera, Info, Map as MapIcon, DollarSign, HelpCircle, CalendarDays, XCircle 
+  Camera, Info, Map as MapIcon, DollarSign, HelpCircle, CalendarDays, XCircle,
+  MessageCircle // Added for the help button
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext"; 
 import OpenTripBookingModal from "@/app/[locale]/open-trip/[slug]/OpenTripBookingModal"; 
@@ -23,18 +25,24 @@ export default function OpenTripDetailView({ initialData }: OpenTripDetailViewPr
   const t = useTranslations("OpenTripDetail");
   const tBooking = useTranslations("booking");
 
-  // State: Tidak perlu masukkan initialData ke useState jika tidak akan diubah di client
+  // State
   const trip = initialData; 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const sliderRef = useRef<HTMLDivElement>(null);
 
+  // Theme Logic
   const isDark = (theme as unknown as string) === "dark";
   const mainBgClass = isDark ? "bg-black" : "bg-gray-50";
   const contentBgClass = isDark ? "bg-gray-900" : "bg-white";
   const textClass = isDark ? "text-white" : "text-gray-900"; 
   const textMutedClass = isDark ? "text-gray-400" : "text-gray-600";
   const borderClass = isDark ? "border-gray-700" : "border-gray-200";
+
+  // WhatsApp Config
+  const whatsappNumber = "6282224291148";
+  const whatsappMsg = encodeURIComponent(`Hi TravelMore! I'm interested in the "${trip.name}" open trip. Can you provide more details?`);
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMsg}`;
 
   const displayImages = trip.images && trip.images.length > 0 
     ? trip.images 
@@ -204,9 +212,10 @@ export default function OpenTripDetailView({ initialData }: OpenTripDetailViewPr
             )}
           </div>
 
-          {/* RIGHT SIDEBAR (BOOKING) */}
-          <div className="lg:col-span-1">
-            <div className={`lg:sticky lg:top-28 ${contentBgClass} rounded-3xl p-6 shadow-xl border ${borderClass}`}>
+          {/* RIGHT SIDEBAR (BOOKING & HELP) */}
+          <div className="lg:col-span-1 flex flex-col gap-6 sticky top-28 h-fit">
+            {/* Booking Card */}
+            <div className={`${contentBgClass} rounded-3xl p-6 shadow-xl border ${borderClass}`}>
               <div className="mb-6">
                 <span className={`text-sm font-medium ${textMutedClass}`}>{t("startingFrom")}</span>
                 <div className="flex flex-wrap items-baseline gap-1">
@@ -216,7 +225,10 @@ export default function OpenTripDetailView({ initialData }: OpenTripDetailViewPr
                 <p className="text-xs text-gray-400 mt-1 italic">{t("priceDisclaimer")}</p>
               </div>
               
-              <button onClick={() => setIsModalOpen(true)} className="w-full py-4 bg-primary hover:bg-primary/90 text-white font-bold text-lg rounded-xl shadow-lg shadow-primary/30 transition-all transform hover:-translate-y-1 active:scale-95">
+              <button 
+                onClick={() => setIsModalOpen(true)} 
+                className="w-full py-4 bg-primary hover:bg-primary/90 text-white font-bold text-lg rounded-xl shadow-lg shadow-primary/30 transition-all transform hover:-translate-y-1 active:scale-95"
+              >
                 {t("bookNow")}
               </button>
 
@@ -226,6 +238,21 @@ export default function OpenTripDetailView({ initialData }: OpenTripDetailViewPr
                     {trip.meeting_points && trip.meeting_points.length > 0 ? trip.meeting_points.map(mp => mp.name).join(', ') : t("pickupDesc")}
                   </p>
               </div>
+            </div>
+
+            {/* Need Help Card */}
+            <div className={`${contentBgClass} rounded-3xl p-6 shadow-lg border ${borderClass}`}>
+               <h4 className={`font-bold mb-2 ${textClass}`}>{tBooking("needHelp")}</h4>
+               <p className={`text-sm mb-4 ${textMutedClass}`}>Contact our support team for custom rental arrangements or special requests.</p>
+               <a 
+                 href={whatsappUrl}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl border font-bold text-center transition-all duration-300 hover:shadow-md active:scale-95 ${isDark ? "border-gray-700 hover:bg-gray-800 text-white" : "border-gray-200 hover:bg-gray-50 text-gray-900"}`}
+               >
+                 <MessageCircle size={18} />
+                 {tBooking("sendMessage")}
+               </a>
             </div>
           </div>
         </div>

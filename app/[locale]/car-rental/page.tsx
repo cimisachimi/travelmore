@@ -8,9 +8,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { Users, Gauge, Luggage } from "lucide-react";
 import api from "@/lib/api";
 import { useTheme } from "@/components/ThemeProvider";
+import { AxiosError } from "axios"; // ✅ Added import for better error typing
 
 interface ApiCar {
   id: number;
+  slug: string; 
   car_model: string;
   brand: string;
   category: "regular" | "exclusive";
@@ -22,15 +24,6 @@ interface ApiCar {
   trunk_size: number;
   features: string[];
   images: { url: string; type: 'thumbnail' | 'gallery' }[];
-}
-
-// --- Helper Slug Function ---
-function createSlug(brand: string, model: string) {
-  const fullName = `${brand} ${model}`;
-  return fullName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with -
-    .replace(/(^-|-$)+/g, '');   // Remove leading/trailing -
 }
 
 // --- Reusable Icon Component ---
@@ -66,18 +59,13 @@ function CarCard({ car, isExclusive }: { car: ApiCar; isExclusive: boolean }) {
 
   const displayType = car.car_type?.toUpperCase() || "GENERAL";
 
-  // Style Variables
   const cardBgClass = isExclusive ? "bg-gray-900 border border-gray-800" : "bg-card shadow-md";
   const textTitleClass = isExclusive ? "text-white" : "text-foreground";
   const textMutedClass = isExclusive ? "text-gray-400" : "text-foreground/70";
   const accentColor = isExclusive ? "text-yellow-500" : "text-primary";
 
-  // ✅ UPDATED LINK WITH SLUG
-  const slug = createSlug(car.brand, car.car_model);
-  const href = `/car-rental/${car.id}-${slug}`;
-
   return (
-    <Link href={href} className="block h-full">
+    <Link href={`/car-rental/${car.slug}`} className="block h-full">
       <div className={`${cardBgClass} rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 h-full flex flex-col group`}>
         <div className="relative h-56 w-full">
           <Image
@@ -88,7 +76,7 @@ function CarCard({ car, isExclusive }: { car: ApiCar; isExclusive: boolean }) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </div>
-        <div className="p-5 flex flex-col flex-grow">
+        <div className="p-5 flex flex-col grow"> {/* ✅ Changed flex-grow to grow */}
           <p className={`text-sm font-semibold ${accentColor}`}>{displayType}</p>
           <h3 className={`text-2xl font-bold mt-1 ${textTitleClass}`}>{carName}</h3>
           <div className={`flex items-center gap-4 mt-4 text-sm ${textMutedClass}`}>
@@ -96,7 +84,7 @@ function CarCard({ car, isExclusive }: { car: ApiCar; isExclusive: boolean }) {
             <InfoIcon icon={Gauge} text={car.transmission} colorClass={textMutedClass} />
             <InfoIcon icon={Luggage} text={`${car.trunk_size} Bags`} colorClass={textMutedClass} />
           </div>
-          <p className={`${textMutedClass} mt-4 line-clamp-2 flex-grow h-12`}>
+          <p className={`${textMutedClass} mt-4 line-clamp-2 grow h-12`}> {/* ✅ Changed flex-grow to grow */}
             {car.description || "No description available."}
           </p>
           <div className={`mt-5 pt-4 border-t ${isExclusive ? "border-gray-800" : "border-border/50"}`}>
@@ -111,10 +99,8 @@ function CarCard({ car, isExclusive }: { car: ApiCar; isExclusive: boolean }) {
   );
 }
 
-// --- Main Page Component ---
 export default function CarRentalPage() {
   const { theme, setTheme } = useTheme();
-
   const t = useTranslations("carRental");
   const tNav = useTranslations("Navbar");
   const locale = useLocale();
@@ -123,20 +109,15 @@ export default function CarRentalPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Auto-reset theme on unmount
   useEffect(() => {
-    return () => {
-      setTheme("regular");
-    };
+    return () => setTheme("regular");
   }, [setTheme]);
 
-  // Logic Style
   const isExclusive = theme === "exclusive";
   const mainBgClass = isExclusive ? "bg-black" : "bg-background";
   const textClass = isExclusive ? "text-white" : "text-foreground";
   const textMutedClass = isExclusive ? "text-gray-400" : "text-foreground/60";
 
-  // Filter cars based on the current theme (category)
   const filteredCars = useMemo(() => {
     return cars.filter((car) => car.category === theme);
   }, [cars, theme]);
@@ -145,21 +126,11 @@ export default function CarRentalPage() {
     const fetchCars = async () => {
       setLoading(true);
       try {
-        // ✅ FIX: Menambahkan '/public' karena backend mengharuskannya
-        // URL Akhir: https://api.travelmore.travel/api/public/car-rentals?locale=en
-        const response = await api.get("/public/car-rentals", {
-          params: { locale }
-        });
-        
-        if (response.status !== 200) throw new Error("Failed to fetch car rental data.");
-        setCars(response.data.data || response.data); // Handle jika response dibungkus 'data'
-      } catch (err: unknown) {
-        let errorMessage = "An unknown error occurred.";
-        if (err instanceof Error) errorMessage = err.message;
-        
-        // Debugging di console browser
-        console.error("Fetch Cars Error:", err);
-        setError(errorMessage);
+        const response = await api.get("/public/car-rentals", { params: { locale } });
+        setCars(response.data.data || response.data);
+      } catch (err: unknown) { // ✅ Replaced 'any' with 'unknown'
+        const axiosError = err as AxiosError<{ message: string }>; // ✅ Added proper type casting
+        setError(axiosError.message || "Error fetching cars.");
       } finally {
         setLoading(false);
       }
@@ -167,62 +138,26 @@ export default function CarRentalPage() {
     fetchCars();
   }, [locale]);
 
-  if (loading) {
-    return (
-      <div className={`flex justify-center items-center min-h-screen ${mainBgClass}`}>
-        <p className={`text-xl ${textMutedClass}`}>Loading cars...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={`flex justify-center items-center min-h-screen ${mainBgClass}`}>
-        <p className="text-xl text-red-500">Error: {error}</p>
-        <p className="text-sm text-gray-500 mt-2">Cek Console Log untuk detail.</p>
-      </div>
-    );
-  }
+  if (loading) return <div className={`flex justify-center items-center min-h-screen ${mainBgClass}`}><p className={textMutedClass}>Loading cars...</p></div>;
+  
+  // ✅ Added error UI to resolve unused 'error' variable warning
+  if (error) return <div className={`flex justify-center items-center min-h-screen ${mainBgClass}`}><p className="text-red-500 font-bold">{error}</p></div>;
 
   return (
     <div className={`${mainBgClass} min-h-screen transition-colors duration-300`}>
       <div className="container mx-auto px-4 lg:px-8 py-16">
         <div className="text-center mb-12">
-          <h1 className={`text-5xl font-extrabold tracking-tight ${textClass}`}>
-            {t("title")}
-          </h1>
-          <p className={`mt-4 text-lg max-w-2xl mx-auto ${textMutedClass}`}>
-            {t("subtitle")}
-          </p>
-
-          {/* Toggle Button */}
+          <h1 className={`text-5xl font-extrabold tracking-tight ${textClass}`}>{t("title")}</h1>
+          <p className={`mt-4 text-lg max-w-2xl mx-auto ${textMutedClass}`}>{t("subtitle")}</p>
           <div className="flex justify-center mt-8">
             <div className={`flex items-center p-1.5 rounded-full ${isExclusive ? "bg-gray-800" : "bg-gray-100"}`}>
-              <button 
-                onClick={() => setTheme("regular")} 
-                className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${!isExclusive ? "bg-white text-primary shadow-md" : "text-gray-400 hover:text-white"}`}
-              >
-                {tNav("regular", { defaultMessage: "Regular" })}
-              </button>
-              <button 
-                onClick={() => setTheme("exclusive")} 
-                className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${isExclusive ? "bg-yellow-500 text-black shadow-md" : "text-gray-500 hover:text-black"}`}
-              >
-                {tNav("exclusive", { defaultMessage: "Exclusive" })}
-              </button>
+              <button onClick={() => setTheme("regular")} className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${!isExclusive ? "bg-white text-primary shadow-md" : "text-gray-400 hover:text-white"}`}>{tNav("regular")}</button>
+              <button onClick={() => setTheme("exclusive")} className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${isExclusive ? "bg-yellow-500 text-black shadow-md" : "text-gray-500 hover:text-black"}`}>{tNav("exclusive")}</button>
             </div>
           </div>
         </div>
-
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredCars.map((car) => (
-            <CarCard key={car.id} car={car} isExclusive={isExclusive} />
-          ))}
-          {filteredCars.length === 0 && (
-            <div className="col-span-full text-center py-20">
-              <p className={textMutedClass}>No cars found in this category.</p>
-            </div>
-          )}
+          {filteredCars.map((car) => <CarCard key={car.id} car={car} isExclusive={isExclusive} />)}
         </div>
       </div>
     </div>

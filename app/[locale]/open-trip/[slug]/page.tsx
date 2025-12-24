@@ -9,32 +9,23 @@ type Props = {
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://travelmore.travel';
 
-// ✅ FIX: Helper untuk Server Side
 function getImageUrl(path: string | null | undefined) {
     if (!path) return '/placeholder.jpg';
     if (path.startsWith('http')) return path;
-    if (path.startsWith('/')) return `${process.env.NEXT_PUBLIC_SITE_URL}${path}`; // Untuk SEO, url local harus full absolute path
-    
-    // Clean slash
+    if (path.startsWith('/')) return `${process.env.NEXT_PUBLIC_SITE_URL}${path}`;
     const apiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
     const cleanPath = path.replace(/^\//, '');
     return `${apiBase}/storage/${cleanPath}`;
 }
 
-function createSlug(name: string) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)+/g, '');
-}
-
-async function getOpenTripData(id: string): Promise<OpenTrip | null> {
+async function getOpenTripData(slug: string): Promise<OpenTrip | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
   
-  if (!id || isNaN(Number(id))) return null;
+  if (!slug) return null;
 
   try {
-    const res = await fetch(`${apiUrl}/open-trips/${id}`, {
+    // ✅ Updated: Fetch using slug endpoint
+    const res = await fetch(`${apiUrl}/open-trips/slug/${slug}`, {
       next: { revalidate: 60 }, 
     });
 
@@ -52,8 +43,7 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug, locale } = await params;
-  const id = slug.split('-')[0];
-  const trip = await getOpenTripData(id);
+  const trip = await getOpenTripData(slug); // ✅ Fetch by direct slug
 
   if (!trip) {
     return {
@@ -62,11 +52,9 @@ export async function generateMetadata(
     };
   }
 
-  const correctSlug = `${trip.id}-${createSlug(trip.name)}`;
-  const canonicalUrl = `${baseUrl}/${locale}/open-trip/${correctSlug}`;
+  // Use the backend slug as the source of truth
+  const canonicalUrl = `${baseUrl}/${locale}/open-trip/${trip.slug}`;
   const previousImages = (await parent).openGraph?.images || [];
-  
-  // ✅ FIX: Gunakan Helper
   const mainImage = getImageUrl(trip.thumbnail_url);
 
   const priceVal = Number(trip.starting_from_price) || 0;
@@ -78,8 +66,8 @@ export async function generateMetadata(
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        'en': `${baseUrl}/en/open-trip/${correctSlug}`,
-        'id': `${baseUrl}/id/open-trip/${correctSlug}`,
+        'en': `${baseUrl}/en/open-trip/${trip.slug}`,
+        'id': `${baseUrl}/id/open-trip/${trip.slug}`,
       },
     },
     openGraph: {
@@ -95,19 +83,17 @@ export async function generateMetadata(
 
 export default async function Page({ params }: Props) {
   const { slug, locale } = await params;
-  const id = slug.split('-')[0];
-  const tripData = await getOpenTripData(id);
+  const tripData = await getOpenTripData(slug); // ✅ No split needed
 
   if (!tripData) {
     notFound();
   }
 
-  const correctSlug = `${tripData.id}-${createSlug(tripData.name)}`;
-  if (slug !== correctSlug) {
-    permanentRedirect(`/${locale}/open-trip/${correctSlug}`);
+  // Auto Redirect if the URL slug doesn't match the current localized slug
+  if (slug !== tripData.slug) {
+    permanentRedirect(`/${locale}/open-trip/${tripData.slug}`);
   }
 
-  // ✅ FIX: Gunakan Helper
   const mainImage = getImageUrl(tripData.thumbnail_url);
 
   const jsonLd = {
@@ -131,7 +117,7 @@ export default async function Page({ params }: Props) {
       priceCurrency: 'IDR',
       price: tripData.starting_from_price,
       availability: 'https://schema.org/InStock',
-      url: `${baseUrl}/${locale}/open-trip/${correctSlug}`,
+      url: `${baseUrl}/${locale}/open-trip/${tripData.slug}`,
       validFrom: new Date().toISOString(),
     },
     offeredBy: {

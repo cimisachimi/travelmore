@@ -1,3 +1,4 @@
+// components/views/CarDetailView.tsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -16,7 +17,7 @@ import { AxiosError } from "axios";
 import { 
   Car as CarIcon, Fuel, Luggage, User as UserIcon, Settings, 
   Clock, TicketPercent, Loader2, CheckCircle2, AlertCircle, MapPin,
-  ArrowLeft 
+  ArrowLeft, MessageCircle 
 } from 'lucide-react';
 import { Car } from "@/types/car";
 
@@ -37,6 +38,7 @@ interface ApiCarAvailabilityMap {
 
 export default function CarDetailView({ initialData }: CarDetailViewProps) {
   const t = useTranslations("carDetail");
+  const tCommon = useTranslations("packages"); // Added for the needHelp translation key
   const { user } = useAuth();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
@@ -79,6 +81,11 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
   const cardBgClass = isExclusive ? "bg-gray-900 border-gray-800" : "bg-card shadow-lg";
   const inputBgClass = isExclusive ? "bg-gray-950 border-gray-800 text-white" : "bg-background border-gray-300";
   const buttonClass = isExclusive ? "bg-yellow-500 text-black hover:bg-yellow-400" : "bg-primary text-primary-foreground hover:bg-primary/90";
+
+  // WhatsApp Config Logic
+  const whatsappNumber = "6282224291148";
+  const whatsappMsg = encodeURIComponent(`Hi TravelMore! I'm interested in renting the "${car.brand} ${car.car_model}". Can you provide more details?`);
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMsg}`;
 
   const calendarStyle = {
     "--rdp-accent-color": isExclusive ? "#eab308" : "var(--primary, #000000)",
@@ -359,144 +366,161 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
             )}
           </div>
 
-          {/* --- RIGHT: Booking Form --- */}
-          <div className={`${cardBgClass} rounded-lg p-6 sticky top-8 h-fit`}>
-            <h3 className="text-xl font-bold mb-4">{t("form.title")}</h3>
-            <div className={`mb-4 p-4 border rounded-lg ${isExclusive ? "bg-black border-gray-800" : "bg-background"}`}>
-              <span className={`text-2xl font-bold ${accentColorClass}`}>{formatCurrency(price)}</span>
-              <span className={textMutedClass}> /day</span>
-            </div>
-
-            <div className="calendar-container mb-6 flex justify-center" style={calendarStyle}>
-              <DayPicker
-                mode="range"
-                selected={selectedRange}
-                onSelect={setSelectedRange}
-                disabled={disabledDays}
-                modifiers={{ available: availableDays, booked: bookedDays, maintenance: maintenanceDays }}
-                modifiersClassNames={{ available: "rdp-day_available", booked: "rdp-day_booked", maintenance: "rdp-day_maintenance" }}
-                classNames={{
-                    day_selected: isExclusive 
-                        ? "!bg-yellow-500 !text-black hover:!bg-yellow-400" 
-                        : "!bg-primary !text-white hover:!bg-primary/90",
-                    day_range_middle: isExclusive
-                        ? "!bg-yellow-500/20 !text-yellow-500"
-                        : "!bg-gray-100 !text-black",
-                }}
-              />
-            </div>
-
-            {user ? (
-              bookingSuccess ? (
-                <div className={`text-center p-6 rounded-lg border ${isExclusive ? "bg-green-900/20 border-green-800 text-green-200" : "bg-green-50 border-green-200 text-green-800"}`}>
-                  <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
-                  <h4 className="font-bold text-lg">Booking Successful!</h4>
-                  <p className="mt-1 mb-4">Your car is reserved. Please proceed to payment.</p>
-                  <button onClick={() => router.push('/profile')} className={`w-full font-bold py-3 rounded-lg ${buttonClass}`}>
-                    Go to My Profile
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 gap-3">
-                        <input type="text" value={name} disabled className={`w-full border rounded-lg px-4 py-2 opacity-70 cursor-not-allowed ${inputBgClass}`} />
-                        <input type="email" value={email} disabled className={`w-full border rounded-lg px-4 py-2 opacity-70 cursor-not-allowed ${inputBgClass}`} />
-                    </div>
-                    <input type="tel" placeholder={t("form.phone")} value={phone} onChange={(e) => setPhone(e.target.value)} required className={`w-full border rounded-lg px-4 py-2 focus:ring-2 outline-none ${isExclusive ? "bg-black border-gray-700 focus:ring-yellow-500" : "bg-background focus:ring-primary"}`} />
-                    <div className="grid grid-cols-3 gap-3">
-                        <div className="col-span-1">
-                            <div className="relative">
-                                <Clock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                                <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className={`w-full border rounded-lg pl-10 pr-2 py-2 focus:ring-2 outline-none ${isExclusive ? "bg-black border-gray-700 focus:ring-yellow-500" : "bg-background focus:ring-primary"}`} />
-                            </div>
-                        </div>
-                        <div className="col-span-2">
-                            <div className="relative">
-                                <MapPin className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                                <input type="text" placeholder={t("form.pickup")} value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} required className={`w-full border rounded-lg pl-10 pr-4 py-2 focus:ring-2 outline-none ${isExclusive ? "bg-black border-gray-700 focus:ring-yellow-500" : "bg-background focus:ring-primary"}`} />
-                            </div>
-                        </div>
-                    </div>
-                  </div>
-
-                  {/* DISCOUNT CODE */}
-                  <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-1">
-                        <TicketPercent size={14} /> Discount Code
-                    </label>
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            placeholder="SALE10"
-                            value={discountCode}
-                            onChange={(e) => {
-                                setDiscountCode(e.target.value.toUpperCase());
-                                setAppliedDiscount(0);
-                                setDiscountMessage(null);
-                            }}
-                            className={`w-full border rounded-lg px-3 py-2 outline-none uppercase ${isExclusive ? "bg-black border-gray-700 focus:ring-2 focus:ring-yellow-500" : "bg-background border-gray-300 focus:ring-2 focus:ring-primary"}`}
-                        />
-                        <button
-                            type="button"
-                            onClick={handleApplyCode}
-                            disabled={!discountCode.trim() || isCheckingCode || !selectedRange?.from}
-                            className={`font-bold px-4 rounded-lg disabled:opacity-50 min-w-[80px] flex items-center justify-center transition-colors ${buttonClass}`}
-                        >
-                            {isCheckingCode ? <Loader2 size={16} className="animate-spin" /> : "Apply"}
-                        </button>
-                    </div>
-                    {discountMessage && (
-                        <div className={`mt-2 text-xs flex items-center gap-1.5 ${discountMessage.type === 'success' ? 'text-green-500' : 'text-red-500'}`}>
-                            {discountMessage.type === 'success' ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />} 
-                            {discountMessage.text}
-                        </div>
-                    )}
-                  </div>
-
-                  {/* PRICE SUMMARY */}
-                  <div className={`p-4 rounded-lg border space-y-2 ${isExclusive ? "bg-black/50 border-gray-800" : "bg-muted/30 border-border"}`}>
-                    <div className="flex justify-between text-sm">
-                        <span className={textMutedClass}>Duration</span>
-                        <span>{totalDays} Days</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                        <span className={textMutedClass}>Rate</span>
-                        <span>{formatCurrency(price)}/day</span>
-                    </div>
-                    <div className={`flex justify-between text-sm font-medium pt-2 border-t border-dashed ${isExclusive ? "border-gray-800" : "border-border"}`}>
-                        <span>Subtotal</span>
-                        <span>{formatCurrency(baseTotal)}</span>
-                    </div>
-                    {appliedDiscount > 0 && (
-                        <div className="flex justify-between text-sm text-green-500 font-bold">
-                            <span>Discount</span>
-                            <span>- {formatCurrency(appliedDiscount)}</span>
-                        </div>
-                    )}
-                    <div className={`flex justify-between text-lg font-bold pt-2 border-t mt-2 ${accentColorClass} ${isExclusive ? "border-gray-800" : "border-border"}`}>
-                        <span>Total Payment</span>
-                        <span>{formatCurrency(grandTotal)}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={!selectedRange?.from || !selectedRange?.to || isSubmitting}
-                    className={`w-full font-bold py-3 rounded-lg disabled:opacity-50 transition-all shadow-md ${buttonClass}`}
-                  >
-                    {isSubmitting ? <span className="flex items-center justify-center gap-2"><Loader2 size={18} className="animate-spin"/> Processing...</span> : t("form.button")}
-                  </button>
-                </form>
-              )
-            ) : (
-              <div className={`mt-6 text-center p-4 rounded-lg border ${isExclusive ? "bg-yellow-900/20 border-yellow-800 text-yellow-200" : "bg-yellow-50 border-yellow-200 text-yellow-800"}`}>
-                <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-                <p className="text-sm">
-                  Please <Link href="/login" className="font-bold underline">log in</Link> to book this car.
-                </p>
+          {/* --- RIGHT: Booking Form parent wrapper FIX --- */}
+          <div className="flex flex-col gap-6 sticky top-8 h-fit">
+            <div className={`${cardBgClass} rounded-lg p-6`}>
+              <h3 className="text-xl font-bold mb-4">{t("form.title")}</h3>
+              <div className={`mb-4 p-4 border rounded-lg ${isExclusive ? "bg-black border-gray-800" : "bg-background"}`}>
+                <span className={`text-2xl font-bold ${accentColorClass}`}>{formatCurrency(price)}</span>
+                <span className={textMutedClass}> /day</span>
               </div>
-            )}
+
+              <div className="calendar-container mb-6 flex justify-center" style={calendarStyle}>
+                <DayPicker
+                  mode="range"
+                  selected={selectedRange}
+                  onSelect={setSelectedRange}
+                  disabled={disabledDays}
+                  modifiers={{ available: availableDays, booked: bookedDays, maintenance: maintenanceDays }}
+                  modifiersClassNames={{ available: "rdp-day_available", booked: "rdp-day_booked", maintenance: "rdp-day_maintenance" }}
+                  classNames={{
+                      day_selected: isExclusive 
+                          ? "!bg-yellow-500 !text-black hover:!bg-yellow-400" 
+                          : "!bg-primary !text-white hover:!bg-primary/90",
+                      day_range_middle: isExclusive
+                          ? "!bg-yellow-500/20 !text-yellow-500"
+                          : "!bg-gray-100 !text-black",
+                  }}
+                />
+              </div>
+
+              {user ? (
+                bookingSuccess ? (
+                  <div className={`text-center p-6 rounded-lg border ${isExclusive ? "bg-green-900/20 border-green-800 text-green-200" : "bg-green-50 border-green-200 text-green-800"}`}>
+                    <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
+                    <h4 className="font-bold text-lg">Booking Successful!</h4>
+                    <p className="mt-1 mb-4">Your car is reserved. Please proceed to payment.</p>
+                    <button onClick={() => router.push('/profile')} className={`w-full font-bold py-3 rounded-lg ${buttonClass}`}>
+                      Go to My Profile
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 gap-3">
+                          <input type="text" value={name} disabled className={`w-full border rounded-lg px-4 py-2 opacity-70 cursor-not-allowed ${inputBgClass}`} />
+                          <input type="email" value={email} disabled className={`w-full border rounded-lg px-4 py-2 opacity-70 cursor-not-allowed ${inputBgClass}`} />
+                      </div>
+                      <input type="tel" placeholder={t("form.phone")} value={phone} onChange={(e) => setPhone(e.target.value)} required className={`w-full border rounded-lg px-4 py-2 focus:ring-2 outline-none ${isExclusive ? "bg-black border-gray-700 focus:ring-yellow-500" : "bg-background focus:ring-primary"}`} />
+                      <div className="grid grid-cols-3 gap-3">
+                          <div className="col-span-1">
+                              <div className="relative">
+                                  <Clock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                                  <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className={`w-full border rounded-lg pl-10 pr-2 py-2 focus:ring-2 outline-none ${isExclusive ? "bg-black border-gray-700 focus:ring-yellow-500" : "bg-background focus:ring-primary"}`} />
+                              </div>
+                          </div>
+                          <div className="col-span-2">
+                              <div className="relative">
+                                  <MapPin className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                                  <input type="text" placeholder={t("form.pickup")} value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} required className={`w-full border rounded-lg pl-10 pr-4 py-2 focus:ring-2 outline-none ${isExclusive ? "bg-black border-gray-700 focus:ring-yellow-500" : "bg-background focus:ring-primary"}`} />
+                              </div>
+                          </div>
+                      </div>
+                    </div>
+
+                    {/* DISCOUNT CODE */}
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-1">
+                          <TicketPercent size={14} /> Discount Code
+                      </label>
+                      <div className="flex gap-2">
+                          <input
+                              type="text"
+                              placeholder="SALE10"
+                              value={discountCode}
+                              onChange={(e) => {
+                                  setDiscountCode(e.target.value.toUpperCase());
+                                  setAppliedDiscount(0);
+                                  setDiscountMessage(null);
+                              }}
+                              className={`w-full border rounded-lg px-3 py-2 outline-none uppercase ${isExclusive ? "bg-black border-gray-700 focus:ring-2 focus:ring-yellow-500" : "bg-background border-gray-300 focus:ring-2 focus:ring-primary"}`}
+                          />
+                          <button
+                              type="button"
+                              onClick={handleApplyCode}
+                              disabled={!discountCode.trim() || isCheckingCode || !selectedRange?.from}
+                              className={`font-bold px-4 rounded-lg disabled:opacity-50 min-w-[80px] flex items-center justify-center transition-colors ${buttonClass}`}
+                          >
+                              {isCheckingCode ? <Loader2 size={16} className="animate-spin" /> : "Apply"}
+                          </button>
+                      </div>
+                      {discountMessage && (
+                          <div className={`mt-2 text-xs flex items-center gap-1.5 ${discountMessage.type === 'success' ? 'text-green-500' : 'text-red-500'}`}>
+                              {discountMessage.type === 'success' ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />} 
+                              {discountMessage.text}
+                          </div>
+                      )}
+                    </div>
+
+                    {/* PRICE SUMMARY */}
+                    <div className={`p-4 rounded-lg border space-y-2 ${isExclusive ? "bg-black/50 border-gray-800" : "bg-muted/30 border-border"}`}>
+                      <div className="flex justify-between text-sm">
+                          <span className={textMutedClass}>Duration</span>
+                          <span>{totalDays} Days</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                          <span className={textMutedClass}>Rate</span>
+                          <span>{formatCurrency(price)}/day</span>
+                      </div>
+                      <div className={`flex justify-between text-sm font-medium pt-2 border-t border-dashed ${isExclusive ? "border-gray-800" : "border-border"}`}>
+                          <span>Subtotal</span>
+                          <span>{formatCurrency(baseTotal)}</span>
+                      </div>
+                      {appliedDiscount > 0 && (
+                          <div className="flex justify-between text-sm text-green-500 font-bold">
+                              <span>Discount</span>
+                              <span>- {formatCurrency(appliedDiscount)}</span>
+                          </div>
+                      )}
+                      <div className={`flex justify-between text-lg font-bold pt-2 border-t mt-2 ${accentColorClass} ${isExclusive ? "border-gray-800" : "border-border"}`}>
+                          <span>Total Payment</span>
+                          <span>{formatCurrency(grandTotal)}</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={!selectedRange?.from || !selectedRange?.to || isSubmitting}
+                      className={`w-full font-bold py-3 rounded-lg disabled:opacity-50 transition-all shadow-md ${buttonClass}`}
+                    >
+                      {isSubmitting ? <span className="flex items-center justify-center gap-2"><Loader2 size={18} className="animate-spin"/> Processing...</span> : t("form.button")}
+                    </button>
+                  </form>
+                )
+              ) : (
+                <div className={`mt-6 text-center p-4 rounded-lg border ${isExclusive ? "bg-yellow-900/20 border-yellow-800 text-yellow-200" : "bg-yellow-50 border-yellow-200 text-yellow-800"}`}>
+                  <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
+                  <p className="text-sm">
+                    Please <Link href="/login" className="font-bold underline">log in</Link> to book this car.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Need Help Card - Will now stick with the booking card */}
+            <div className={`p-6 rounded-3xl border shadow-lg ${cardBgClass}`}>
+               <h4 className={`font-bold mb-2 ${textClass}`}>{tCommon("booking.needHelp")}</h4>
+               <p className={`text-sm mb-4 ${textMutedClass}`}>Contact our support team for custom rental arrangements or special requests.</p>
+               <a 
+                 href={whatsappUrl}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl border font-bold text-center transition-all duration-300 hover:shadow-md active:scale-95 ${isExclusive ? "border-gray-700 hover:bg-gray-800 text-white" : "border-gray-200 hover:bg-gray-50 text-gray-900"}`}
+               >
+                 <MessageCircle size={18} />
+                 {tCommon("booking.sendMessage")}
+               </a>
+            </div>
           </div>
         </div>
       </div>

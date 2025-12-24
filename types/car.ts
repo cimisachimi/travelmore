@@ -7,6 +7,7 @@ export interface CarImage {
 
 export interface Car {
   id: number;
+  slug : string;
   car_model: string;
   brand: string;
   category: "regular" | "exclusive";
