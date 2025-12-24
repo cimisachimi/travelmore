@@ -1,11 +1,10 @@
 // app/[locale]/profile/page.tsx
 "use client";
 
-import { useState, useEffect, Suspense } from "react"; 
+import { useEffect, Suspense } from "react"; 
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "@/i18n/navigation"; 
-import { useSearchParams } from "next/navigation"; 
 import { toast } from "sonner";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 import SettingsTab from "./components/SettingsTab";
 import BookingsTab from "./components/BookingsTab";
@@ -17,22 +16,22 @@ type ProfileTab = "profile" | "bookings" | "history" | "refunds";
 function ProfileContent() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams(); 
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   
-  const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
+  // --- PERBAIKAN DI SINI: MENGAMBIL TAB LANGSUNG DARI URL ---
+  const tabParam = searchParams.get("tab");
+  const orderIdParam = searchParams.get("order_id");
 
-  // Sync Tab dengan URL Parameter
-  useEffect(() => {
-    const tabParam = searchParams.get("tab");
-    const orderIdParam = searchParams.get("order_id");
+  // Logika penentuan tab aktif (Single Source of Truth)
+  let activeTab: ProfileTab = "profile";
+  if (tabParam && ["profile", "bookings", "history", "refunds"].includes(tabParam)) {
+    activeTab = tabParam as ProfileTab;
+  } else if (orderIdParam) {
+    activeTab = "bookings";
+  }
 
-    if (tabParam && ["profile", "bookings", "history", "refunds"].includes(tabParam)) {
-      setActiveTab(tabParam as ProfileTab);
-    } else if (orderIdParam) {
-      setActiveTab("bookings");
-    }
-  }, [searchParams]);
-
+  // Cek Auth tetap menggunakan useEffect
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
@@ -44,14 +43,15 @@ function ProfileContent() {
     toast.info("You have been logged out.");
   };
 
+  // Fungsi switchTab sekarang hanya berurusan dengan URL
   const switchTab = (tab: ProfileTab) => {
-    setActiveTab(tab);
-    const newUrl = new URL(window.location.href);
-    newUrl.searchParams.set("tab", tab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tab);
+    
     if (tab !== "bookings") {
-      newUrl.searchParams.delete("order_id");
+      params.delete("order_id");
     }
-    window.history.pushState({}, "", newUrl);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   if (loading || !user) {
@@ -74,7 +74,6 @@ function ProfileContent() {
 
     switch (activeTab) {
       case "profile": return <SettingsTab />;
-      // PERBAIKAN: Menambahkan deskripsi agar lolos linting
       // @ts-expect-error: Component props type definition needs refinement
       case "bookings": return <BookingsTab highlightOrderId={highlightOrderId} />; 
       case "history": return <HistoryTab />;
