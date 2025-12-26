@@ -8,7 +8,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Users, Gauge, Luggage } from "lucide-react";
 import api from "@/lib/api";
 import { useTheme } from "@/components/ThemeProvider";
-import { AxiosError } from "axios"; // ✅ Added import for better error typing
+import { AxiosError } from "axios"; 
 
 interface ApiCar {
   id: number;
@@ -128,7 +128,7 @@ export default function CarRentalPage() {
       try {
         const response = await api.get("/public/car-rentals", { params: { locale } });
         setCars(response.data.data || response.data);
-      } catch (err: unknown) { // ✅ Replaced 'any' with 'unknown'
+      } catch (err: unknown) { 
         const axiosError = err as AxiosError<{ message: string }>; // ✅ Added proper type casting
         setError(axiosError.message || "Error fetching cars.");
       } finally {

@@ -6,7 +6,10 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl"; 
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { X, Users, Clock, Camera, Plus, TicketPercent, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { 
+  X, Users, Clock, Camera, Plus, TicketPercent, Loader2, 
+  CheckCircle2, AlertCircle, MapPin, Phone, Info 
+} from "lucide-react"; // Menambahkan icon MapPin, Phone, Info
 import { AxiosError } from "axios";
 import { useTheme } from "@/components/ThemeProvider";
 import { Activity, TFunction, AuthUser } from "@/types/activity";
@@ -73,7 +76,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
   
   const today = new Date().toISOString().split("T")[0];
 
-  // ✅ Scroll Lock Logic
+  // Scroll Lock Logic
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -122,7 +125,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     }).format(amount);
   };
 
-  // ✅ FIX: Gunakan useCallback untuk handleApplyCode
   const handleApplyCode = useCallback(async () => {
     if (!discountCode.trim()) return;
     setIsCheckingCode(true);
@@ -158,7 +160,6 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     }
   }, [activity.id, discountCode, quantity, selectedAddons]);
 
-  // ✅ FIX: Update useEffect dependencies
   useEffect(() => {
     if (appliedDiscount > 0 && discountCode) {
       const timer = setTimeout(() => {
@@ -194,6 +195,9 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     );
   };
 
+  // Helper untuk cek link maps
+  const isMapLink = (text: string) => text.includes("goo.gl") || text.includes("maps.app") || text.includes("google.com/maps");
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
     if (!bookingDate) newErrors.booking_date = t("booking.errors.noDate");
@@ -202,13 +206,26 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     if ((baseSubtotal + addonsTotal) <= 0) newErrors.general = t("booking.errors.noPrice");
     if (!nationality) newErrors.participant_nationality = t("booking.errors.noNationality");
     if (!fullName) newErrors.full_name = t("booking.errors.noName");
+    
     if (!email) {
       newErrors.email = t("booking.errors.noEmail");
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = t("booking.errors.invalidEmail");
     }
-    if (!localPhone) newErrors.phone_number = t("booking.errors.noPhone");
-    if (!pickupLocation) newErrors.pickup_location = t("booking.errors.noPickup");
+
+    // Validasi Phone diperketat
+    if (!localPhone) {
+        newErrors.phone_number = t("booking.errors.noPhone");
+    } else if (localPhone.length < 9) {
+        newErrors.phone_number = "Phone number is too short (min 9 digits)";
+    }
+
+    // Validasi Pickup Location
+    if (!pickupLocation) {
+        newErrors.pickup_location = t("booking.errors.noPickup");
+    } else if (pickupLocation.length < 5) {
+        newErrors.pickup_location = "Pickup location details are too short.";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -218,6 +235,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
     e.preventDefault();
     if (!validateForm()) {
       if (errors.general) toast.error(errors.general);
+      else toast.error("Please check the form for errors");
       return;
     }
     if (!user) {
@@ -301,14 +319,17 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
             </div>
             <div>
               <label className={`block text-sm font-medium ${mutedTextColor}`}><Clock size={14} className="inline mr-1" /> {t("booking.time")} :</label>
-              <input 
-                type="time" 
-                value={activityTime} 
-                onChange={(e) => setActivityTime(e.target.value)} 
-                required 
-                disabled={isSubmitting} 
-                className={`${baseInputClass} py-2 px-3 ${errors.activity_time ? errorBorderClass : ""}`} 
-              />
+              <div className="flex items-center gap-2 mt-1">
+                  <input 
+                    type="time" 
+                    value={activityTime} 
+                    onChange={(e) => setActivityTime(e.target.value)} 
+                    required 
+                    disabled={isSubmitting} 
+                    className={`block w-full rounded-md shadow-sm ${inputBgClass} ${focusRingClass} ${textColor} border ${errors.activity_time ? errorBorderClass : inputBorderClass} py-2 px-3`} 
+                  />
+                  <span className="text-sm font-bold text-muted-foreground whitespace-nowrap">WIB</span>
+              </div>
             </div>
           </div>
 
@@ -354,7 +375,7 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
           )}
 
           {/* Contact Information */}
-          <div className="space-y-4">
+          <div className="space-y-4 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700">
             <div>
               <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.nationality.title")} :</label>
               <select 
@@ -379,9 +400,12 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={`${baseInputClass} py-2 px-3`} />
             </div>
             
+            {/* Phone Section - Improved */}
             <div>
-              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.phone")} :</label>
-              <div className="flex">
+              <label className={`block text-sm font-medium ${mutedTextColor} flex items-center gap-1`}>
+                  {t("booking.phone")} <span className="text-red-500">*</span>
+              </label>
+              <div className="flex mt-1">
                 <select value={phoneCode} onChange={(e) => setPhoneCode(e.target.value)} className={`w-auto border rounded-l-md px-3 py-2 ${inputBgClass} ${inputBorderClass}`}>
                   {countryCodes.map((c) => (<option key={c.code} value={c.code}>{c.label}</option>))}
                 </select>
@@ -390,14 +414,47 @@ const ActivityBookingModal: React.FC<ActivityBookingModalProps> = ({
                   value={localPhone} 
                   onChange={handleLocalPhoneChange} 
                   required 
-                  className={`${baseInputClass} rounded-l-none border-l-0 mt-0 py-2 px-3`} 
+                  placeholder="812345678"
+                  className={`${baseInputClass} rounded-l-none border-l-0 mt-0 py-2 px-3 ${errors.phone_number ? 'border-red-500' : ''}`} 
                 />
               </div>
+              {/* Validation & Hint Text */}
+              {errors.phone_number ? (
+                  <p className="text-red-600 text-xs mt-1 font-medium">{errors.phone_number}</p>
+              ) : (
+                  <p className="text-xs text-primary/80 mt-1.5 flex items-center gap-1">
+                      <Phone size={12} className="inline" /> 
+                      Ensure this number is active on WhatsApp.
+                  </p>
+              )}
             </div>
 
+            {/* Pickup Location - Improved */}
             <div>
-              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.pickupLocation")} :</label>
-              <input type="text" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} required className={`${baseInputClass} py-2 px-3`} />
+              <label className={`block text-sm font-medium ${mutedTextColor} flex items-center gap-1`}>
+                  {t("booking.pickupLocation")} <span className="text-red-500">*</span>
+              </label>
+              <div className="relative mt-1">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <MapPin size={16} className="text-gray-400" />
+                  </div>
+                  <input 
+                      type="text" 
+                      value={pickupLocation} 
+                      onChange={(e) => setPickupLocation(e.target.value)} 
+                      required 
+                      placeholder="Hotel Name or Google Maps Link"
+                      className={`${baseInputClass} pl-10 py-2 px-3 ${errors.pickup_location ? errorBorderClass : ""}`} 
+                  />
+              </div>
+               {errors.pickup_location ? (
+                  <p className="text-red-600 text-xs mt-1 font-medium">{errors.pickup_location}</p>
+              ) : (
+                  <p className={`text-xs mt-1.5 flex items-center gap-1 ${isMapLink(pickupLocation) ? 'text-green-600 font-medium' : mutedTextColor}`}>
+                      {isMapLink(pickupLocation) ? <CheckCircle2 size={12}/> : <Info size={12}/>}
+                      {isMapLink(pickupLocation) ? "Maps link detected" : "Tip: You can paste a Google Maps link here."}
+                  </p>
+              )}
             </div>
 
             <div>

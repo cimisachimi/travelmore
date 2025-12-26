@@ -6,7 +6,10 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl"; 
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { X, Users, TicketPercent, Camera, Plus, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { 
+  X, Users, TicketPercent, Camera, Plus, CheckCircle2, 
+  AlertCircle, Loader2, MapPin, Phone, Info 
+} from "lucide-react"; 
 import { AxiosError } from "axios";
 import { useTheme } from "@/components/ThemeProvider";
 import { HolidayPackage, TFunction, AuthUser, Addon, PackagePriceTier } from "@/types/package";
@@ -59,7 +62,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
   const [fullName, setFullName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [pickupLocation, setPickupLocation] = useState<string>("");
-  const [flightNumber, setFlightNumber] = useState<string>("");
+  // State flightNumber dihapus
   const [specialRequest, setSpecialRequest] = useState<string>("");
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [phoneCode, setPhoneCode] = useState("+62");
@@ -69,7 +72,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
 
   const today = new Date().toISOString().split("T")[0];
 
-  // ✅ FIX: Body Scroll Lock (Kept from functional fix)
+  // Body Scroll Lock
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -104,7 +107,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
       setDiscountMessage(null);
       setNationality("");
       setPickupLocation("");
-      setFlightNumber("");
+      // Reset flightNumber dihapus
       setSpecialRequest("");
       setSelectedAddons([]);
       setErrors({});
@@ -148,7 +151,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
     }
   };
 
-  // Debounce effect for price calculation when pax changes
+  // Debounce effect for price calculation
   useEffect(() => {
     if (appliedDiscount > 0 && discountCode) {
       const timer = setTimeout(() => {
@@ -222,19 +225,42 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
   // --- VALIDATION & SUBMIT ---
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
+    
+    // Date
     if (!startDate) newErrors.startDate = t("booking.errors.noDate");
+    
+    // Pax
     if (adults < 1) newErrors.adults = t("booking.errors.minAdults");
-    if (children < 0) newErrors.children = t("booking.errors.invalidChildren");
+    
+    // Calculation integrity
     if ((baseSubtotal + addonsTotal) <= 0) newErrors.general = t("booking.errors.noPrice");
+    
+    // Nationality
     if (!nationality) newErrors.participant_nationality = t("booking.errors.noNationality");
-    if (!fullName) newErrors.full_name = t("booking.errors.noName");
+    
+    // Name
+    if (!fullName || fullName.trim().length < 3) newErrors.full_name = t("booking.errors.noName");
+    
+    // Email (Enhanced Regex)
     if (!email) {
       newErrors.email = t("booking.errors.noEmail");
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
+    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)) {
       newErrors.email = t("booking.errors.invalidEmail");
     }
-    if (!localPhone) newErrors.phone_number = t("booking.errors.noPhone");
-    if (!pickupLocation) newErrors.pickup_location = t("booking.errors.noPickup");
+    
+    // Phone Validation (Enhanced)
+    if (!localPhone) {
+      newErrors.phone_number = t("booking.errors.noPhone");
+    } else if (localPhone.length < 9) {
+      newErrors.phone_number = "Phone number is too short (min 9 digits)"; 
+    }
+    
+    // Pickup Location Validation (Enhanced)
+    if (!pickupLocation) {
+      newErrors.pickup_location = t("booking.errors.noPickup");
+    } else if (pickupLocation.length < 5) {
+       newErrors.pickup_location = "Pickup location details are too short.";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -244,6 +270,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
     e.preventDefault();
     if (!validateForm()) {
         if (errors.general) toast.error(errors.general);
+        else toast.error("Please check the form for errors"); // Feedback visual jika validasi gagal
         return;
     }
     if (!user) {
@@ -265,7 +292,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
           email: email,
           phone_number: `${phoneCode}${localPhone.replace(/[^0-9]/g, "")}`,
           pickup_location: pickupLocation,
-          flight_number: flightNumber || null,
+          flight_number: null, // Dikirim null karena input sudah dihapus di UI
           special_request: specialRequest || null,
           selected_addons: selectedAddons,
         }
@@ -290,7 +317,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
 
   if (!isOpen) return null;
 
-  // --- STYLING VARS (Restored to "TravelMore" classic) ---
+  // --- STYLING VARS ---
   const modalBgClass = theme === "regular" ? "bg-white" : "bg-card";
   const textColor = theme === "regular" ? "text-gray-900" : "text-foreground";
   const mutedTextColor = theme === "regular" ? "text-gray-600" : "text-foreground/70";
@@ -302,10 +329,11 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
   const addonCardClass = theme === "regular" ? "border-gray-200 hover:border-primary bg-white" : "border-gray-700 hover:border-primary bg-gray-800";
   const addonSelectedClass = "border-primary ring-1 ring-primary bg-primary/10 dark:bg-primary/20";
 
+  // Helper check for maps link
+  const isMapLink = (text: string) => text.includes("goo.gl") || text.includes("maps.app") || text.includes("google.com/maps");
+
   return (
-    // ✅ FIX: Items-start + high z-index + overflow-y-auto ensures scrollability
     <div className="fixed inset-0 z-[1000] flex justify-center items-start bg-black/70 backdrop-blur-sm p-4 overflow-y-auto animate-fadeIn">
-      {/* ✅ FIX: Added vertical margin (my-10) so the modal is never trapped behind top navbar */}
       <div className={`${modalBgClass} rounded-xl shadow-xl p-6 sm:p-8 w-full max-w-lg relative my-10 animate-in zoom-in-95 duration-200`}>
         <button onClick={onClose} className={`absolute top-4 right-4 ${mutedTextColor} hover:${textColor} transition-colors`}><X size={24} /></button>
 
@@ -389,42 +417,103 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
 
           {/* 3. Nationality */}
           <div>
-             <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.nationality.title")}</label>
-             <select
+              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.nationality.title")}</label>
+              <select
                value={nationality}
                onChange={(e) => setNationality(e.target.value)}
                required
                className={`${baseInputClass} ${errors.participant_nationality ? errorBorderClass : inputBorderClass} py-2 px-3`}
-             >
-                <option value="">{t("booking.selectOption")}</option>
-                <option value="WNI">{t("booking.nationality.local")}</option>
-                <option value="WNA">{t("booking.nationality.foreign")}</option>
-             </select>
+              >
+                 <option value="">{t("booking.selectOption")}</option>
+                 <option value="WNI">{t("booking.nationality.local")}</option>
+                 <option value="WNA">{t("booking.nationality.foreign")}</option>
+              </select>
           </div>
 
            {/* User Info Inputs */}
-           <div>
-              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.fullName")}</label>
-              <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required className={`${baseInputClass} py-2 px-3 border ${inputBorderClass}`} />
-           </div>
-           <div>
-              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.email")}</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={`${baseInputClass} py-2 px-3 border ${inputBorderClass}`} />
-           </div>
-           
-           <div>
-              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.phone")}</label>
-              <div className="flex mt-1">
-                  <select value={phoneCode} onChange={(e) => setPhoneCode(e.target.value)} className={`w-auto border rounded-l-md px-3 py-2 ${inputBgClass} ${inputBorderClass}`}>
-                     {countryCodes.map((c) => (<option key={c.code} value={c.code}>{c.label}</option>))}
-                  </select>
-                  <input type="tel" value={localPhone} onChange={handleLocalPhoneChange} required className={`${baseInputClass} rounded-l-none border-l-0 mt-0 py-2 px-3`} />
-              </div>
-           </div>
+           <div className="space-y-4 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700">
+             <div>
+                <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.fullName")}</label>
+                <input 
+                  type="text" 
+                  value={fullName} 
+                  onChange={(e) => setFullName(e.target.value)} 
+                  required 
+                  className={`${baseInputClass} ${errors.full_name ? errorBorderClass : inputBorderClass} py-2 px-3`} 
+                />
+             </div>
+             
+             <div>
+                <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.email")}</label>
+                <input 
+                  type="email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  required 
+                  className={`${baseInputClass} ${errors.email ? errorBorderClass : inputBorderClass} py-2 px-3`} 
+                />
+                {errors.email && <p className="text-red-600 text-xs mt-1">{errors.email}</p>}
+             </div>
+             
+             {/* PHONE SECTION - IMPROVED */}
+             <div>
+                <label className={`block text-sm font-medium ${mutedTextColor} flex items-center gap-1`}>
+                    {t("booking.phone")} <span className="text-red-500">*</span>
+                </label>
+                <div className="flex mt-1">
+                    <select value={phoneCode} onChange={(e) => setPhoneCode(e.target.value)} className={`w-auto border rounded-l-md px-3 py-2 ${inputBgClass} ${inputBorderClass}`}>
+                       {countryCodes.map((c) => (<option key={c.code} value={c.code}>{c.label}</option>))}
+                    </select>
+                    <input 
+                      type="tel" 
+                      value={localPhone} 
+                      onChange={handleLocalPhoneChange} 
+                      required 
+                      placeholder="8123456789"
+                      className={`${baseInputClass} rounded-l-none border-l-0 mt-0 py-2 px-3 ${errors.phone_number ? 'border-red-500' : ''}`} 
+                    />
+                </div>
+                {/* VALIDATION & HINT TEXT */}
+                {errors.phone_number ? (
+                    <p className="text-red-600 text-xs mt-1 font-medium">{errors.phone_number}</p>
+                ) : (
+                    <p className="text-xs text-primary/80 mt-1.5 flex items-center gap-1">
+                        <Phone size={12} className="inline" /> 
+                        Ensure this number is active on WhatsApp for pickup coordination.
+                    </p>
+                )}
+             </div>
 
-           <div>
-              <label className={`block text-sm font-medium ${mutedTextColor}`}>{t("booking.pickupLocation")}</label>
-              <input type="text" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} required className={`${baseInputClass} py-2 px-3 border ${inputBorderClass}`} />
+             {/* PICKUP LOCATION - IMPROVED */}
+             <div>
+                <label className={`block text-sm font-medium ${mutedTextColor} flex items-center gap-1`}>
+                    {t("booking.pickupLocation")} <span className="text-red-500">*</span>
+                </label>
+                <div className="relative mt-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <MapPin size={16} className="text-gray-400" />
+                    </div>
+                    <input 
+                      type="text" 
+                      value={pickupLocation} 
+                      onChange={(e) => setPickupLocation(e.target.value)} 
+                      required 
+                      placeholder="Hotel Name or Google Maps Link"
+                      className={`${baseInputClass} pl-10 py-2 ${errors.pickup_location ? errorBorderClass : inputBorderClass}`} 
+                    />
+                </div>
+                {errors.pickup_location ? (
+                    <p className="text-red-600 text-xs mt-1 font-medium">{errors.pickup_location}</p>
+                ) : (
+                    <p className={`text-xs mt-1.5 flex items-center gap-1 ${isMapLink(pickupLocation) ? 'text-green-600 font-medium' : mutedTextColor}`}>
+                       {isMapLink(pickupLocation) ? <CheckCircle2 size={12}/> : <Info size={12}/>}
+                       {isMapLink(pickupLocation) ? "Maps link detected" : "Tip: You can paste a Google Maps link here."}
+                    </p>
+                )}
+             </div>
+             
+             {/* Input Flight Number TELAH DIHAPUS DARI SINI */}
+
            </div>
 
            {/* Discount Code */}

@@ -17,8 +17,8 @@ import { AxiosError } from "axios";
 import { 
   Car as CarIcon, Fuel, Luggage, User as UserIcon, Settings, 
   Clock, TicketPercent, Loader2, CheckCircle2, AlertCircle, MapPin,
-  ArrowLeft, MessageCircle 
-} from 'lucide-react';
+  ArrowLeft, MessageCircle, Phone, Info 
+} from 'lucide-react'; // Added Phone & Info icons
 import { Car } from "@/types/car";
 
 interface CarDetailViewProps {
@@ -38,7 +38,7 @@ interface ApiCarAvailabilityMap {
 
 export default function CarDetailView({ initialData }: CarDetailViewProps) {
   const t = useTranslations("carDetail");
-  const tCommon = useTranslations("packages"); // Added for the needHelp translation key
+  const tCommon = useTranslations("packages"); 
   const { user } = useAuth();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
@@ -46,8 +46,6 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
   const [car] = useState<Car>(initialData);
   const [availabilities, setAvailabilities] = useState<ApiCarAvailabilityMap>({});
   
-  // ✅ FIX UTAMA: Inisialisasi Active Image LANGSUNG di sini
-  // Jangan gunakan string kosong "" sebagai default, tapi hitung langsung dari props
   const [activeImage, setActiveImage] = useState<string>(() => {
     const firstImage = initialData.images?.find(img => img.type === 'thumbnail')?.url || initialData.images?.[0]?.url;
     return firstImage 
@@ -66,6 +64,9 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
   const [pickupLocation, setPickupLocation] = useState("");
   const [pickupTime, setPickupTime] = useState("09:00");
   
+  // Validation Errors State
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
   // Discount States
   const [discountCode, setDiscountCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
@@ -79,8 +80,9 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
   const textMutedClass = isExclusive ? "text-gray-400" : "text-foreground/70";
   const accentColorClass = isExclusive ? "text-yellow-500" : "text-primary";
   const cardBgClass = isExclusive ? "bg-gray-900 border-gray-800" : "bg-card shadow-lg";
-  const inputBgClass = isExclusive ? "bg-gray-950 border-gray-800 text-white" : "bg-background border-gray-300";
+  const inputBgClass = isExclusive ? "bg-gray-950 border-gray-800 text-white placeholder:text-gray-600" : "bg-background border-gray-300 placeholder:text-gray-400";
   const buttonClass = isExclusive ? "bg-yellow-500 text-black hover:bg-yellow-400" : "bg-primary text-primary-foreground hover:bg-primary/90";
+  const errorBorderClass = "border-red-500 focus:ring-red-500"; // New error class
 
   // WhatsApp Config Logic
   const whatsappNumber = "6282224291148";
@@ -99,25 +101,24 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
     return `${year}-${month}-${day}`;
   };
 
-  // Initial Setup (Fetch Availability Only)
+  // Helper check for maps link
+  const isMapLink = (text: string) => text.includes("goo.gl") || text.includes("maps.app") || text.includes("google.com/maps");
+
+  // Initial Setup
   useEffect(() => {
     if (car) {
       setTheme(car.category || "regular");
-      
-      // Fetch Availability
       const fetchAvailability = async () => {
         try {
-          // ✅ FIX: Konsisten menggunakan /public
           const availabilityResponse = await api.get(`/public/car-rentals/${car.id}/availability`);
           setAvailabilities(availabilityResponse.data);
         } catch (err) {
-            console.error("Failed to fetch availability, trying fallback...");
+            console.error("Failed to fetch availability, trying fallback...", err);
             try {
                  const fallback = await api.get(`/car-rentals/${car.id}/availability`);
                  setAvailabilities(fallback.data);
             } catch (fallbackErr) {
-                 // Silent fail agar UI tidak rusak total
-                 console.warn("Availability fetch failed completely. Calendar will show all days as available.");
+                 console.warn("Availability fetch failed completely. Calendar will show all days as available.", fallbackErr);
             }
         }
       };
@@ -125,19 +126,15 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
     }
   }, [car, setTheme]);
 
-  // Reset theme on unmount
   useEffect(() => {
-    return () => {
-      setTheme("regular");
-    };
+    return () => { setTheme("regular"); };
   }, [setTheme]);
 
-  // Autofill User Info
   useEffect(() => {
     if (user) {
       setName(user.name || "");
       setEmail(user.email || "");
-      // @ts-expect-error: phone/phone_number field check
+      // @ts-expect-error: phone field check
       setPhone(user.phone || user.phone_number || "");
     }
   }, [user]);
@@ -209,7 +206,6 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
     }
   };
 
-  // Debounce Discount Check
   useEffect(() => {
     if (appliedDiscount > 0 && discountCode && selectedRange?.from && selectedRange?.to) {
       const timer = setTimeout(() => {
@@ -217,11 +213,34 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
       }, 500); 
       return () => clearTimeout(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRange]);
+
+  // VALIDASI FORM
+  const validateForm = () => {
+      const newErrors: { [key: string]: string } = {};
+
+      if (!phone) {
+          newErrors.phone = "Phone number is required";
+      } else if (phone.length < 9) {
+          newErrors.phone = "Phone number too short (min 9 digits)";
+      }
+
+      if (!pickupLocation) {
+          newErrors.pickupLocation = "Pickup location is required";
+      } else if (pickupLocation.length < 5) {
+          newErrors.pickupLocation = "Please verify pickup location";
+      }
+      
+      if(!pickupTime) newErrors.pickupTime = "Pickup time is required";
+
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!selectedRange?.from || !selectedRange?.to) {
       toast.error("Please select a valid start and end date.");
       return;
@@ -230,9 +249,11 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
       toast.error("Please log in to book a car.");
       return;
     }
-    if (!phone || !pickupLocation || !pickupTime) {
-      toast.error("Please fill in all booking details.");
-      return;
+    
+    // Jalankan Validasi
+    if (!validateForm()) {
+        toast.error("Please check the form for errors.");
+        return;
     }
 
     setIsSubmitting(true);
@@ -314,7 +335,6 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
           {/* --- LEFT: Gallery + Info --- */}
           <div>
             <div className={`relative w-full h-80 rounded-lg overflow-hidden shadow-lg mb-4 ${isExclusive ? "bg-gray-800 border border-gray-700" : "bg-muted"}`}>
-              {/* ✅ FIX: Pastikan activeImage ada isinya sebelum render Image */}
               {activeImage ? (
                   <Image
                     src={activeImage}
@@ -366,7 +386,7 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
             )}
           </div>
 
-          {/* --- RIGHT: Booking Form parent wrapper FIX --- */}
+          {/* --- RIGHT: Booking Form --- */}
           <div className="flex flex-col gap-6 sticky top-8 h-fit">
             <div className={`${cardBgClass} rounded-lg p-6`}>
               <h3 className="text-xl font-bold mb-4">{t("form.title")}</h3>
@@ -411,19 +431,67 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
                           <input type="text" value={name} disabled className={`w-full border rounded-lg px-4 py-2 opacity-70 cursor-not-allowed ${inputBgClass}`} />
                           <input type="email" value={email} disabled className={`w-full border rounded-lg px-4 py-2 opacity-70 cursor-not-allowed ${inputBgClass}`} />
                       </div>
-                      <input type="tel" placeholder={t("form.phone")} value={phone} onChange={(e) => setPhone(e.target.value)} required className={`w-full border rounded-lg px-4 py-2 focus:ring-2 outline-none ${isExclusive ? "bg-black border-gray-700 focus:ring-yellow-500" : "bg-background focus:ring-primary"}`} />
+                      
+                      {/* PHONE INPUT - IMPROVED */}
+                      <div>
+                        <div className="relative">
+                            <Phone className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                            <input 
+                                type="tel" 
+                                placeholder={t("form.phone")} 
+                                value={phone} 
+                                onChange={(e) => setPhone(e.target.value)} 
+                                required 
+                                className={`w-full border rounded-lg pl-10 pr-4 py-2 focus:ring-2 outline-none ${inputBgClass} ${errors.phone ? errorBorderClass : isExclusive ? "focus:ring-yellow-500" : "focus:ring-primary"}`} 
+                            />
+                        </div>
+                         {errors.phone ? (
+                             <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                         ) : (
+                             <p className={`text-xs mt-1 ${textMutedClass} flex items-center gap-1`}>
+                                 <Info size={12}/> Ensure this number is active on WhatsApp.
+                             </p>
+                         )}
+                      </div>
+
                       <div className="grid grid-cols-3 gap-3">
                           <div className="col-span-1">
                               <div className="relative">
                                   <Clock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                                  <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className={`w-full border rounded-lg pl-10 pr-2 py-2 focus:ring-2 outline-none ${isExclusive ? "bg-black border-gray-700 focus:ring-yellow-500" : "bg-background focus:ring-primary"}`} />
+                                  <input 
+                                    type="time" 
+                                    value={pickupTime} 
+                                    onChange={(e) => setPickupTime(e.target.value)} 
+                                    className={`w-full border rounded-lg pl-10 pr-2 py-2 focus:ring-2 outline-none ${inputBgClass} ${isExclusive ? "focus:ring-yellow-500" : "focus:ring-primary"}`} 
+                                  />
                               </div>
+                              {/* --- UPDATED WIB SECTION --- */}
+                              <p className={`text-xs mt-1 ${textMutedClass} flex items-center gap-1`}>
+                                 <Info size={12}/> Time in WIB
+                              </p>
                           </div>
+                          
                           <div className="col-span-2">
+                              {/* PICKUP LOCATION - IMPROVED */}
                               <div className="relative">
                                   <MapPin className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                                  <input type="text" placeholder={t("form.pickup")} value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} required className={`w-full border rounded-lg pl-10 pr-4 py-2 focus:ring-2 outline-none ${isExclusive ? "bg-black border-gray-700 focus:ring-yellow-500" : "bg-background focus:ring-primary"}`} />
+                                  <input 
+                                    type="text" 
+                                    placeholder={t("form.pickup")} 
+                                    value={pickupLocation} 
+                                    onChange={(e) => setPickupLocation(e.target.value)} 
+                                    required 
+                                    className={`w-full border rounded-lg pl-10 pr-4 py-2 focus:ring-2 outline-none ${inputBgClass} ${errors.pickupLocation ? errorBorderClass : isExclusive ? "focus:ring-yellow-500" : "focus:ring-primary"}`} 
+                                  />
                               </div>
+                               {errors.pickupLocation ? (
+                                   <p className="text-red-500 text-xs mt-1">{errors.pickupLocation}</p>
+                               ) : (
+                                  <p className={`text-xs mt-1 flex items-center gap-1 ${isMapLink(pickupLocation) ? 'text-green-500 font-bold' : textMutedClass}`}>
+                                      {isMapLink(pickupLocation) ? <CheckCircle2 size={12}/> : null}
+                                      {isMapLink(pickupLocation) ? "Maps link detected" : "Tip: You can paste a Google Maps link."}
+                                  </p>
+                               )}
                           </div>
                       </div>
                     </div>
@@ -443,7 +511,7 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
                                   setAppliedDiscount(0);
                                   setDiscountMessage(null);
                               }}
-                              className={`w-full border rounded-lg px-3 py-2 outline-none uppercase ${isExclusive ? "bg-black border-gray-700 focus:ring-2 focus:ring-yellow-500" : "bg-background border-gray-300 focus:ring-2 focus:ring-primary"}`}
+                              className={`w-full border rounded-lg px-3 py-2 outline-none uppercase ${inputBgClass} ${isExclusive ? "focus:ring-2 focus:ring-yellow-500" : "focus:ring-2 focus:ring-primary"}`}
                           />
                           <button
                               type="button"
@@ -507,7 +575,7 @@ export default function CarDetailView({ initialData }: CarDetailViewProps) {
               )}
             </div>
 
-            {/* Need Help Card - Will now stick with the booking card */}
+            {/* Need Help Card */}
             <div className={`p-6 rounded-3xl border shadow-lg ${cardBgClass}`}>
                <h4 className={`font-bold mb-2 ${textClass}`}>{tCommon("booking.needHelp")}</h4>
                <p className={`text-sm mb-4 ${textMutedClass}`}>Contact our support team for custom rental arrangements or special requests.</p>
