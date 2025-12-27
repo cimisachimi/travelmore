@@ -28,12 +28,12 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({ isOpen, onC
   const router = useRouter();
   const { theme } = useTheme();
 
-  // ✅ FIX: Define today variable to resolve ReferenceError
+  
   const today = new Date().toISOString().split("T")[0];
 
   // --- STATE ---
   const [startDate, setStartDate] = useState("");
-  // const [minDate, setMinDate] = useState(""); // ✅ FIX: Hapus unused var
+ 
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   
@@ -64,9 +64,7 @@ const OpenTripBookingModal: React.FC<OpenTripBookingModalProps> = ({ isOpen, onC
     return () => { document.body.style.overflow = "auto"; };
   }, [isOpen]);
 
-  // useEffect(() => {
-  //   setMinDate(new Date().toISOString().split("T")[0]);
-  // }, []); // ✅ FIX: Hapus useEffect unused var
+
 
   useEffect(() => {
     if (isOpen) {

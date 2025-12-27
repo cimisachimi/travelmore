@@ -32,7 +32,7 @@ async function getOpenTripData(slug: string, locale: string): Promise<OpenTrip |
   }
 }
 
-// Hapus parameter 'parent' dan ResolvingMetadata karena tidak digunakan
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, locale } = await params;
   const trip = await getOpenTripData(slug, locale);
@@ -71,10 +71,9 @@ export default async function Page({ params }: Props) {
     permanentRedirect(`/${locale}/open-trip/${tripData.slug}`);
   }
 
-  // ✅ FIX: Gunakan tipe intersection agar aman dari 'no-explicit-any' dan TS error
+
   const data = tripData as OpenTrip & { rating?: number | string };
 
-  // 1. Schema Utama: TouristTrip
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'TouristTrip',
@@ -83,7 +82,7 @@ export default async function Page({ params }: Props) {
     'image': data.thumbnail_url ? [getImageUrl(data.thumbnail_url)] : [],
     'touristType': ["AdventureTourism", "GroupTravel"],
     
-    // ✅ FIX SEO: Validasi rating dengan Number()
+    
     ...(data.rating && Number(data.rating) > 0 ? {
       'aggregateRating': {
         '@type': 'AggregateRating',

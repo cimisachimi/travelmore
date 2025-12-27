@@ -58,7 +58,7 @@ export default function BlogSection() {
   }, [locale]); 
 
   return (
-    // ✅ PERUBAHAN: Background diganti menjadi bg-white secara permanen
+    
     <section className="bg-white min-h-screen py-20 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6">
       
@@ -75,7 +75,7 @@ export default function BlogSection() {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {loading ? (
             Array.from({ length: 3 }).map((_, i) => (
-              // ✅ Skeleton disesuaikan untuk bg putih
+             
               <div key={i} className="bg-gray-50 rounded-3xl border border-gray-100 flex flex-col overflow-hidden">
                 <div className="h-60 w-full bg-gray-200 animate-pulse"></div>
                 <div className="p-6 space-y-3">
@@ -96,7 +96,7 @@ export default function BlogSection() {
                 <Link
                   key={blog.id}
                   href={href}
-                  // ✅ PERUBAHAN: Card menggunakan bg-white dengan border halus & shadow agar kontras
+                 
                   className="bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col overflow-hidden group border border-gray-100 h-full"
                 >
                   <div className="relative h-60 w-full overflow-hidden">
@@ -123,7 +123,7 @@ export default function BlogSection() {
                         )}
                     </div>
 
-                    {/* ✅ Teks dipaksa tetap gelap agar terbaca jelas di bg putih */}
+                 
                     <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
                       {blog.title}
                     </h3>

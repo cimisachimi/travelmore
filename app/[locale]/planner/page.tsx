@@ -9,7 +9,7 @@ import ComparisonSection from "@/components/ComparisonSection";
 import PlannerForm from "./PlannerForm";
 import api from "@/lib/api"; 
 
-// --- Helper Icons (Tetap sama) ---
+
 const CheckIcon = ({ className = "" }: { className?: string }) => (
   <svg
     className={`w-6 h-6 flex-shrink-0 text-primary ${className}`}

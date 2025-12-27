@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Lock } from "lucide-react";
 
-// ✅ 1. Import Auth Context (Agar satu sumber kebenaran dengan Login & Hero)
+
 import { useAuth } from "@/contexts/AuthContext";
 
 interface CustomizeButtonProps {
@@ -24,7 +24,7 @@ export default function CustomizeButton({
 }: CustomizeButtonProps) {
   const router = useRouter();
   
-  // ✅ 2. Gunakan User dari Context, bukan cek localStorage manual
+  
   const { user } = useAuth();
   
   // Cek status login
@@ -53,7 +53,7 @@ export default function CustomizeButton({
     <div className="space-y-3">
       <button
         onClick={() => {
-          // ✅ 3. Logika Redirect yang sudah cocok dengan LoginPage Anda
+          
           const targetUrl = encodeURIComponent(url); 
           router.push(`/login?redirect=${targetUrl}`);
         }}

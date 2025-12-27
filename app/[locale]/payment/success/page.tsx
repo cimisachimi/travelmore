@@ -3,7 +3,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { CheckCircle } from "lucide-react"; // Ensure you have lucide-react or use another icon
+import { CheckCircle } from "lucide-react"; 
 
 export default function PaymentSuccessPage() {
   return (

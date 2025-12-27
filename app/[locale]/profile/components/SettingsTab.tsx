@@ -197,8 +197,7 @@ export default function SettingsTab() {
                 </div>
               </div>
 
-              {/* Full Name - Spans full width on desktop if you want, or keep in grid. 
-                  Let's make it span full width for better emphasis on legal name */}
+              
               <div className="space-y-2 md:col-span-2">
                 <label htmlFor="fullName" className="text-sm font-semibold text-gray-700">
                   Full Name <span className="text-xs font-normal text-gray-400 ml-1">(As per KTP/Passport)</span>

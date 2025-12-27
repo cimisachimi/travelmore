@@ -17,7 +17,7 @@ export default function OrderPaymentActions({
 }: OrderPaymentActionsProps) {
   const status = order.status;
 
-  // ✅ ADDED: Identify if this is a Trip Planner order
+  
   const isTripPlanner = order.booking?.bookable_type?.includes("TripPlanner");
 
   if (status === "pending" || status === "processing") {

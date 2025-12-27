@@ -96,7 +96,7 @@ export default function PackagesPage() {
   const loadingString = useMemo(() => t("status.loading"), [t]);
   const noCategoriesString = useMemo(() => t("status.noCategories"), [t]);
   
-  // --- STRATEGI FETCHING: AGRESSIVE LOOP ---
+  
   useEffect(() => {
     let isMounted = true; 
 

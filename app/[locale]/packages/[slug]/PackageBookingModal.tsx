@@ -512,7 +512,7 @@ const PackageBookingModal: React.FC<PackageBookingModalProps> = ({
                 )}
              </div>
              
-             {/* Input Flight Number TELAH DIHAPUS DARI SINI */}
+             
 
            </div>
 

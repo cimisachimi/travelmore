@@ -86,8 +86,7 @@ interface BookingDetails {
   service_name?: string | null;
   notes?: string | null;
   
-  // Catch-all
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
   [key: string]: any;
 }
 

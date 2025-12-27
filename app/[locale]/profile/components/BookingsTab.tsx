@@ -198,12 +198,12 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
 
     const rawDate = (getVal('departure_date', 'departureDate') as string) || booking.start_date;
     
-    // --- ✅ PERBAIKAN LOGIKA DURASI (Updated Fix) ---
+   
     // 1. Cek 'duration' atau 'days' di dalam details (JSON)
     let rawDuration = getVal('duration', 'duration') || getVal('days', 'days');
     
     // 2. JIKA TIDAK ADA DI JSON, Cek di object 'bookable' (Data TripPlanner langsung)
-    // Ini langkah penting yang sebelumnya hilang
+    
     if (!rawDuration && bookable) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const b = bookable as any;
@@ -211,17 +211,17 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
     }
     
     // 3. Logic format tampilan agar tidak double teks
-    let durationDisplay = "1 Day"; // Default fallback
+    let durationDisplay = "1 Day"; 
 
     if (rawDuration) {
         const strVal = String(rawDuration);
         const lowerVal = strVal.toLowerCase();
 
-        // Jika data sudah mengandung kata "day" atau "hari" (misal: "2 Hari"), pakai langsung
+        
         if (lowerVal.includes('day') || lowerVal.includes('hari')) {
             durationDisplay = strVal;
         } else {
-            // Jika hanya angka (misal: "2"), tambahkan " Days"
+            
             durationDisplay = `${strVal} Days`;
         }
     }

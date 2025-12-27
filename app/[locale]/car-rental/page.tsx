@@ -76,7 +76,7 @@ function CarCard({ car, isExclusive }: { car: ApiCar; isExclusive: boolean }) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </div>
-        <div className="p-5 flex flex-col grow"> {/* ✅ Changed flex-grow to grow */}
+        <div className="p-5 flex flex-col grow"> 
           <p className={`text-sm font-semibold ${accentColor}`}>{displayType}</p>
           <h3 className={`text-2xl font-bold mt-1 ${textTitleClass}`}>{carName}</h3>
           <div className={`flex items-center gap-4 mt-4 text-sm ${textMutedClass}`}>
@@ -84,7 +84,7 @@ function CarCard({ car, isExclusive }: { car: ApiCar; isExclusive: boolean }) {
             <InfoIcon icon={Gauge} text={car.transmission} colorClass={textMutedClass} />
             <InfoIcon icon={Luggage} text={`${car.trunk_size} Bags`} colorClass={textMutedClass} />
           </div>
-          <p className={`${textMutedClass} mt-4 line-clamp-2 grow h-12`}> {/* ✅ Changed flex-grow to grow */}
+          <p className={`${textMutedClass} mt-4 line-clamp-2 grow h-12`}> 
             {car.description || "No description available."}
           </p>
           <div className={`mt-5 pt-4 border-t ${isExclusive ? "border-gray-800" : "border-border/50"}`}>
@@ -129,7 +129,7 @@ export default function CarRentalPage() {
         const response = await api.get("/public/car-rentals", { params: { locale } });
         setCars(response.data.data || response.data);
       } catch (err: unknown) { 
-        const axiosError = err as AxiosError<{ message: string }>; // ✅ Added proper type casting
+        const axiosError = err as AxiosError<{ message: string }>; 
         setError(axiosError.message || "Error fetching cars.");
       } finally {
         setLoading(false);
@@ -140,7 +140,7 @@ export default function CarRentalPage() {
 
   if (loading) return <div className={`flex justify-center items-center min-h-screen ${mainBgClass}`}><p className={textMutedClass}>Loading cars...</p></div>;
   
-  // ✅ Added error UI to resolve unused 'error' variable warning
+ 
   if (error) return <div className={`flex justify-center items-center min-h-screen ${mainBgClass}`}><p className="text-red-500 font-bold">{error}</p></div>;
 
   return (

@@ -83,7 +83,7 @@ export default async function Page({ params }: Props) {
   const priceExpiry = new Date();
   priceExpiry.setFullYear(priceExpiry.getFullYear() + 1);
 
-  // Menggunakan tipe intersection agar aman dari error eslint
+  
   const data = packageData as HolidayPackage & { rating?: number | string };
 
   // 1. Schema Utama: TouristTrip
@@ -107,7 +107,7 @@ export default async function Page({ params }: Props) {
       }
     } : {}),
 
-    // ✅ FIX ERROR DISINI: Ganti 'any' dengan tipe spesifik
+    
     'itinerary': data.itinerary?.map((item: { day: number | string; title: string; description: string }) => ({
       '@type': 'ItemList',
       'name': `Day ${item.day}: ${item.title}`,

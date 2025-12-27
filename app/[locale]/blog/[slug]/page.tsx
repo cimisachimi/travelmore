@@ -86,7 +86,7 @@ export default async function Page({ params }: Props) {
   
   if (!blogData) notFound();
 
-  // ✅ REDIRECT: Jika hash ID atau slug berubah agar URL tetap rapi
+
   const correctFullSlug = `${blogData.slug}-${encryptId(blogData.id)}`;
   if (fullSlug !== correctFullSlug) {
     permanentRedirect(`/${locale}/blog/${correctFullSlug}`);

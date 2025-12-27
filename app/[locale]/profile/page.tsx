@@ -19,7 +19,7 @@ function ProfileContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   
-  // --- PERBAIKAN DI SINI: MENGAMBIL TAB LANGSUNG DARI URL ---
+  
   const tabParam = searchParams.get("tab");
   const orderIdParam = searchParams.get("order_id");
 
@@ -31,7 +31,7 @@ function ProfileContent() {
     activeTab = "bookings";
   }
 
-  // Cek Auth tetap menggunakan useEffect
+  
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
@@ -43,7 +43,7 @@ function ProfileContent() {
     toast.info("You have been logged out.");
   };
 
-  // Fungsi switchTab sekarang hanya berurusan dengan URL
+ 
   const switchTab = (tab: ProfileTab) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", tab);

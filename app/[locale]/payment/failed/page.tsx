@@ -22,7 +22,7 @@ export default function PaymentFailedPage() {
 
 
         <div className="space-y-3">
-          {/* Primary Button: Retry */}
+          
           <Link
             href="/booking" // Or wherever you want them to retry
             className="block w-full px-8 py-3 rounded-lg bg-red-600 text-white font-bold hover:brightness-90 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"

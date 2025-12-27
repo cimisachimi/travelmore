@@ -2,7 +2,7 @@
 import { useTranslations } from 'next-intl';
 import SampleItineraries from '@/components/SampleItineraries'; // Import komponen Anda tadi
 
-// Tambahkan Metadata untuk SEO halaman ini
+
 export const metadata = {
   title: 'Itinerary & Tour Packages - Travelmore',
   description: 'Explore our best curated travel packages in Yogyakarta.',
@@ -23,7 +23,7 @@ export default function ItineraryIndexPage() {
           </p>
         </div>
 
-        {/* Panggil Component SampleItineraries di sini */}
+       
         <SampleItineraries />
 
       </div>
