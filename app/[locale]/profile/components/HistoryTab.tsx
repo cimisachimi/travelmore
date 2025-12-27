@@ -86,8 +86,8 @@ interface BookingDetails {
   service_name?: string | null;
   notes?: string | null;
   
-  
-  [key: string]: any;
+  // Catch-all (FIXED: Changed 'any' to 'unknown' to fix build error)
+  [key: string]: unknown;
 }
 
 // --- HELPER: Service Type Badge ---
@@ -135,7 +135,6 @@ const CarRentalDetails = ({ details }: { details: BookingDetails }) => (
           {details.plate_number && <div className="text-xs text-muted-foreground">{details.plate_number}</div>}
         </div>
 
-        {/* --- Bagian Tanggal Sewa --- */}
         <div>
            <span className="text-xs text-muted-foreground block">Rental Dates</span>
            <span className="font-medium flex items-center gap-1">
@@ -144,7 +143,6 @@ const CarRentalDetails = ({ details }: { details: BookingDetails }) => (
               {details.end_date ? ` - ${formatDate(details.end_date)}` : ""}
            </span>
         </div>
-        {/* --------------------------- */}
 
         <div>
           <span className="text-xs text-muted-foreground block">Duration</span>
@@ -179,7 +177,24 @@ const TripPlannerDetails = ({ details }: { details: BookingDetails }) => {
     if (details.trip_type === "domestic") location = `🇮🇩 ${details.city}, ${details.province}`;
     if (details.trip_type === "foreign") location = `🌐 ${details.city}, ${details.country}`;
 
-    const durationDisplay = details.duration || details.days || "";
+    // --- FIX LOGIKA DURASI (Sama dengan BookingsTab) ---
+    const rawDuration = details.duration || details.days;
+    let durationDisplay = ""; // Default kosong dulu
+
+    if (rawDuration) {
+        const strVal = String(rawDuration);
+        const lowerVal = strVal.toLowerCase();
+
+        // Jika data sudah ada teks (misal: "2 Hari" atau "2 Days"), pakai langsung
+        if (lowerVal.includes('day') || lowerVal.includes('hari')) {
+            durationDisplay = strVal;
+        } else {
+            // Jika hanya angka (misal: "2"), tambahkan " Days"
+            durationDisplay = `${strVal} Days`;
+        }
+    }
+    // --------------------------------------------------
+
     const displayDate = details.departure_date || details.start_date || details.booking_date || details.date || "-";
 
     return (
@@ -196,7 +211,9 @@ const TripPlannerDetails = ({ details }: { details: BookingDetails }) => {
                     <div>
                         <span className="text-xs text-muted-foreground block">Date & Duration</span>
                         <span className="font-medium flex items-center gap-1">
-                             <Calendar size={12}/> {displayDate !== "-" ? formatDate(displayDate) : "-"} ({durationDisplay} days)
+                             <Calendar size={12}/> {displayDate !== "-" ? formatDate(displayDate) : "-"} 
+                             {/* Hapus hardcode 'days' di sini, gunakan durationDisplay yang sudah diformat */}
+                             {durationDisplay ? ` (${durationDisplay})` : ""}
                         </span>
                     </div>
                 </div>
