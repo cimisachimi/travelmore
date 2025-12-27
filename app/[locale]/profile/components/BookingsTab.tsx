@@ -1,3 +1,4 @@
+// app/[locale]/profile/components/BookingsTab.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -48,6 +49,7 @@ interface BookingDetailsJSON {
   departure_date?: string;
   departureDate?: string;
   duration?: string | number;
+  days?: string | number; 
   
   // Location
   city?: string;
@@ -140,7 +142,6 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <DetailRow icon={Ticket} label="Activity Name" value={bookable?.name} />
             <DetailRow icon={Users} label="Participants" value={details?.quantity || details?.num_participants} />
-            {/* Fix: Prioritaskan pickup_location juga untuk activity */}
             <DetailRow icon={MapPin} label="Meeting Point" value={details?.pickup_location || details?.meeting_point} />
             <DetailRow icon={Calendar} label="Date" value={formatDate(booking.start_date)} />
         </div>
@@ -152,7 +153,6 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
   if (type === "HolidayPackage" || type === "OpenTrip") {
     const paxCount = (Number(details?.adults) || 0) + (Number(details?.children) || 0) + (Number(details?.num_participants) || 0) || 1;
     
-    // ✅ FIX DI SINI: Cek pickup_location dulu, baru meeting_point
     const meetingPointDisplay = details?.pickup_location || details?.meeting_point || "See Voucher";
 
     return (
@@ -164,7 +164,6 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
              <DetailRow icon={Map} label="Destination" value={bookable?.name} />
              <DetailRow icon={Users} label="Travelers" value={`${paxCount} Pax`} />
-             {/* ✅ Gunakan variable meetingPointDisplay yg sudah diperbaiki */}
              <DetailRow icon={MapPin} label="Meeting Point" value={meetingPointDisplay} />
         </div>
       </div>
@@ -198,10 +197,38 @@ function ServiceSpecificDetails({ booking }: { booking: SimpleBooking }) {
     }
 
     const rawDate = (getVal('departure_date', 'departureDate') as string) || booking.start_date;
-    const duration = getVal('duration', 'duration') || 1;
     
+    // --- ✅ PERBAIKAN LOGIKA DURASI (Updated Fix) ---
+    // 1. Cek 'duration' atau 'days' di dalam details (JSON)
+    let rawDuration = getVal('duration', 'duration') || getVal('days', 'days');
+    
+    // 2. JIKA TIDAK ADA DI JSON, Cek di object 'bookable' (Data TripPlanner langsung)
+    // Ini langkah penting yang sebelumnya hilang
+    if (!rawDuration && bookable) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const b = bookable as any;
+        rawDuration = b.duration || b.days || b.total_days; 
+    }
+    
+    // 3. Logic format tampilan agar tidak double teks
+    let durationDisplay = "1 Day"; // Default fallback
+
+    if (rawDuration) {
+        const strVal = String(rawDuration);
+        const lowerVal = strVal.toLowerCase();
+
+        // Jika data sudah mengandung kata "day" atau "hari" (misal: "2 Hari"), pakai langsung
+        if (lowerVal.includes('day') || lowerVal.includes('hari')) {
+            durationDisplay = strVal;
+        } else {
+            // Jika hanya angka (misal: "2"), tambahkan " Days"
+            durationDisplay = `${strVal} Days`;
+        }
+    }
+    // ---------------------------------------
+
     const dateDisplay = rawDate 
-      ? `${formatDate(rawDate)} (${duration} Days)`
+      ? `${formatDate(rawDate)} (${durationDisplay})`
       : "Date TBA";
 
     const contactDisplay = (getVal('phone', 'phone_number') as string) || "-";
@@ -316,12 +343,12 @@ export default function BookingsTab() {
                 </div>
 
                 <div className="bg-muted/10 p-4 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
-                   <div className="flex flex-col">
+                    <div className="flex flex-col">
                       <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Total Price</span>
                       <span className="font-bold text-lg text-primary">{formatCurrency(booking.total_price)}</span>
-                   </div>
+                    </div>
 
-                   <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3">
                       {canRefund && (
                         <button 
                             onClick={() => handleOpenRefund(booking)}
@@ -346,7 +373,7 @@ export default function BookingsTab() {
                               <CreditCard size={16} /> Pay Now
                           </Link>
                       )}
-                   </div>
+                    </div>
                 </div>
               </div>
             );
